@@ -279,13 +279,14 @@ def analyze(args):
     table = []
     os.makedirs(args.out, exist_ok=True)
     for path in args.scores:
-        rows = [json.loads(l) for l in open(path)]
-        rows = [r for r in rows if r.get("score") is not None]
+        allrows = [json.loads(l) for l in open(path)]
+        rows = [r for r in allrows if r.get("score") is not None]
         if not rows:
             continue
         d = pd.DataFrame(rows).drop_duplicates("run").merge(agents[["run", "task"]], on="run")
         model = d.model.iloc[0]
-        cost = float(d["cost"].sum()) if "cost" in d else 0.0
+        cost_all = float(sum(r.get("cost") or 0.0 for r in allrows))  # every call in the file, parsable or not
+        cost = float(d["cost"].sum()) if "cost" in d else 0.0          # the calls behind the rows below
         for arm in ("solo", "pooled", "cheat"):
             x = d if arm == "pooled" else d[d.condition == arm]
             if len(set(x.y)) < 2:
@@ -294,7 +295,8 @@ def analyze(args):
             T = sorted(set(x.author))
             row = {"arm": arm, "probe": f"judge:{model}", "layer": "judge", "position": "prompt", "pooling": "agent", "features": "raw",
                    "scope": "pooled", "agents": len(x), "cheat": int(y.sum()), "no_cheat": int((1 - y).sum()), "auroc": auc(s, y),
-                   "ci_lo": None, "ci_hi": None, "cost_usd": cost, "coverage": len(d) / len(agents)}
+                   "ci_lo": None, "ci_hi": None, "cost_usd": cost_all, "cost_scored_usd": cost, "n_calls": len(allrows),
+                   "coverage": len(d) / len(agents)}
             row["ci_lo"], row["ci_hi"] = boot_ci(s, y, run)
             within = {}
             for t in T:

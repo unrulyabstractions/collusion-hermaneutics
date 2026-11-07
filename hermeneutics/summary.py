@@ -101,15 +101,17 @@ def baselines_rows(path, pa, fa):
                              f"activation probe, reader (PCA, agent means, layer {L} {pos})"))
         if fa is not None and arm in set(fa.arm):
             Lf, posf = best_config(fa, arm)
+            n_cfg = fa[fa.arm == arm][["layer", "position"]].drop_duplicates().shape[0]
+            part = f", {n_cfg} of 12 configurations run" if n_cfg < 12 else ""
             rows.append(_rows_of(fa, arm, lambda d, L=Lf, pos=posf: (d.layer.astype(str) == str(L)) & (d.position == pos),
-                                 f"activation probe, reader (every dimension, layer {L} {pos})"))
+                                 f"activation probe, reader (every dimension, layer {Lf} {posf}{part})"))
         rnd = P("random", "pca_agent", "auroc.csv")
         if os.path.exists(rnd):
             rd = pd.read_csv(rnd)
             if arm in set(rd.arm):
                 Lr, posr = best_config(rd, arm)
                 rows.append(_rows_of(rd, arm, lambda d, L=Lr, pos=posr: (d.layer.astype(str) == str(L)) & (d.position == pos) & (d.pooling == "agent"),
-                                     f"random-weights reader null (PCA probe, layer {L} {pos}, fewer agents)"))
+                                     f"random-weights reader null (PCA probe, layer {Lr} {posr}, first 200 subsample runs)"))
         tf = [pd.read_csv(f) for f in sorted(glob.glob(P("tfidf*", "auroc.csv")))]
         if tf:
             td = pd.concat(tf).drop_duplicates(["arm", "position", "scope"], keep="first")
@@ -283,6 +285,17 @@ def main(path):
                         "| method | " + " | ".join(AUTHOR_NAME[a] for a in authors) + " |", "|---|" + "---|" * len(authors)]
                 for r in rows:
                     out.append(f"| {r['method']} | " + " | ".join(f3(r["per_author"].get(a)) for a in authors) + " |")
+                sp = os.path.join(path, "judges", "spend.json")
+                if os.path.exists(sp):
+                    sj = json.load(open(sp))
+                    out += ["", "**Table 11b.** Judge spend in USD. The provider ledger's movement is the authoritative total; the other "
+                            "figures are subsets of it and are listed so that every number quoted elsewhere reconciles.\n",
+                            "| figure | USD | what it counts |", "|---|---|---|",
+                            f"| provider ledger movement (authoritative) | {sj['provider_after'] - sj['provider_before']:.2f} | OpenRouter key usage before and after this step |",
+                            f"| calls recorded in the three score files | {sj['score_files_all_calls']:.2f} | every call whose reply was saved, parsable or not |",
+                            f"| calls whose reply parsed to a score (`judges/auroc.csv` cost_scored_usd) | {sj['score_files_scored_calls']:.2f} | the calls behind the AUROC rows |",
+                            f"| discarded first pricing round | {sj['discarded_pricing_round']:.2f} | 60 calls with a 16-token output budget that returned empty replies; files deleted |",
+                            f"| residual | {sj['provider_after'] - sj['provider_before'] - sj['score_files_all_calls'] - sj['discarded_pricing_round']:.2f} | ledger rounding to cents |"]
     out += ["", "## Limits\n",
             "The subsample holds a fraction of the runs per author and leaves out the longest transcripts. The cheat label "
             "counts opening the planted material, so a probe may read that the solution text entered the context rather than "

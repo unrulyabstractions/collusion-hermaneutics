@@ -193,7 +193,7 @@ The VISION asks the probe to beat every baseline. We therefore compare it with t
 | method | agents | B.I pooled | within-author mean | B.II mean |
 |---|---|---|---|---|
 | activation probe, reader (PCA, agent means, layer all both) | 373 | 0.967 [0.950, 0.981] | 0.892 | 0.915 |
-| activation probe, reader (every dimension, layer all both) | 373 | 0.971 [0.954, 0.984] | 0.936 | 0.910 |
+| activation probe, reader (every dimension, layer all close) | 373 | 0.971 [0.954, 0.984] | 0.936 | 0.910 |
 | TF-IDF + logistic regression, whole transcript | 373 | 0.979 [0.967, 0.990] | 0.948 | 0.943 |
 | TF-IDF + logistic regression, the agent's own words | 373 | 0.955 [0.938, 0.972] | 0.914 | 0.883 |
 | lexical-only reader null: TF-IDF on the think windows | 373 | 0.843 [0.805, 0.878] | n/a | 0.702 |
@@ -206,19 +206,29 @@ The VISION asks the probe to beat every baseline. We therefore compare it with t
 | method | DeepSeek V4.1 Flash | GPT-5 mini | Claude Haiku 5.5 | GPT-6 Luna | Qwen3.8-27B |
 |---|---|---|---|---|---|
 | activation probe, reader (PCA, agent means, layer all both) | 0.860 | 0.862 | 0.929 | 0.853 | 0.955 |
-| activation probe, reader (every dimension, layer all both) | 0.930 | 0.942 | 0.974 | 0.880 | 0.952 |
+| activation probe, reader (every dimension, layer all close) | 0.930 | 0.942 | 0.974 | 0.880 | 0.952 |
 | TF-IDF + logistic regression, whole transcript | 0.936 | 0.962 | 0.978 | 0.938 | 0.926 |
 | TF-IDF + logistic regression, the agent's own words | 0.917 | 0.897 | 0.960 | 0.867 | 0.931 |
 | lexical-only reader null: TF-IDF on the think windows | 0.885 | 0.820 | n/a | 0.610 | 0.930 |
 | judge: Claude Haiku 5.5 (author-level) | 0.703 | 0.848 | 0.645 | 0.782 | 0.792 |
 | judge: Claude Sonnet 5.5 (above the authors), 77% of the agents | 0.583 | 0.973 | 0.851 | 0.788 | 0.862 |
 | judge: GPT-5 mini (author-level) | 0.551 | 0.677 | 0.564 | 0.638 | 0.678 |
+
+**Table 11b.** Judge spend in USD. The provider ledger's movement is the authoritative total; the other figures are subsets of it and are listed so that every number quoted elsewhere reconciles.
+
+| figure | USD | what it counts |
+|---|---|---|
+| provider ledger movement (authoritative) | 12.36 | OpenRouter key usage before and after this step |
+| calls recorded in the three score files | 12.01 | every call whose reply was saved, parsable or not |
+| calls whose reply parsed to a score (`judges/auroc.csv` cost_scored_usd) | 11.86 | the calls behind the AUROC rows |
+| discarded first pricing round | 0.33 | 60 calls with a 16-token output budget that returned empty replies; files deleted |
+| residual | 0.02 | ledger rounding to cents |
 **Table 12.** Both arms pooled, then the cheat arm alone: the probe against the baselines.
 
 | method | agents | B.I pooled | within-author mean | B.II mean |
 |---|---|---|---|---|
 | activation probe, reader (PCA, agent means, layer 38 close) | 600 | 0.963 [0.949, 0.976] | 0.914 | 0.930 |
-| activation probe, reader (every dimension, layer 38 close) | 600 | 0.955 [0.940, 0.969] | 0.919 | 0.910 |
+| activation probe, reader (every dimension, layer 26 open, 2 of 12 configurations run) | 600 | 0.955 [0.940, 0.969] | 0.919 | 0.910 |
 | TF-IDF + logistic regression, whole transcript | 600 | 0.984 [0.975, 0.992] | 0.944 | 0.968 |
 | TF-IDF + logistic regression, the agent's own words | 600 | 0.962 [0.948, 0.975] | 0.918 | 0.921 |
 | lexical-only reader null: TF-IDF on the think windows | 600 | 0.851 [0.822, 0.881] | n/a | 0.729 |

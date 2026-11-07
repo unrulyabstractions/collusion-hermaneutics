@@ -1,0 +1,7 @@
+arm,layer,position,pooling,features,accuracy,majority_rate
+pooled,26,open,agent,raw,0.9933333333333333,0.6216666666666666
+pooled,26,open,agent,author erased,0.995,0.6216666666666666
+pooled,26,open,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,26,close,agent,raw,0.975,0.6216666666666666
+pooled,26,close,agent,author erased,0.9716666666666667,0.6216666666666666
+pooled,26,close,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666

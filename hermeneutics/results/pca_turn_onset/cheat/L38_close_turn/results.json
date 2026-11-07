@@ -1,0 +1,277 @@
+{
+ "counts": {
+  "ds": {
+   "agents": 35,
+   "cheat": 30,
+   "no_cheat": 5
+  },
+  "gpt5m": {
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30
+  },
+  "haiku": {
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30
+  },
+  "luna": {
+   "agents": 42,
+   "cheat": 30,
+   "no_cheat": 12
+  },
+  "qwen": {
+   "agents": 30,
+   "cheat": 30,
+   "no_cheat": 0
+  }
+ },
+ "authors": [
+  "ds",
+  "gpt5m",
+  "haiku",
+  "luna",
+  "qwen"
+ ],
+ "with_both_classes": [
+  "ds",
+  "gpt5m",
+  "haiku",
+  "luna"
+ ],
+ "n_rows": 2878,
+ "n_agents": 227,
+ "pooling": "turn",
+ "author_probe": {
+  "raw": {
+   "accuracy": 0.9840166782487839,
+   "C": [
+    0.1,
+    0.1,
+    0.1,
+    1.0,
+    1.0
+   ],
+   "confusion": [
+    [
+     531,
+     0,
+     4,
+     1,
+     1
+    ],
+    [
+     0,
+     813,
+     3,
+     7,
+     0
+    ],
+    [
+     2,
+     0,
+     720,
+     8,
+     0
+    ],
+    [
+     0,
+     14,
+     6,
+     416,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     352
+    ]
+   ],
+   "balanced_accuracy": 0.9834211915171377,
+   "majority_rate": 0.2859624739402363
+  }
+ },
+ "cheat": [
+  {
+   "features": "raw",
+   "scope": "pooled",
+   "agents": 221,
+   "cheat": 144,
+   "no_cheat": 77,
+   "auroc": 0.9731240981240981,
+   "ci": [
+    0.9518428145111368,
+    0.9909825751171905
+   ],
+   "C": [
+    0.01,
+    0.1,
+    0.1,
+    0.1,
+    0.1
+   ],
+   "auroc_turns": 0.9482269244000088,
+   "within": {
+    "ds": 0.9733333333333334,
+    "gpt5m": 0.9736111111111111,
+    "haiku": 0.9444444444444444,
+    "luna": 0.9638888888888889
+   },
+   "within_mean": 0.9638194444444445
+  },
+  {
+   "features": "raw",
+   "scope": "ds",
+   "agents": 35,
+   "cheat": 30,
+   "no_cheat": 5,
+   "auroc": 0.9533333333333334,
+   "ci": [
+    0.8258494623655914,
+    1.0
+   ],
+   "C": [
+    0.1,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "auroc_turns": 0.9095058468502453
+  },
+  {
+   "features": "raw",
+   "scope": "gpt5m",
+   "agents": 54,
+   "cheat": 24,
+   "no_cheat": 30,
+   "auroc": 0.9625,
+   "ci": [
+    0.8960715651809621,
+    1.0
+   ],
+   "C": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    0.1
+   ],
+   "auroc_turns": 0.8746449886807985
+  },
+  {
+   "features": "raw",
+   "scope": "haiku",
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30,
+   "auroc": 0.9755555555555556,
+   "ci": [
+    0.9352472718253968,
+    1.0
+   ],
+   "C": [
+    1.0,
+    0.1,
+    1.0,
+    0.1,
+    0.1
+   ],
+   "auroc_turns": 0.9606289463909867
+  },
+  {
+   "features": "raw",
+   "scope": "luna",
+   "agents": 42,
+   "cheat": 30,
+   "no_cheat": 12,
+   "auroc": 0.8944444444444444,
+   "ci": [
+    0.7743519756387404,
+    0.9926215277777778
+   ],
+   "C": [
+    1.0,
+    1.0,
+    1.0,
+    0.1,
+    0.1
+   ],
+   "auroc_turns": 0.76761583011583
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO ds",
+   "agents": 35,
+   "cheat": 30,
+   "no_cheat": 5,
+   "auroc": 0.9666666666666667,
+   "ci": [
+    0.9000000000000001,
+    1.0
+   ],
+   "C": [
+    0.01
+   ],
+   "auroc_turns": 0.8216144850999623
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO gpt5m",
+   "agents": 54,
+   "cheat": 24,
+   "no_cheat": 30,
+   "auroc": 0.7625,
+   "ci": [
+    0.6359858374384236,
+    0.8779367751589975
+   ],
+   "C": [
+    0.1
+   ],
+   "auroc_turns": 0.6723674281402209
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO haiku",
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30,
+   "auroc": 0.9644444444444444,
+   "ci": [
+    0.9176794280351185,
+    0.9955506117908788
+   ],
+   "C": [
+    0.1
+   ],
+   "auroc_turns": 0.9327244502433311
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO luna",
+   "agents": 42,
+   "cheat": 30,
+   "no_cheat": 12,
+   "auroc": 0.9944444444444445,
+   "ci": [
+    0.9730639730639731,
+    1.0
+   ],
+   "C": [
+    0.01
+   ],
+   "auroc_turns": 0.9272683397683398
+  }
+ ],
+ "nuisance": {
+  "turn position (index, fraction)": 0.8128607503607505
+ },
+ "arm": "cheat",
+ "layer": 38,
+ "position": "close",
+ "probe": "pca",
+ "turn_labels": "onset"
+}

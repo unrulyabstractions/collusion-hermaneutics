@@ -1,0 +1,277 @@
+{
+ "counts": {
+  "ds": {
+   "agents": 35,
+   "cheat": 30,
+   "no_cheat": 5
+  },
+  "gpt5m": {
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30
+  },
+  "haiku": {
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30
+  },
+  "luna": {
+   "agents": 42,
+   "cheat": 30,
+   "no_cheat": 12
+  },
+  "qwen": {
+   "agents": 30,
+   "cheat": 30,
+   "no_cheat": 0
+  }
+ },
+ "authors": [
+  "ds",
+  "gpt5m",
+  "haiku",
+  "luna",
+  "qwen"
+ ],
+ "with_both_classes": [
+  "ds",
+  "gpt5m",
+  "haiku",
+  "luna"
+ ],
+ "n_rows": 2878,
+ "n_agents": 227,
+ "pooling": "turn",
+ "author_probe": {
+  "raw": {
+   "accuracy": 0.972550382209868,
+   "C": [
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1
+   ],
+   "confusion": [
+    [
+     528,
+     0,
+     5,
+     2,
+     2
+    ],
+    [
+     0,
+     799,
+     13,
+     11,
+     0
+    ],
+    [
+     2,
+     9,
+     711,
+     8,
+     0
+    ],
+    [
+     0,
+     17,
+     10,
+     409,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     352
+    ]
+   ],
+   "balanced_accuracy": 0.9732249233621225,
+   "majority_rate": 0.2859624739402363
+  }
+ },
+ "cheat": [
+  {
+   "features": "raw",
+   "scope": "pooled",
+   "agents": 221,
+   "cheat": 144,
+   "no_cheat": 77,
+   "auroc": 0.9813311688311688,
+   "ci": [
+    0.9654265263839471,
+    0.9934294774925889
+   ],
+   "C": [
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1
+   ],
+   "auroc_turns": 0.9557447161493213,
+   "within": {
+    "ds": 0.9866666666666667,
+    "gpt5m": 0.9777777777777779,
+    "haiku": 0.9833333333333333,
+    "luna": 0.9666666666666667
+   },
+   "within_mean": 0.9786111111111112
+  },
+  {
+   "features": "raw",
+   "scope": "ds",
+   "agents": 35,
+   "cheat": 30,
+   "no_cheat": 5,
+   "auroc": 0.9066666666666667,
+   "ci": [
+    0.7068376068376069,
+    1.0
+   ],
+   "C": [
+    0.01,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "auroc_turns": 0.8348924933987174
+  },
+  {
+   "features": "raw",
+   "scope": "gpt5m",
+   "agents": 54,
+   "cheat": 24,
+   "no_cheat": 30,
+   "auroc": 0.9444444444444444,
+   "ci": [
+    0.8793461907702725,
+    0.9916666666666666
+   ],
+   "C": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "auroc_turns": 0.8757563284626467
+  },
+  {
+   "features": "raw",
+   "scope": "haiku",
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30,
+   "auroc": 0.9766666666666666,
+   "ci": [
+    0.9393939393939393,
+    1.0
+   ],
+   "C": [
+    1.0,
+    0.1,
+    0.1,
+    0.1,
+    0.1
+   ],
+   "auroc_turns": 0.9602289502004743
+  },
+  {
+   "features": "raw",
+   "scope": "luna",
+   "agents": 42,
+   "cheat": 30,
+   "no_cheat": 12,
+   "auroc": 0.8611111111111112,
+   "ci": [
+    0.6773206056616196,
+    1.0
+   ],
+   "C": [
+    1.0,
+    1.0,
+    0.1,
+    0.1,
+    0.1
+   ],
+   "auroc_turns": 0.722007722007722
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO ds",
+   "agents": 35,
+   "cheat": 30,
+   "no_cheat": 5,
+   "auroc": 0.8866666666666667,
+   "ci": [
+    0.7706896551724138,
+    0.9791666666666666
+   ],
+   "C": [
+    0.1
+   ],
+   "auroc_turns": 0.6209732176537156
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO gpt5m",
+   "agents": 54,
+   "cheat": 24,
+   "no_cheat": 30,
+   "auroc": 0.6777777777777778,
+   "ci": [
+    0.5293289431157079,
+    0.800867303992304
+   ],
+   "C": [
+    0.1
+   ],
+   "auroc_turns": 0.6526308568292516
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO haiku",
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30,
+   "auroc": 0.9855555555555555,
+   "ci": [
+    0.9486780258519388,
+    1.0
+   ],
+   "C": [
+    0.1
+   ],
+   "auroc_turns": 0.9283816344606242
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO luna",
+   "agents": 42,
+   "cheat": 30,
+   "no_cheat": 12,
+   "auroc": 0.9972222222222222,
+   "ci": [
+    0.9851851851851853,
+    1.0
+   ],
+   "C": [
+    0.1
+   ],
+   "auroc_turns": 0.9121380308880309
+  }
+ ],
+ "nuisance": {
+  "turn position (index, fraction)": 0.8128607503607505
+ },
+ "arm": "cheat",
+ "layer": 51,
+ "position": "open",
+ "probe": "pca",
+ "turn_labels": "onset"
+}

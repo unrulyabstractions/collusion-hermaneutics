@@ -1,0 +1,315 @@
+{
+ "counts": {
+  "ds": {
+   "agents": 85,
+   "cheat": 42,
+   "no_cheat": 43
+  },
+  "gpt5m": {
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30
+  },
+  "haiku": {
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30
+  },
+  "luna": {
+   "agents": 78,
+   "cheat": 39,
+   "no_cheat": 39
+  },
+  "qwen": {
+   "agents": 90,
+   "cheat": 52,
+   "no_cheat": 38
+  }
+ },
+ "authors": [
+  "ds",
+  "gpt5m",
+  "haiku",
+  "luna",
+  "qwen"
+ ],
+ "with_both_classes": [
+  "ds",
+  "gpt5m",
+  "haiku",
+  "luna",
+  "qwen"
+ ],
+ "n_rows": 5731,
+ "n_agents": 373,
+ "pooling": "turn",
+ "author_probe": {
+  "raw": {
+   "accuracy": 0.9682428895480719,
+   "C": [
+    0.1,
+    0.1,
+    0.01,
+    0.1,
+    0.1
+   ],
+   "confusion": [
+    [
+     1357,
+     3,
+     3,
+     6,
+     13
+    ],
+    [
+     7,
+     775,
+     3,
+     39,
+     3
+    ],
+    [
+     7,
+     4,
+     731,
+     21,
+     2
+    ],
+    [
+     9,
+     8,
+     18,
+     1076,
+     1
+    ],
+    [
+     32,
+     0,
+     0,
+     3,
+     1610
+    ]
+   ],
+   "balanced_accuracy": 0.9641874524458789,
+   "majority_rate": 0.28703542139242716
+  }
+ },
+ "cheat": [
+  {
+   "features": "raw",
+   "scope": "pooled",
+   "agents": 372,
+   "cheat": 192,
+   "no_cheat": 180,
+   "auroc": 0.9803530092592592,
+   "ci": [
+    0.9684125641144445,
+    0.9893880079847482
+   ],
+   "C": [
+    0.1,
+    0.01,
+    0.1,
+    0.1,
+    0.01
+   ],
+   "auroc_turns": 0.9416983343157138,
+   "within": {
+    "ds": 0.9767441860465116,
+    "gpt5m": 0.9793103448275863,
+    "haiku": 0.9844444444444445,
+    "luna": 0.9506903353057199,
+    "qwen": 0.9969635627530364
+   },
+   "within_mean": 0.9776305746754597
+  },
+  {
+   "features": "raw",
+   "scope": "ds",
+   "agents": 85,
+   "cheat": 42,
+   "no_cheat": 43,
+   "auroc": 0.9850498338870431,
+   "ci": [
+    0.9601328903654485,
+    1.0
+   ],
+   "C": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "auroc_turns": 0.9671675947493963
+  },
+  {
+   "features": "raw",
+   "scope": "gpt5m",
+   "agents": 59,
+   "cheat": 29,
+   "no_cheat": 30,
+   "auroc": 0.9839080459770115,
+   "ci": [
+    0.9564592703648176,
+    1.0
+   ],
+   "C": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "auroc_turns": 0.9540034071550256
+  },
+  {
+   "features": "raw",
+   "scope": "haiku",
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30,
+   "auroc": 0.9844444444444445,
+   "ci": [
+    0.9497697398088023,
+    1.0
+   ],
+   "C": [
+    1.0,
+    0.1,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "auroc_turns": 0.9465955270112819
+  },
+  {
+   "features": "raw",
+   "scope": "luna",
+   "agents": 78,
+   "cheat": 39,
+   "no_cheat": 39,
+   "auroc": 0.9638395792241947,
+   "ci": [
+    0.9236842105263159,
+    0.9921258140008139
+   ],
+   "C": [
+    1.0,
+    1.0,
+    0.1,
+    0.01,
+    0.1
+   ],
+   "auroc_turns": 0.8995738636363635
+  },
+  {
+   "features": "raw",
+   "scope": "qwen",
+   "agents": 90,
+   "cheat": 52,
+   "no_cheat": 38,
+   "auroc": 0.9939271255060729,
+   "ci": [
+    0.9820718310811226,
+    1.0
+   ],
+   "C": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "auroc_turns": 0.9739144263536539
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO ds",
+   "agents": 85,
+   "cheat": 42,
+   "no_cheat": 43,
+   "auroc": 0.9928017718715393,
+   "ci": [
+    0.9787136524822695,
+    1.0
+   ],
+   "C": [
+    0.01
+   ],
+   "auroc_turns": 0.9276439603645226
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO gpt5m",
+   "agents": 59,
+   "cheat": 29,
+   "no_cheat": 30,
+   "auroc": 0.993103448275862,
+   "ci": [
+    0.9756844362745097,
+    1.0
+   ],
+   "C": [
+    0.01
+   ],
+   "auroc_turns": 0.8112578080636004
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO haiku",
+   "agents": 60,
+   "cheat": 30,
+   "no_cheat": 30,
+   "auroc": 0.9877777777777779,
+   "ci": [
+    0.9657968574635242,
+    1.0
+   ],
+   "C": [
+    0.01
+   ],
+   "auroc_turns": 0.9156412515274659
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO luna",
+   "agents": 78,
+   "cheat": 39,
+   "no_cheat": 39,
+   "auroc": 0.8461538461538461,
+   "ci": [
+    0.7568048391327156,
+    0.9239066257816257
+   ],
+   "C": [
+    0.1
+   ],
+   "auroc_turns": 0.7521232057416268
+  },
+  {
+   "features": "raw",
+   "scope": "LOTO qwen",
+   "agents": 90,
+   "cheat": 52,
+   "no_cheat": 38,
+   "auroc": 0.97165991902834,
+   "ci": [
+    0.9388601373563779,
+    0.9955209892932397
+   ],
+   "C": [
+    0.1
+   ],
+   "auroc_turns": 0.88231124574025
+  }
+ ],
+ "nuisance": {
+  "turn position (index, fraction)": 0.9834201388888889
+ },
+ "arm": "solo",
+ "layer": 38,
+ "position": "open",
+ "probe": "pca",
+ "turn_labels": "onset"
+}

@@ -1,0 +1,37 @@
+arm,layer,position,pooling,features,accuracy,majority_rate
+pooled,26,open,agent,raw,0.995,0.6216666666666666
+pooled,26,open,agent,author erased,0.995,0.6216666666666666
+pooled,26,open,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,26,close,agent,raw,0.9833333333333333,0.6216666666666666
+pooled,26,close,agent,author erased,0.9883333333333333,0.6216666666666666
+pooled,26,close,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,26,both,agent,raw,0.9916666666666667,0.6216666666666666
+pooled,26,both,agent,author erased,0.9966666666666667,0.6216666666666666
+pooled,26,both,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,38,open,agent,raw,0.9916666666666667,0.6216666666666666
+pooled,38,open,agent,author erased,0.9816666666666667,0.6216666666666666
+pooled,38,open,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,38,close,agent,raw,0.9883333333333333,0.6216666666666666
+pooled,38,close,agent,author erased,0.9866666666666667,0.6216666666666666
+pooled,38,close,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,38,both,agent,raw,0.9883333333333333,0.6216666666666666
+pooled,38,both,agent,author erased,0.9933333333333333,0.6216666666666666
+pooled,38,both,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,51,open,agent,raw,0.9716666666666667,0.6216666666666666
+pooled,51,open,agent,author erased,0.9733333333333334,0.6216666666666666
+pooled,51,open,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,51,close,agent,raw,0.9633333333333334,0.6216666666666666
+pooled,51,close,agent,author erased,0.965,0.6216666666666666
+pooled,51,close,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,51,both,agent,raw,0.9666666666666667,0.6216666666666666
+pooled,51,both,agent,author erased,0.97,0.6216666666666666
+pooled,51,both,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,all,open,agent,raw,0.985,0.6216666666666666
+pooled,all,open,agent,author erased,0.9766666666666667,0.6216666666666666
+pooled,all,open,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,all,close,agent,raw,0.975,0.6216666666666666
+pooled,all,close,agent,author erased,0.97,0.6216666666666666
+pooled,all,close,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666
+pooled,all,both,agent,raw,0.9783333333333334,0.6216666666666666
+pooled,all,both,agent,author erased,0.9716666666666667,0.6216666666666666
+pooled,all,both,agent,"author, task, condition erased",0.6216666666666667,0.6216666666666666

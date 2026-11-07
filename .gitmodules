@@ -1,0 +1,4 @@
+[submodule "submodule/spar-guardian-agents"]
+	path = submodule/spar-guardian-agents
+	url = https://github.com/unrulyabstractions/spar-guardian-agents.git
+	branch = apart-hackathon

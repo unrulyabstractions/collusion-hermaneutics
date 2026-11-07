@@ -1,0 +1,27 @@
+import numpy as np, pandas as pd, time, sys
+sys.argv=["x"]
+from hermeneutics import probes as P
+rng=np.random.default_rng(0)
+authors=["ds","gpt5m","haiku","luna","qwen"]; tasks=list("abcdefghi")
+rows=[]; acts={26:[],38:[],51:[]}
+d=5120; SIGN=np.where(np.random.default_rng(1).random(d)<0.5,-1.0,1.0)
+for i in range(150):
+    au=authors[i%5]; cond=["solo","cheat"][(i//5)%2]; y=int(rng.random()<0.5)
+    nt=int(rng.integers(3,12))
+    rows.append({"run":f"r{i}","author":au,"condition":cond,"task":tasks[i%9],"y":y,"rung":"x","n_turns":nt,"n_readable":nt,"n_tokens":1000})
+    for L in acts:
+        a=rng.normal(size=(nt,2,d)).astype(np.float32)
+        a[:,:,:50]+=0.6*authors.index(au)*SIGN[:50]; a[:,:,50:100]+=0.5*y*SIGN[50:100]; a[:,:,100:150]+=0.4*(cond=="cheat")*SIGN[100:150]
+        acts[L].append(a)
+agents=pd.DataFrame(rows)
+t0=time.time()
+X,turn_of,_=P.features(agents,acts,38,"close","agent"); print("agent X",X.shape, flush=True)
+res=P.analyze(X,agents,None,n_shuf=4,jobs=1,full=True)
+print("author probe", {k:round(v["accuracy"],3) for k,v in res["author_probe"].items()})
+print("cheat rows", len(res["cheat"]), "shuffle keys", list(res["shuffle"]), "nuisance", {k:round(v,3) for k,v in res["nuisance"].items()})
+print([(r["features"], r["scope"], round(r["auroc"],3)) for r in res["cheat"] if r["scope"] in ("pooled","LOTO ds","ds")])
+print("erasure", res["erasure_check"])
+Xt,turn_of,tpos=P.features(agents,acts,"all","both","turn"); agents["onset_turn"]=[2 if y else None for y in agents.y]; keep=P.onset_rows(agents,turn_of,tpos); Xt,turn_of,tpos=Xt[keep],turn_of[keep],tpos[keep]; print("onset kept",int(keep.sum())); print("turn X",Xt.shape, flush=True)
+n_of=agents.n_turns.values[turn_of]; res2=P.analyze(Xt,agents,turn_of,n_shuf=0,jobs=1,full=False,turn_pos=np.column_stack([tpos,tpos/np.maximum(n_of-1,1)]).astype(float))
+print([(r["features"], r["scope"], round(r["auroc"],3), round(r.get("auroc_turns",0),3)) for r in res2["cheat"][:3]])
+print("flat rows", len(P.flat_rows(res,"solo",38,"close","agent")), f"{time.time()-t0:.0f}s")

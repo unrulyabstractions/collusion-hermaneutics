@@ -1,0 +1,3 @@
+# Controls-run and pilot tooling (archival)
+
+Scripts preserved from the 2026-11-07 session scratchpad that drove the `study_apart_controls` collection (5 authors × 9 tasks × solo/cheat on 20 arena9 hosts), its guards, the completion gates (`final_force_sync.py`, `final_sweep.py`, `final_report.py`), the board-seed pilots (`pilot_runner.sh`, `pilot60_runner.sh`, `confirm_runner*.sh`, `parse_pilot*.py`) and the publish verification (`verify_publish.sh`, `hf_baseline.json`). Kept as-is for provenance; many hard-code session paths and host names and are not a maintained package. Secrets were never written into these files (keys came from environment variables).

@@ -1,0 +1,5 @@
+{"repo": "unrulyabstractions/apart-swarm", "type": "dataset",
+ "note": "RETARGETED 2026-11-07 ~10:10 UTC. The earlier baseline in this file (unrulyabstractions/arena-capstone, sha b2d1160..., 2026-11-06, 25490 files) was taken on the WRONG repo (the old persona-project dataset) and is DISCARDED.",
+ "pre_final_snapshot_documented_by_coordinator": {"files": 16121, "runs": 1932, "approx_time_utc": "2026-11-07T02:04", "retrieved_by_me": false},
+ "moved_vs_baseline_check": "DROPPED (pre-final revision not retrievable); verify ABSOLUTE final state instead",
+ "expected_final": {"n_files": 37368, "head": "1830ebb6 or later", "lastModified": "2026-11-07", "manifest_rows": 4466, "canonical": 4157}}

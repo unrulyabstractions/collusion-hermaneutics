@@ -1,0 +1,182 @@
+{
+  "hosts": {
+    "apple": {
+      "ssh": "arena9-apple",
+      "conc_total": 8,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "gabby": {
+      "ssh": "arena9-gabby",
+      "conc_total": 8,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "bloom": {
+      "ssh": "arena9-bloom",
+      "conc_total": 8,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    },
+    "flash": {
+      "ssh": "arena9-flash",
+      "conc_total": 8,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    },
+    "iron": {
+      "ssh": "arena9-iron",
+      "conc_total": 8,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    },
+    "jack": {
+      "ssh": "arena9-jack",
+      "conc_total": 8,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    },
+    "cake": {
+      "ssh": "arena9-cake",
+      "conc_total": 14,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "kind": {
+      "ssh": "arena9-kind",
+      "conc_total": 8,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "bonbon": {
+      "ssh": "arena9-bonbon",
+      "conc_total": 8,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    },
+    "bulk": {
+      "ssh": "arena9-bulk",
+      "conc_total": 6,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    },
+    "diamond": {
+      "ssh": "arena9-diamond",
+      "conc_total": 6,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "discord": {
+      "ssh": "arena9-discord",
+      "conc_total": 8,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "entropy": {
+      "ssh": "arena9-entropy",
+      "conc_total": 8,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "gustav": {
+      "ssh": "arena9-gustav",
+      "conc_total": 8,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    },
+    "harmony": {
+      "ssh": "arena9-harmony",
+      "conc_total": 8,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    },
+    "twilight": {
+      "ssh": "arena9-twilight",
+      "conc_total": 14,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "scoot": {
+      "ssh": "arena9-scoot",
+      "conc_total": 14,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "ember": {
+      "ssh": "arena9-ember",
+      "conc_total": 8,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    },
+    "flutter": {
+      "ssh": "arena9-flutter",
+      "conc_total": 8,
+      "swe_cap": 3,
+      "min_free_mb": 3000
+    },
+    "joy": {
+      "ssh": "arena9-joy",
+      "conc_total": 0,
+      "swe_cap": 0,
+      "min_free_mb": 3000
+    }
+  },
+  "key_hosts": [
+    [
+      "sunset",
+      "4df8"
+    ],
+    [
+      "cloud",
+      "091b"
+    ],
+    [
+      "orchard",
+      "e5a5"
+    ],
+    [
+      "quiet",
+      "24e8"
+    ],
+    [
+      "kind",
+      "39de"
+    ],
+    [
+      "cake",
+      "3473"
+    ],
+    [
+      "twilight",
+      "d028"
+    ],
+    [
+      "scoot",
+      "eae7"
+    ],
+    [
+      "discord",
+      "3daa"
+    ],
+    [
+      "ember",
+      "0786"
+    ],
+    [
+      "flash",
+      "605f"
+    ],
+    [
+      "iron",
+      "240c"
+    ]
+  ],
+  "lookahead": 50,
+  "pause_models": [
+    "qwen",
+    "haiku",
+    "gpt5m",
+    "ds",
+    "luna"
+  ]
+}

@@ -85,12 +85,47 @@ class Weights:
         return [n for n in self.map if n.startswith(p)]
 
 
-def load_layer(cfg, weights, i, device):
+def init_random(layer, gen):
+    """Weights drawn as Qwen3_5PreTrainedModel._init_weights draws them, with no trained values: Linear and Conv1d
+    N(0, 0.02) with zero bias, RMSNorm weight 0 (the norm scales by 1 + weight), gated RMSNorm weight 1, dt_bias 1,
+    A_log = log U(0.01, 16). Every parameter must be covered, or this raises."""
+    from torch import nn
+    from transformers.models.qwen3_5.modeling_qwen3_5 import Qwen3_5GatedDeltaNet, Qwen3_5RMSNormGated
+    done = set()
+    for m in layer.modules():
+        if isinstance(m, (nn.Linear, nn.Conv1d)):
+            m.weight.data.normal_(0, 0.02, generator=gen)
+            done.add(id(m.weight))
+            if m.bias is not None:
+                m.bias.data.zero_()
+                done.add(id(m.bias))
+        elif isinstance(m, Qwen3_5RMSNorm):
+            m.weight.data.zero_()
+            done.add(id(m.weight))
+        elif isinstance(m, Qwen3_5RMSNormGated):
+            m.weight.data.fill_(1.0)
+            done.add(id(m.weight))
+        elif isinstance(m, Qwen3_5GatedDeltaNet):
+            m.dt_bias.data.fill_(1.0)
+            m.A_log.data.copy_(torch.empty_like(m.A_log).uniform_(0.01, 16, generator=gen).log_())
+            done.update((id(m.dt_bias), id(m.A_log)))
+    missing = [n for n, p in layer.named_parameters() if id(p) not in done]
+    if missing:
+        raise RuntimeError(f"parameters without an init rule: {missing}")
+
+
+def load_layer(cfg, weights, i, device, random_seed=None):
+    """Decoder block i with its trained weights, or (random_seed given) with random weights: the random-weights reader."""
     with torch.device("meta"):
         layer = Qwen3_5DecoderLayer(cfg, i)
-    p = f"{PREFIX}layers.{i}."
-    sd = {n[len(p):]: t for n, t in weights.get(weights.layer_names(i), device).items()}
-    layer.load_state_dict(sd, strict=True, assign=True)
+    if random_seed is not None:
+        layer.to_empty(device=device)
+        init_random(layer, torch.Generator(device=device).manual_seed(random_seed * 1000 + i))
+        layer.to(torch.bfloat16)
+    else:
+        p = f"{PREFIX}layers.{i}."
+        sd = {n[len(p):]: t for n, t in weights.get(weights.layer_names(i), device).items()}
+        layer.load_state_dict(sd, strict=True, assign=True)
     mlp = layer.mlp
     plain = mlp.forward
 
@@ -169,9 +204,13 @@ def plan(jobs, limit):
     return out + ([cur] if cur else [])
 
 
-def run_batch(batch, layers, cfg, weights, dev, linear_chunk):
+def run_batch(batch, layers, cfg, weights, dev, linear_chunk, random_seed=None):
     """{f"think_L{L}": [n_turns, 2, d], f"mean_L{L}": [n_units, d]} fp16 per job."""
-    emb = weights.get([f"{PREFIX}embed_tokens.weight"], dev)[f"{PREFIX}embed_tokens.weight"]
+    if random_seed is None:
+        emb = weights.get([f"{PREFIX}embed_tokens.weight"], dev)[f"{PREFIX}embed_tokens.weight"]
+    else:  # random embeddings too: N(0, 0.02), the model's own initialiser
+        g = torch.Generator(device=dev).manual_seed(random_seed * 1000 + 999)
+        emb = (torch.randn(cfg.vocab_size, cfg.hidden_size, generator=g, device=dev) * 0.02).to(torch.bfloat16)
     hidden = [emb[torch.tensor(j[2], device=dev)][None].cpu() for j in batch]  # pageable: pinned cache grows unbounded
     del emb
     torch.cuda.empty_cache()
@@ -179,7 +218,7 @@ def run_batch(batch, layers, cfg, weights, dev, linear_chunk):
     acts = [{} for _ in batch]
     t0 = time.time()
     for i in range(max(layers)):
-        layer = load_layer(cfg, weights, i, dev)
+        layer = load_layer(cfg, weights, i, dev, random_seed)
         with torch.no_grad():
             for k, j in enumerate(batch):
                 h = hidden[k].to(dev, non_blocking=True)
@@ -247,6 +286,9 @@ def main():
     ap.add_argument("--max-tokens", type=int, default=262_144, help="cut longer sequences (Qwen3.8's context)")
     ap.add_argument("--linear-chunk", type=int, default=LINEAR_CHUNK)
     ap.add_argument("--limit-batches", type=int, default=0)
+    ap.add_argument("--first", type=int, default=0, help="only the first N runs of the list")
+    ap.add_argument("--random-init", type=int, default=None, metavar="SEED",
+                    help="random-weights reader: the same architecture with random blocks and embeddings (a null)")
     args = ap.parse_args()
     layers = sorted(int(x) for x in args.layers.split(","))
     os.makedirs(args.out, exist_ok=True)
@@ -264,6 +306,10 @@ def main():
     if missing:
         print(f"{len(missing)} requested runs not valid or not found: {missing[:5]} ...", flush=True)
     rows = [rows[w] for w in want if w in rows]
+    if args.first:
+        rows = rows[:args.first]
+    if args.random_init is not None:
+        model = f"random-init-seed{args.random_init}"
 
     dev = torch.device("cuda")
     cfg = AutoConfig.from_pretrained(mdir).text_config
@@ -284,7 +330,7 @@ def main():
         t0 = time.time()
         ntok = sum(len(j[2]) for j in batch)
         print(f"batch {b + 1}/{len(batches)}: {len(batch)} agents, {ntok} tokens, longest {max(len(j[2]) for j in batch)}", flush=True)
-        acts = run_batch(batch, layers, cfg, weights, dev, args.linear_chunk)
+        acts = run_batch(batch, layers, cfg, weights, dev, args.linear_chunk, args.random_init)
         for job, t in zip(batch, acts):
             write(args.out, job, t, layers, model)
         del acts

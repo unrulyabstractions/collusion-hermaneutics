@@ -13,6 +13,8 @@ during the sprint.
 | `hermeneutics/labels.py` | `OLD/script/groups_data.py` (`RUNG_LEVEL`, `CHEATED_FROM`, `cheat_floor`, `simple_rung`) | the per-task cheating threshold and the cheat / no cheat / other rule | reads the rung from `signals.jsonl` rows; the coarse heuristic label follows arena-capstone `publish_apart_swarm/build_snapshot.py` (2026-11-07 02:00 UTC) |
 | `hermeneutics/runs.py` | arena-capstone `publish_apart_swarm/build_snapshot.py` (`inspect_copy` gates, `canon_key`) | validity gates (ok, trajectories, team row) and the canonical-copy rule | rewritten as a run-list function over a parametrised data root |
 | `hermeneutics/probes.py` | `OLD/analysis/teacher_confound/run.py` | `Leace`, `zs` (PCA + z-score), `choose_C`, `fit_score`, `boot_ci`, `auc`, `onehot`, the fold design (StratifiedGroupKFold by run), the teacher probe, within-teacher and leave-one-teacher-out loops, the label-shuffle null, the tables | new `load()` over the think-position cache; author map ds/gpt5m/haiku/luna/qwen; loops over layers x positions x pooling; the solo arm reported first; a full-dimension probe variant, a condition readout, "onset" per-turn labels with a turn-position baseline; the within-agent step analysis dropped |
+| `hermeneutics/judge.py` | `OLD/analysis/qwen_judge/run.py` | the judge prompt wording (`INTRO`, the question), the task-head and transcript-tail cuts, the 500-character cut per tool result, the one-pass local scorer (streamed blocks, final norm, lm_head on the last position, score = log P(Yes) - log P(No) with thinking off) | prompts built from `render.py` messages instead of spans.jsonl; the OpenRouter scorer with a dollar cap; the analysis over the probe's arms and scopes |
 
-New in the sprint: `hermeneutics/think.py`, `hermeneutics/subsample.py`, `hermeneutics/__init__.py`, the results and
-this file.
+New in the sprint: `hermeneutics/think.py`, `hermeneutics/subsample.py`, `hermeneutics/baselines.py` (TF-IDF text
+baselines), the random-weights reader path of `extract.py` (`init_random`), `hermeneutics/summary.py`,
+`hermeneutics/__init__.py`, the results and this file.

@@ -382,6 +382,12 @@ def analyze(X, a, turn_of=None, n_shuf=100, jobs=8, full=True, turn_pos=None):
     for r in rows:
         log(f"  {r['features']} | {r['scope']}: {r['auroc']:.3f} [{r['ci'][0]:.3f}, {r['ci'][1]:.3f}]")
     res["cheat"] = rows
+    # held-out scores per agent (and per row for turn pooling), so every AUROC above is recomputable from files
+    res["_scores"] = pd.DataFrame({"run": run_a, "author": auth_a, "condition": a.condition.values, "y": y_a, "fold": fold_a,
+                                   **{f"score|{n}|{s}": agent_scores(SC[(n, s)]) for (n, s) in SC}})
+    if turn_of is not None:
+        res["_turn_scores"] = pd.DataFrame({"run": run, "turn": turn_pos[:, 0].astype(int) if turn_pos is not None else -1,
+                                            "y": y, "fold": fold, **{f"score|{n}|{s}": SC[(n, s)] for (n, s) in SC}})
 
     # ---- nuisance baselines (metadata only, same folds)
     def nuis(Fn, idx):
@@ -515,6 +521,9 @@ def main():
             res.update(arm=arm, layer=L, position=pos, probe=PROBE, turn_labels=args.turn_labels if pooling == "turn" else "agent")
             d = os.path.join(args.out, arm, f"L{L}_{pos}_{pooling}")
             os.makedirs(d, exist_ok=True)
+            res.pop("_scores").to_csv(os.path.join(d, "scores.csv"), index=False)
+            if "_turn_scores" in res:
+                res.pop("_turn_scores").to_csv(os.path.join(d, "turn_scores.csv"), index=False)
             json.dump(res, open(os.path.join(d, "results.json"), "w"), indent=1, default=float)
             table += flat_rows(res, arm, L, pos, pooling)
             for name, v in res["author_probe"].items():

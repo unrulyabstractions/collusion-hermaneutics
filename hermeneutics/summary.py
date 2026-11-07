@@ -2,6 +2,7 @@
 
     python -m hermeneutics.summary [hermeneutics/results]
 """
+import glob
 import json
 import os
 import sys
@@ -75,6 +76,60 @@ def length_baseline(ag, arm="solo"):
     for tr, te in StratifiedGroupKFold(5, shuffle=True, random_state=0).split(F, strata, a.run):
         p[te] = LogisticRegression(C=1.0, max_iter=5000).fit(F[tr], y[tr]).decision_function(F[te])
     return float(roc_auc_score(y, p))
+
+
+def _rows_of(d, arm, cfg_filter, method):
+    """One baseline row from an auroc.csv: pooled cell, within-author mean, mean of the LOTO rows, per-author values."""
+    x = d[(d.arm == arm) & cfg_filter(d)]
+    x = x[x.features == "raw"] if "features" in x.columns else x
+    if x.empty or x[x.scope == "pooled"].empty:
+        return None
+    p = x[x.scope == "pooled"].iloc[0]
+    within = {s: float(x[x.scope == s].iloc[0].auroc) for s in x.scope if s != "pooled" and not str(s).startswith("LOTO")}
+    loto = [float(v) for v in x[x.scope.astype(str).str.startswith("LOTO")].auroc]
+    return {"arm": arm, "method": method, "agents": int(p.agents), "pooled": cell(p),
+            "within": f3(float(np.mean(list(within.values())))) if within else "n/a",
+            "loto": f3(float(np.mean(loto))) if loto else "n/a", "per_author": within}
+
+
+def baselines_rows(path, pa, fa):
+    P = lambda *a: os.path.join(path, *a)  # noqa: E731
+    rows = []
+    for arm in ("solo", "pooled", "cheat"):
+        L, pos = best_config(pa, arm)
+        rows.append(_rows_of(pa, arm, lambda d, L=L, pos=pos: (d.layer.astype(str) == str(L)) & (d.position == pos) & (d.pooling == "agent"),
+                             f"activation probe, reader (PCA, agent means, layer {L} {pos})"))
+        if fa is not None and arm in set(fa.arm):
+            Lf, posf = best_config(fa, arm)
+            rows.append(_rows_of(fa, arm, lambda d, L=Lf, pos=posf: (d.layer.astype(str) == str(L)) & (d.position == pos),
+                                 f"activation probe, reader (every dimension, layer {L} {pos})"))
+        rnd = P("random", "pca_agent", "auroc.csv")
+        if os.path.exists(rnd):
+            rd = pd.read_csv(rnd)
+            if arm in set(rd.arm):
+                Lr, posr = best_config(rd, arm)
+                rows.append(_rows_of(rd, arm, lambda d, L=Lr, pos=posr: (d.layer.astype(str) == str(L)) & (d.position == pos) & (d.pooling == "agent"),
+                                     f"random-weights reader null (PCA probe, layer {L} {pos}, fewer agents)"))
+        tf = [pd.read_csv(f) for f in sorted(glob.glob(P("tfidf*", "auroc.csv")))]
+        if tf:
+            td = pd.concat(tf).drop_duplicates(["arm", "position", "scope"], keep="first")
+            for view, name in (("transcript", "TF-IDF + logistic regression, whole transcript"),
+                               ("agent", "TF-IDF + logistic regression, the agent's own words"),
+                               ("think", "lexical-only reader null: TF-IDF on the think windows")):
+                rows.append(_rows_of(td, arm, lambda d, v=view: d.position == v, name))
+        jd = P("judges", "auroc.csv")
+        if os.path.exists(jd):
+            j = pd.read_csv(jd)
+            for probe in sorted(set(j.probe)):
+                cov = j[j.probe == probe].coverage.iloc[0]
+                name = {"judge:qwen3.8-27b-local": "reader interrogation: Qwen3.8-27B, one forward pass",
+                        "judge:openai/gpt-5-mini": "judge: GPT-5 mini (author-level)",
+                        "judge:anthropic/claude-haiku-5.5": "judge: Claude Haiku 5.5 (author-level)",
+                        "judge:anthropic/claude-sonnet-5.5": "judge: Claude Sonnet 5.5 (above the authors)"}.get(probe, probe)
+                if cov < 0.999:
+                    name += f", {cov:.0%} of the agents"
+                rows.append(_rows_of(j, arm, lambda d, pr=probe: d.probe == pr, name))
+    return [r for r in rows if r]
 
 
 def main(path):
@@ -190,10 +245,39 @@ def main(path):
                 "A probe on every dimension, z-scored with an L2 penalty and no PCA, gives the same picture in the solo arm "
                 "(Table 9). Table 9 covers the solo arm.\n",
                 f"**Table 9.** Solo arm, full-dimension probe, layer {Lf}, position `{posf}`.\n"] + scope_table(fa, "solo", Lf, posf, ERASED)
+    base = baselines_rows(path, pa, fa)
+    if base:
+        out += ["", "## Do the baselines reach the probe?\n",
+                "The VISION asks the probe to beat every baseline. We therefore compare it with text classifiers on the same "
+                "transcripts, with judges that read the same transcripts and answer the same question, and with the two "
+                "nulls: a lexical-only reader (TF-IDF on the think windows alone) and a random-weights reader (the same "
+                "architecture with untrained blocks and embeddings, probed the same way). All rows use the same agents, folds "
+                "and scopes; judges have no training and so no leave-one-author-out row. Table 10 holds the solo arm; "
+                "Table 11 the per-author view inside it; Table 12 the other arms.\n"]
+        for arm, tn in (("solo", 10), ("pooled", 12), ("cheat", 12)):
+            rows = [r for r in base if r["arm"] == arm]
+            if not rows:
+                continue
+            if arm == "solo":
+                out += [f"**Table {tn}.** Solo arm: the probe against the baselines and nulls. Held-out AUROC [95% bootstrap over runs]; "
+                        "within-author mean over the authors with both classes; B.II mean over the five held-out authors.\n"]
+            elif tn == 12 and arm == "pooled":
+                out += [f"**Table {tn}.** Both arms pooled, then the cheat arm alone: the probe against the baselines.\n"]
+            else:
+                out += [""]
+            out += ["| method | agents | B.I pooled | within-author mean | B.II mean |", "|---|---|---|---|---|"]
+            for r in rows:
+                out.append(f"| {r['method']} | {r['agents']} | {r['pooled']} | {r['within']} | {r['loto']} |")
+            if arm == "solo":
+                authors = sorted({a for r in rows for a in r["per_author"]})
+                out += ["", "**Table 11.** Solo arm, within-author AUROC (A) per method and author.\n",
+                        "| method | " + " | ".join(AUTHOR_NAME[a] for a in authors) + " |", "|---|" + "---|" * len(authors)]
+                for r in rows:
+                    out.append(f"| {r['method']} | " + " | ".join(f3(r["per_author"].get(a)) for a in authors) + " |")
     out += ["", "## Limits\n",
             "The subsample holds a fraction of the runs per author and leaves out the longest transcripts. The cheat label "
             "counts opening the planted material, so a probe may read that the solution text entered the context rather than "
-            "an intent. A text classifier on the transcript is the baseline that settles this, and it is not in these tables. "
+            "an intent; the text classifiers in Table 10 measure how far the transcript alone carries the label. "
             "Haiku's think blocks are empty and Luna's hold summaries at best, so for those authors the positions read a turn "
             "boundary with no reasoning inside it. LEACE removes linear traces only. All probes are linear.\n",
             "## Files\n",

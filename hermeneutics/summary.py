@@ -163,7 +163,8 @@ def main(path):
            "run. We erase the author with **LEACE**, a closed-form linear concept eraser, and we erase author, task and "
            "condition together. We shuffle labels inside each author for a null. We therefore contend that the reader's "
            "think-position states separate cheating from honest work inside every author, across authors, and after the "
-           "author is erased.\n",
+           "author is erased. We also contend that a text classifier on the same transcripts reaches the same AUROC, so the "
+           "probe does not beat every baseline, and the label is recoverable from the transcript's words.\n",
            "## What was probed\n",
            f"The authors are {authors}. We probe {len(ag)} of the valid controls runs, one agent per run, balanced over "
            "condition and label where the data allow. The **solo arm** gives no cheating instruction in the prompt and is the "
@@ -253,7 +254,15 @@ def main(path):
                 "nulls: a lexical-only reader (TF-IDF on the think windows alone) and a random-weights reader (the same "
                 "architecture with untrained blocks and embeddings, probed the same way). All rows use the same agents, folds "
                 "and scopes; judges have no training and so no leave-one-author-out row. Table 10 holds the solo arm; "
-                "Table 11 the per-author view inside it; Table 12 the other arms.\n"]
+                "Table 11 the per-author view inside it; Table 12 the other arms. A TF-IDF classifier on the whole transcript "
+                "reaches the probe's pooled AUROC or above, within authors and across them. The cheat ladder that defines the "
+                "label reads the same transcript, so the words of the tool results carry the label, and a reader of the whole "
+                "text recovers it. The probe beats every judge, beats the lexical-only reader at the same positions, and matches "
+                "the classifier on the agent's own words. We therefore contend that the activations carry the cheating label "
+                "about as well as the transcript's words do, and no better; the VISION criterion of beating every baseline is "
+                "not met against the whole-transcript classifier. Whether the reader's states carry anything the words do not "
+                "is the question the random-weights null and a residual test (probe on the text classifier's errors) would "
+                "settle.\n"]
         for arm, tn in (("solo", 10), ("pooled", 12), ("cheat", 12)):
             rows = [r for r in base if r["arm"] == arm]
             if not rows:

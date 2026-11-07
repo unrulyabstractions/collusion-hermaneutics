@@ -220,6 +220,8 @@ The VISION asks the probe to beat every baseline. We therefore compare it with t
 | activation probe, reader (PCA, agent means, layer 38 close) | 600 | 0.963 [0.949, 0.976] | 0.914 | 0.930 |
 | activation probe, reader (every dimension, layer 38 close) | 600 | 0.955 [0.940, 0.969] | 0.919 | 0.910 |
 | TF-IDF + logistic regression, whole transcript | 600 | 0.984 [0.975, 0.992] | 0.944 | 0.968 |
+| TF-IDF + logistic regression, the agent's own words | 600 | 0.962 [0.948, 0.975] | 0.918 | 0.921 |
+| lexical-only reader null: TF-IDF on the think windows | 600 | 0.851 [0.822, 0.881] | n/a | 0.729 |
 | judge: Claude Haiku 5.5 (author-level) | 600 | 0.789 [0.755, 0.822] | 0.801 | n/a |
 | judge: Claude Sonnet 5.5 (above the authors), 77% of the agents | 460 | 0.806 [0.767, 0.843] | 0.812 | n/a |
 | judge: GPT-5 mini (author-level) | 600 | 0.675 [0.628, 0.715] | 0.678 | n/a |
@@ -227,6 +229,9 @@ The VISION asks the probe to beat every baseline. We therefore compare it with t
 | method | agents | B.I pooled | within-author mean | B.II mean |
 |---|---|---|---|---|
 | activation probe, reader (PCA, agent means, layer 38 close) | 227 | 0.940 [0.902, 0.969] | 0.868 | 0.818 |
+| TF-IDF + logistic regression, whole transcript | 227 | 0.975 [0.956, 0.991] | 0.900 | 0.907 |
+| TF-IDF + logistic regression, the agent's own words | 227 | 0.951 [0.923, 0.975] | 0.872 | 0.888 |
+| lexical-only reader null: TF-IDF on the think windows | 227 | 0.822 [0.767, 0.872] | n/a | 0.653 |
 | judge: Claude Haiku 5.5 (author-level) | 227 | 0.851 [0.802, 0.894] | 0.880 | n/a |
 | judge: Claude Sonnet 5.5 (above the authors), 77% of the agents | 198 | 0.840 [0.789, 0.889] | 0.801 | n/a |
 | judge: GPT-5 mini (author-level) | 227 | 0.725 [0.656, 0.796] | 0.667 | n/a |

@@ -15,10 +15,10 @@ studying a larger (often closed-weight) model (the author model) through the int
 
 
 #Background
-1. https://www.lesswrong.com/posts/CZLhfNGaDqtYxvGJD/model-hermeneutics-monitoring-closed-weight-models-with-open
-2. https://aryafayyazi.github.io/GreyBox/
-3. https://arxiv.org/pdf/2606.32008
-4. https://arxiv.org/pdf/2606.32008
+1. Modelk Hermaneutics: https://www.lesswrong.com/posts/CZLhfNGaDqtYxvGJD/model-hermeneutics-monitoring-closed-weight-models-with-open
+2. GreyBox: https://aryafayyazi.github.io/GreyBox/
+3. Surrogate Fidelity: https://arxiv.org/pdf/2606.32008
+4. Detecting Multi-Agent Collusion Through Multi-Agent Interpretability: https://arxiv.org/pdf/2604.01151
 
 
 #Probes Types
@@ -28,18 +28,22 @@ studying a larger (often closed-weight) model (the author model) through the int
     * Trained in some, validated in unseen authors
 
 #Probe Outputs
+Independent labels for:
 - Cheating: gaming, reward hacking
 - Coordination: simplified to agent interaction
 - Cooperation: instrumental coordination 
 - Collaboration: shared-goal cooperation
 - Collusion: cheating collaboration
 - Scheming: covert collusion
+We will mix datasources as every source will have labeling gaps.
+We will fill in labeling when needed but preferably work with gaps.
 
 
 #Probes Configs
 - Input: Residual stream
 - Position
     * "<think>" + "</think>" tokens
+    Same position but adapted:
     * For closed-model transcript, we just append them together since no available CoT
     * For open-weight, we map accordinly
 - Depth
@@ -70,9 +74,17 @@ Logistic regression on TF-IDF features of the transcript
 
 
 #Data
-- Labeled data
+- Labeled authors' transcripts/trajectories
     * authors' transcripts/trajectories to build probes
     * authors' eval responses for validation
+- For Training:
+    * Unlikely we will find labeled data without gaps
+    * Do our best
+
+- For Validation:
+    * Unlikely single validation will test all probe outputs at onc (unless own)
+    * Do our best
+
 
 
 #Labeling options
@@ -97,6 +109,21 @@ We will setlled for unlabeled transcripts if needed
 - (our env): self-generate with cheatbench + orbit + instrumentation
 - https://huggingface.co/datasets/Goodfire/reward-hack-data for evaluation?
 - TODO
+
+
+#Experimental Details
+We still are flexible on models
+* Authors:
+    Leverging data we have
+    - GPT-6-Luna, Claude Haiku 5.5, DeepSeek-V4.1-Flash because we can leverage SPAR data (spar-guardian-agents)
+    - gpt-5-mini, Qwen3.8-27B because used in our env (and arena_capstone)
+    But accepting any authors that already have transcripts in external dataset
+* Readers:
+    Qwen3.8-27B
+    Ranked options for additional:
+        - Nanbeige4.3-33B
+        - Gemma 3 27B IT
+
 
 
 #Needs/ToDos/OpenQuestions

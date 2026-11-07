@@ -19,13 +19,14 @@ studying a larger (often closed-weight) model (the author model) through the int
 2. GreyBox: https://aryafayyazi.github.io/GreyBox/
 3. Surrogate Fidelity: https://arxiv.org/pdf/2606.32008
 4. Detecting Multi-Agent Collusion Through Multi-Agent Interpretability: https://arxiv.org/pdf/2604.01151
+5. Multi-Agent Risks from Advanced AI: https://arxiv.org/pdf/2502.14143
 
 
 #Probes Types
 - A: One probe per author
 - B: One probe using many authors
-    * Trained in all, validated in excluded samples
-    * Trained in some, validated in unseen authors
+    * I: Trained in all, validated in excluded samples
+    * II: Trained in some, validated in unseen authors
 
 #Probe Outputs
 Independent labels for:
@@ -72,6 +73,11 @@ Logistic regression on TF-IDF features of the transcript
 - Lexical-only reader
 - Label-permutation null
 
+#Success
+- Better than all baselines
+- Strong in ambiguous prompts
+- Ideal: B.II succeeds
+
 
 #Data
 - Labeled authors' transcripts/trajectories
@@ -115,7 +121,7 @@ We will setlled for unlabeled transcripts if needed
 We still are flexible on models
 * Authors:
     Leverging data we have
-    - GPT-6-Luna, Claude Haiku 5.5, DeepSeek-V4.1-Flash because we can leverage SPAR data (spar-guardian-agents)
+    - GPT-6-Luna, Claude Haiku 5.5, DeepSeek-V4.1-Flash because we can leverage SPAR (imperfect) data (spar-guardian-agents)
     - gpt-5-mini, Qwen3.8-27B because used in our env (and arena_capstone)
     But accepting any authors that already have transcripts in external dataset
 * Readers:
@@ -124,7 +130,11 @@ We still are flexible on models
         - Nanbeige4.3-33B
         - Gemma 3 27B IT
 
-
+#Project constraints
+- Apart Hackathon: https://apartresearch.com/sprints/swarm-alignment-2026
+- Needs to happen within that timeframe
+- I am flying from London to SF at same time (sat morning)
+- Not be super expensive (less than 2k absolute max)
 
 #Needs/ToDos/OpenQuestions
 - Figure out Possible data sources

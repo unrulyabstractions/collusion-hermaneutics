@@ -184,9 +184,56 @@ A probe on every dimension, z-scored with an L2 penalty and no PCA, gives the sa
 | B.II leave out GPT-6 Luna | 39 / 39 | 0.784 [0.676, 0.874] | 0.776 [0.663, 0.868] | 0.727 [0.609, 0.831] |
 | B.II leave out Qwen3.8-27B | 52 / 38 | 0.939 [0.886, 0.980] | 0.950 [0.903, 0.986] | 0.928 [0.871, 0.973] |
 
+## Do the baselines reach the probe?
+
+The VISION asks the probe to beat every baseline. We therefore compare it with text classifiers on the same transcripts, with judges that read the same transcripts and answer the same question, and with the two nulls: a lexical-only reader (TF-IDF on the think windows alone) and a random-weights reader (the same architecture with untrained blocks and embeddings, probed the same way). All rows use the same agents, folds and scopes; judges have no training and so no leave-one-author-out row. Table 10 holds the solo arm; Table 11 the per-author view inside it; Table 12 the other arms.
+
+**Table 10.** Solo arm: the probe against the baselines and nulls. Held-out AUROC [95% bootstrap over runs]; within-author mean over the authors with both classes; B.II mean over the five held-out authors.
+
+| method | agents | B.I pooled | within-author mean | B.II mean |
+|---|---|---|---|---|
+| activation probe, reader (PCA, agent means, layer all both) | 373 | 0.967 [0.950, 0.981] | 0.892 | 0.915 |
+| activation probe, reader (every dimension, layer all both) | 373 | 0.971 [0.954, 0.984] | 0.936 | 0.910 |
+| TF-IDF + logistic regression, whole transcript | 373 | 0.979 [0.967, 0.990] | 0.948 | 0.943 |
+| TF-IDF + logistic regression, the agent's own words | 373 | 0.955 [0.938, 0.972] | 0.914 | 0.883 |
+| lexical-only reader null: TF-IDF on the think windows | 373 | 0.843 [0.805, 0.878] | n/a | 0.702 |
+| judge: Claude Haiku 5.5 (author-level) | 373 | 0.739 [0.692, 0.782] | 0.754 | n/a |
+| judge: Claude Sonnet 5.5 (above the authors), 77% of the agents | 262 | 0.796 [0.739, 0.846] | 0.812 | n/a |
+| judge: GPT-5 mini (author-level) | 373 | 0.620 [0.566, 0.678] | 0.622 | n/a |
+
+**Table 11.** Solo arm, within-author AUROC (A) per method and author.
+
+| method | DeepSeek V4.1 Flash | GPT-5 mini | Claude Haiku 5.5 | GPT-6 Luna | Qwen3.8-27B |
+|---|---|---|---|---|---|
+| activation probe, reader (PCA, agent means, layer all both) | 0.860 | 0.862 | 0.929 | 0.853 | 0.955 |
+| activation probe, reader (every dimension, layer all both) | 0.930 | 0.942 | 0.974 | 0.880 | 0.952 |
+| TF-IDF + logistic regression, whole transcript | 0.936 | 0.962 | 0.978 | 0.938 | 0.926 |
+| TF-IDF + logistic regression, the agent's own words | 0.917 | 0.897 | 0.960 | 0.867 | 0.931 |
+| lexical-only reader null: TF-IDF on the think windows | 0.885 | 0.820 | n/a | 0.610 | 0.930 |
+| judge: Claude Haiku 5.5 (author-level) | 0.703 | 0.848 | 0.645 | 0.782 | 0.792 |
+| judge: Claude Sonnet 5.5 (above the authors), 77% of the agents | 0.583 | 0.973 | 0.851 | 0.788 | 0.862 |
+| judge: GPT-5 mini (author-level) | 0.551 | 0.677 | 0.564 | 0.638 | 0.678 |
+**Table 12.** Both arms pooled, then the cheat arm alone: the probe against the baselines.
+
+| method | agents | B.I pooled | within-author mean | B.II mean |
+|---|---|---|---|---|
+| activation probe, reader (PCA, agent means, layer 38 close) | 600 | 0.963 [0.949, 0.976] | 0.914 | 0.930 |
+| activation probe, reader (every dimension, layer 38 close) | 600 | 0.955 [0.940, 0.969] | 0.919 | 0.910 |
+| TF-IDF + logistic regression, whole transcript | 600 | 0.984 [0.975, 0.992] | 0.944 | 0.968 |
+| judge: Claude Haiku 5.5 (author-level) | 600 | 0.789 [0.755, 0.822] | 0.801 | n/a |
+| judge: Claude Sonnet 5.5 (above the authors), 77% of the agents | 460 | 0.806 [0.767, 0.843] | 0.812 | n/a |
+| judge: GPT-5 mini (author-level) | 600 | 0.675 [0.628, 0.715] | 0.678 | n/a |
+
+| method | agents | B.I pooled | within-author mean | B.II mean |
+|---|---|---|---|---|
+| activation probe, reader (PCA, agent means, layer 38 close) | 227 | 0.940 [0.902, 0.969] | 0.868 | 0.818 |
+| judge: Claude Haiku 5.5 (author-level) | 227 | 0.851 [0.802, 0.894] | 0.880 | n/a |
+| judge: Claude Sonnet 5.5 (above the authors), 77% of the agents | 198 | 0.840 [0.789, 0.889] | 0.801 | n/a |
+| judge: GPT-5 mini (author-level) | 227 | 0.725 [0.656, 0.796] | 0.667 | n/a |
+
 ## Limits
 
-The subsample holds a fraction of the runs per author and leaves out the longest transcripts. The cheat label counts opening the planted material, so a probe may read that the solution text entered the context rather than an intent. A text classifier on the transcript is the baseline that settles this, and it is not in these tables. Haiku's think blocks are empty and Luna's hold summaries at best, so for those authors the positions read a turn boundary with no reasoning inside it. LEACE removes linear traces only. All probes are linear.
+The subsample holds a fraction of the runs per author and leaves out the longest transcripts. The cheat label counts opening the planted material, so a probe may read that the solution text entered the context rather than an intent; the text classifiers in Table 10 measure how far the transcript alone carries the label. Haiku's think blocks are empty and Luna's hold summaries at best, so for those authors the positions read a turn boundary with no reasoning inside it. LEACE removes linear traces only. All probes are linear.
 
 ## Files
 

@@ -191,9 +191,11 @@ def load(cache, labels_csv):
             for L in m["layers"]:
                 acts.setdefault(L, []).append(f.get_tensor(f"think_L{L}").astype(np.float32))
             readable = f.get_tensor("think_readable")
+        onset = lab.loc[m["run"], "onset_turn"] if "onset_turn" in lab.columns else np.nan
         rows.append({"run": m["run"], "author": m["author"], "condition": m["condition"], "task": m["task"],
                      "y": int(lab.loc[m["run"], "cheat"]), "rung": lab.loc[m["run"], "rung"], "n_turns": m["n_turns"],
-                     "n_readable": int(readable.sum()), "n_tokens": m["n_tokens"]})
+                     "n_readable": int(readable.sum()), "n_tokens": m["n_tokens"],
+                     "onset_turn": None if pd.isna(onset) else int(onset)})
     return pd.DataFrame(rows), acts
 
 
@@ -201,19 +203,30 @@ POS = {"open": [0], "close": [1], "both": [0, 1]}
 
 
 def features(agents, acts, layer, pos, pooling):
-    """X and, for pooling "turn", the agent index of every row. layer: 26 | 38 | 51 | "all"."""
+    """X and, for pooling "turn", the agent index and the within-agent turn index of every row (None, None for
+    pooling "agent"). layer: 26 | 38 | 51 | "all"."""
     layers = sorted(acts) if layer == "all" else [int(layer)]
     per_agent = [np.concatenate([acts[L][i][:, POS[pos], :].reshape(acts[L][i].shape[0], -1) for L in layers], 1)
                  for i in range(len(agents))]
     if pooling == "agent":
-        return np.stack([a.mean(0) for a in per_agent]).astype(np.float64), None
+        return np.stack([a.mean(0) for a in per_agent]).astype(np.float64), None, None
     idx = np.concatenate([np.full(len(a), i) for i, a in enumerate(per_agent)])
-    return np.concatenate(per_agent).astype(np.float64), idx
+    tpos = np.concatenate([np.arange(len(a)) for a in per_agent])
+    return np.concatenate(per_agent).astype(np.float64), idx, tpos
+
+
+def onset_rows(agents, turn_of, tpos):
+    """Row mask for the "onset" turn labels: every turn of a no-cheat agent; of a cheating agent, the turns from its
+    first cheating tool call on (earlier turns are ambiguous and dropped; agents without a known onset are dropped)."""
+    y = agents.y.values[turn_of]
+    onset = np.array([np.nan if o is None else o for o in agents.onset_turn.values], float)[turn_of]
+    return (y == 0) | ((y == 1) & np.isfinite(onset) & (tpos >= onset))
 
 
 # ---------------------------------------------------------------- analysis of one (arm, config)
-def analyze(X, a, turn_of=None, n_shuf=100, jobs=8, full=True):
-    """X rows are agents (turn_of None) or turns (turn_of = agent index per row); a: the agents' DataFrame."""
+def analyze(X, a, turn_of=None, n_shuf=100, jobs=8, full=True, turn_pos=None):
+    """X rows are agents (turn_of None) or turns (turn_of = agent index per row); a: the agents' DataFrame.
+    turn_pos: per-row [turn index, turn fraction] for the turn-position baseline (turn pooling)."""
     y_a = a.y.values.astype(int)
     auth_a = a.author.values
     run_a = a.run.values
@@ -369,10 +382,8 @@ def analyze(X, a, turn_of=None, n_shuf=100, jobs=8, full=True):
     for r in rows:
         log(f"  {r['features']} | {r['scope']}: {r['auroc']:.3f} [{r['ci'][0]:.3f}, {r['ci'][1]:.3f}]")
     res["cheat"] = rows
-    if not full:
-        return res
 
-    # ---- nuisance baselines (one-hot metadata, same folds)
+    # ---- nuisance baselines (metadata only, same folds)
     def nuis(Fn, idx):
         p = np.full(len(y), np.nan)
         for f in range(K):
@@ -384,7 +395,13 @@ def analyze(X, a, turn_of=None, n_shuf=100, jobs=8, full=True):
         ok = np.isfinite(pa)
         return auc(pa[ok], y_a[ok])
     allidx = np.ones(len(y), bool)
-    res["nuisance"] = {"pooled (author + task + condition)": nuis(Zall, allidx), "pooled (author only)": nuis(Zt, allidx)}
+    res["nuisance"] = {}
+    if turn_pos is not None:
+        res["nuisance"]["turn position (index, fraction)"] = nuis(turn_pos, allidx)
+        log("  turn-position baseline", round(res["nuisance"]["turn position (index, fraction)"], 3))
+    if not full:
+        return res
+    res["nuisance"].update({"pooled (author + task + condition)": nuis(Zall, allidx), "pooled (author only)": nuis(Zt, allidx)})
     Fe = varying(np.concatenate([onehot(task.tolist()), onehot(cond.tolist())], 1))
     for t in both:
         res["nuisance"][f"{t} (task + condition)"] = nuis(Fe, auth == t)
@@ -438,7 +455,9 @@ def flat_rows(res, arm, layer, pos, pooling):
     sh = res.get("shuffle", {})
     for r in res["cheat"]:
         s = sh.get(r["features"], {}).get(r["scope"], {})
-        out.append({"arm": arm, "probe": res.get("probe", PROBE), "layer": layer, "position": pos, "pooling": pooling, "features": r["features"],
+        out.append({"arm": arm, "probe": res.get("probe", PROBE), "turn_labels": res.get("turn_labels", "agent"),
+                    "layer": layer, "position": pos, "pooling": pooling, "features": r["features"],
+                    "baseline_turn_position": res.get("nuisance", {}).get("turn position (index, fraction)"),
                     "scope": r["scope"], "agents": r["agents"], "cheat": r["cheat"], "no_cheat": r["no_cheat"],
                     "auroc": r["auroc"], "ci_lo": r["ci"][0], "ci_hi": r["ci"][1], "auroc_turns": r.get("auroc_turns"),
                     "within_mean": r.get("within_mean"), "null_mean": s.get("null_mean"), "null_95": s.get("null_95"),
@@ -460,6 +479,9 @@ def main():
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--quick", action="store_true", help="raw features only, no erasure or null")
     ap.add_argument("--probe", default=PROBE, choices=["pca", "full"])
+    ap.add_argument("--turn-labels", default="agent", choices=["agent", "onset"],
+                    help="turn pooling: every turn carries its agent's label (agent), or a cheating agent's turns count "
+                         "from its first cheating tool call on and its earlier turns are dropped (onset)")
     args = ap.parse_args()
     PROBE = args.probe
     os.makedirs(args.out, exist_ok=True)
@@ -479,9 +501,18 @@ def main():
         for L, pos, pooling in itertools.product(layers, args.positions.split(","), args.poolings.split(",")):
             full = not args.quick and pooling == "agent"
             log(f"== arm {arm} | layer {L} | position {pos} | pooling {pooling} | {len(a)} agents")
-            X, turn_of = features(a, sub, L, pos, pooling)
-            res = analyze(X, a, turn_of, n_shuf=args.shuf, jobs=args.jobs, full=full)
-            res.update(arm=arm, layer=L, position=pos, probe=PROBE)
+            X, turn_of, tpos = features(a, sub, L, pos, pooling)
+            turn_pos = None
+            if pooling == "turn":
+                if args.turn_labels == "onset":
+                    keep = onset_rows(a, turn_of, tpos)
+                    X, turn_of, tpos = X[keep], turn_of[keep], tpos[keep]
+                    log(f"  onset labels: {int(keep.sum())} of {len(keep)} turns kept, "
+                        f"{len(np.unique(turn_of))} agents")
+                n_of = a.n_turns.values[turn_of]
+                turn_pos = np.column_stack([tpos, tpos / np.maximum(n_of - 1, 1)]).astype(float)
+            res = analyze(X, a, turn_of, n_shuf=args.shuf, jobs=args.jobs, full=full, turn_pos=turn_pos)
+            res.update(arm=arm, layer=L, position=pos, probe=PROBE, turn_labels=args.turn_labels if pooling == "turn" else "agent")
             d = os.path.join(args.out, arm, f"L{L}_{pos}_{pooling}")
             os.makedirs(d, exist_ok=True)
             json.dump(res, open(os.path.join(d, "results.json"), "w"), indent=1, default=float)

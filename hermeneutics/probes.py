@@ -115,9 +115,16 @@ class Leace:
 
 
 # ---------------------------------------------------------------- probe pieces
+PROBE = os.environ.get("HERM_PROBE", "pca")  # pca: PCA-256 then z-score; full: z-score every dimension, no PCA
+
+
 def zs(Xtr, Xte):
-    """Training-row PCA to min(PCA_DIM, n_train / 2) components, then z-scoring with training statistics."""
+    """Probe features from raw rows with training statistics: PCA to min(PCA_DIM, n_train / 2) components then z-scoring
+    (PROBE "pca"), or every dimension z-scored (PROBE "full"; the L2 penalty alone regularises)."""
     c = Xtr.mean(0)
+    if PROBE == "full":
+        s = Xtr.std(0) + 1e-6
+        return (Xtr - c) / s, (Xte - c) / s
     k = min(PCA_DIM, max(10, len(Xtr) // 2))
     Xc = Xtr - c
     if len(Xtr) > Xtr.shape[1]:
@@ -287,6 +294,27 @@ def analyze(X, a, turn_of=None, n_shuf=100, jobs=8, full=True):
                                      "majority_rate": float(np.bincount(tix).max() / len(tix))}
     log("  author probe", {n: round(v["accuracy"], 3) for n, v in res["author_probe"].items()})
 
+    # ---- 1b. condition readout (pooled arm): can the features tell the cheat-arm prompt from the solo one?
+    cix = (cond == "cheat").astype(int)
+    if len(set(cix.tolist())) > 1:
+        def cond_probe(name, f):
+            v = PREP[(name, "pooled", f)]
+            if v is None:
+                return name, f, None, None
+            tr, te, Ztr, Zte = v
+            p, _ = fit_z(Ztr, cix[tr], run[tr], Zte, multi=True)
+            return name, f, te, p
+        res["condition_probe"] = {}
+        for name in FEAT:
+            pred = np.full(len(y), -1)
+            for n, f, te, p in pmap(cond_probe, [(name, f) for f in range(K)], jobs):
+                if n == name and p is not None:
+                    pred[te] = p
+            ok = pred >= 0
+            res["condition_probe"][name] = {"accuracy": float((pred[ok] == cix[ok]).mean()),
+                                            "majority_rate": float(max(cix.mean(), 1 - cix.mean()))}
+        log("  condition probe", {n: round(v["accuracy"], 3) for n, v in res["condition_probe"].items()})
+
     # ---- 2. cheat probes: pooled (B.I) and within each author (A); 3. leave one author out (B.II)
     def cheat_job(name, scope, f):
         if scope.startswith("LOTO "):
@@ -321,7 +349,7 @@ def analyze(X, a, turn_of=None, n_shuf=100, jobs=8, full=True):
             sa = agent_scores(s)
             ok = np.isfinite(sa)
             r = {"features": name, "scope": scope, "agents": int(ok.sum()), "cheat": int(y_a[ok].sum()),
-                 "no_cheat": int((1 - y_a[ok]).sum()), "auroc": auc(sa[ok], y_a[ok]), "ci": boot_ci(sa[ok], y_a[ok], run_a[ok]),
+                 "no_cheat": int((1 - y_a[ok]).sum()), "auroc": auc(sa[ok], y_a[ok]), "ci": None,
                  "C": CC.get((name, scope))}
             if turn_of is not None:
                 okt = np.isfinite(s)
@@ -330,7 +358,16 @@ def analyze(X, a, turn_of=None, n_shuf=100, jobs=8, full=True):
                 r["within"] = {t: auc(sa[(auth_a == t) & ok], y_a[(auth_a == t) & ok]) for t in both}
                 r["within_mean"] = float(np.nanmean(list(r["within"].values()))) if both else np.nan
             rows.append(r)
-            log(f"  {name} | {scope}: {r['auroc']:.3f} {r['ci']}")
+
+    def ci_job(i):
+        r = rows[i]
+        sa = agent_scores(SC[(r["features"], r["scope"])])
+        ok = np.isfinite(sa)
+        return i, boot_ci(sa[ok], y_a[ok], run_a[ok])
+    for i, ci in pmap(ci_job, [(i,) for i in range(len(rows))], jobs):
+        rows[i]["ci"] = ci
+    for r in rows:
+        log(f"  {r['features']} | {r['scope']}: {r['auroc']:.3f} [{r['ci'][0]:.3f}, {r['ci'][1]:.3f}]")
     res["cheat"] = rows
     if not full:
         return res
@@ -401,7 +438,7 @@ def flat_rows(res, arm, layer, pos, pooling):
     sh = res.get("shuffle", {})
     for r in res["cheat"]:
         s = sh.get(r["features"], {}).get(r["scope"], {})
-        out.append({"arm": arm, "layer": layer, "position": pos, "pooling": pooling, "features": r["features"],
+        out.append({"arm": arm, "probe": res.get("probe", PROBE), "layer": layer, "position": pos, "pooling": pooling, "features": r["features"],
                     "scope": r["scope"], "agents": r["agents"], "cheat": r["cheat"], "no_cheat": r["no_cheat"],
                     "auroc": r["auroc"], "ci_lo": r["ci"][0], "ci_hi": r["ci"][1], "auroc_turns": r.get("auroc_turns"),
                     "within_mean": r.get("within_mean"), "null_mean": s.get("null_mean"), "null_95": s.get("null_95"),
@@ -410,6 +447,7 @@ def flat_rows(res, arm, layer, pos, pooling):
 
 
 def main():
+    global PROBE
     ap = argparse.ArgumentParser()
     ap.add_argument("--cache", required=True)
     ap.add_argument("--labels", required=True)
@@ -421,14 +459,16 @@ def main():
     ap.add_argument("--shuf", type=int, default=100)
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--quick", action="store_true", help="raw features only, no erasure or null")
+    ap.add_argument("--probe", default=PROBE, choices=["pca", "full"])
     args = ap.parse_args()
+    PROBE = args.probe
     os.makedirs(args.out, exist_ok=True)
     agents, acts = load(args.cache, args.labels)
     log(f"{len(agents)} agents; layers {sorted(acts)}")
     print(agents.pivot_table(index=["author", "condition"], columns="y", values="run", aggfunc="count", fill_value=0))
     agents.to_csv(os.path.join(args.out, "agents.csv"), index=False)
     layers = [x if x == "all" else int(x) for x in args.layers.split(",")]
-    table, authors = [], []
+    table, authors, conds = [], [], []
     for arm in args.arms.split(","):
         sel = np.ones(len(agents), bool) if arm == "pooled" else (agents.condition == arm).values
         a = agents[sel].reset_index(drop=True)
@@ -441,7 +481,7 @@ def main():
             log(f"== arm {arm} | layer {L} | position {pos} | pooling {pooling} | {len(a)} agents")
             X, turn_of = features(a, sub, L, pos, pooling)
             res = analyze(X, a, turn_of, n_shuf=args.shuf, jobs=args.jobs, full=full)
-            res.update(arm=arm, layer=L, position=pos)
+            res.update(arm=arm, layer=L, position=pos, probe=PROBE)
             d = os.path.join(args.out, arm, f"L{L}_{pos}_{pooling}")
             os.makedirs(d, exist_ok=True)
             json.dump(res, open(os.path.join(d, "results.json"), "w"), indent=1, default=float)
@@ -450,8 +490,13 @@ def main():
                 authors.append({"arm": arm, "layer": L, "position": pos, "pooling": pooling, "features": name,
                                 "accuracy": v["accuracy"], "balanced_accuracy": v["balanced_accuracy"],
                                 "majority_rate": v["majority_rate"], "confusion": json.dumps(v["confusion"])})
+            for name, v in res.get("condition_probe", {}).items():
+                conds.append({"arm": arm, "layer": L, "position": pos, "pooling": pooling, "features": name,
+                              "accuracy": v["accuracy"], "majority_rate": v["majority_rate"]})
             pd.DataFrame(table).to_csv(os.path.join(args.out, "auroc.csv"), index=False)
             pd.DataFrame(authors).to_csv(os.path.join(args.out, "author_probe.csv"), index=False)
+            if conds:
+                pd.DataFrame(conds).to_csv(os.path.join(args.out, "condition_probe.csv"), index=False)
     log("wrote", args.out)
 
 

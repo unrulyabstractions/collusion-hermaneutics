@@ -112,6 +112,14 @@ def main(path):
             out += [f"### Cheating AUROC, pooling `{pooling}`\n"] + t + ["", f"Sweep over layers and positions, pooling `{pooling}`, raw features:\n"] + sweep_table(d, arm, pooling)
             if pooling == "agent" and lp is not None:
                 out += ["", "### Author-identity probe\n"] + author_table(ap, arm, *lp)
+                cp = os.path.join(path, "condition_probe.csv")
+                if arm == "pooled" and os.path.exists(cp):
+                    c = pd.read_csv(cp)
+                    c = c[(c.arm == arm) & (c.pooling == "agent") & (c.layer.astype(str) == str(lp[0])) & (c.position == lp[1])]
+                    if not c.empty:
+                        out += ["", "### Condition readout (cheat-arm prompt vs solo prompt)\n",
+                                f"Majority-class rate {f3(c.iloc[0].majority_rate)}.\n", "| features | accuracy |", "|---|---|"]
+                        out += [f"| {r.features} | {f3(r.accuracy)} |" for _, r in c.iterrows()]
                 sh = d[(d.arm == arm) & (d.pooling == "agent") & (d.layer.astype(str) == str(lp[0])) & (d.position == lp[1]) & d.null_p.notna()]
                 if not sh.empty:
                     out += ["", "### Label-permutation null (labels shuffled within author)\n",

@@ -29,7 +29,7 @@ def check_tree(root):
         sc = pd.read_csv(sp)
         y, run = sc.y.values.astype(int), sc.run.values
         for r in res["cheat"]:
-            col = f"score|{r['features']}|{r['scope']}"
+            col = f"score|{r['features']}|{r['scope']}" if "features" in r else f"score|{r['scope']}"  # probes vs text baselines
             if col not in sc.columns:
                 print("MISSING COLUMN", p, col)
                 bad += 1
@@ -44,7 +44,7 @@ def check_tree(root):
             ci_same = all((np.isnan(x) and np.isnan(z)) or abs(x - z) < 1e-9 for x, z in zip(ci, r["ci"]))
             if not (same and counts and ci_same):
                 bad += 1
-                print(f"MISMATCH {p} {r['features']} | {r['scope']}: stored {r['auroc']:.6f} {r['ci']} n={r['agents']}; "
+                print(f"MISMATCH {p} {r.get('features', 'raw')} | {r['scope']}: stored {r['auroc']:.6f} {r['ci']} n={r['agents']}; "
                       f"recomputed {a:.6f} {ci} n={int(ok.sum())}")
     return n, bad
 

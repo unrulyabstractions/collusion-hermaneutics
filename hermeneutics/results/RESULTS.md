@@ -1,27 +1,27 @@
 # A hermeneutic cheating probe: results on the controls subsample
 
-We ask whether an open-weight **reader** (Qwen3.8-27B) that only reads another model's transcript carries a linear readout of whether that model cheated. This is hard because the reader also encodes who wrote the text, which task it was, and whether the prompt asked for the shortcut, and any of these can stand in for cheating. We teacher-force each author's transcript through the reader, keep its residual stream at the `<think>` and `</think>` token of every assistant turn at layers 26, 38 and 51 (of 64), and fit L2 logistic probes on training-fold PCA features, held out by run. We erase the author, and the author with task and condition, with LEACE, and we shuffle labels inside each author for a null. We therefore contend that the reader's think-position states separate cheating from honest work inside every author, across authors, and after the author is erased.
+We ask whether an open-weight **reader** (Qwen3.8-27B) that only reads another model's transcript carries a linear readout of whether that model cheated. This is hard. The reader also encodes who wrote the text, which task it was, and whether the prompt asked for the shortcut. Any of these can stand in for cheating. We teacher-force each author's transcript through the reader and keep its residual stream at the `<think>` and `</think>` token of every assistant turn, at three depths. We fit L2 logistic probes on training-fold PCA features and hold out by run. We erase the author with **LEACE**, a closed-form linear concept eraser, and we erase author, task and condition together. We shuffle labels inside each author for a null. We therefore contend that the reader's think-position states separate cheating from honest work inside every author, across authors, and after the author is erased.
 
 ## What was probed
 
-Authors: DeepSeek V4.1 Flash, GPT-5 mini, Claude Haiku 5.5, GPT-6 Luna, Qwen3.8-27B. Runs: 600 of the 4,157 valid controls runs, about 120 per author, balanced over condition and label where the data allow; one agent per run. The **solo arm** (no cheating instruction in the prompt) is the primary test; the **cheat arm** asks for the shortcut and nearly every author takes it. Labels follow the cheat ladder in `signals.jsonl`: cheating from `opened` (from `tried` on software engineering, chess and creative writing); `none` and `exposed` are honest; the rungs between are left out. Readable reasoning per turn differs by author, so an author signature is built in: DeepSeek V4.1 Flash 0.86, GPT-5 mini 0.49, Claude Haiku 5.5 0.00, GPT-6 Luna 0.31, Qwen3.8-27B 1.00.
+The authors are DeepSeek V4.1 Flash, GPT-5 mini, Claude Haiku 5.5, GPT-6 Luna and Qwen3.8-27B. We probe 600 of the valid controls runs, one agent per run, balanced over condition and label where the data allow. The **solo arm** gives no cheating instruction in the prompt and is the primary test. The **cheat arm** asks for the shortcut, and nearly every author takes it. Labels follow the dataset's cheat ladder. Cheating starts at `opened`, or at `tried` on software engineering, chess and creative writing. The rungs `none` and `exposed` are honest. The rungs between are left out. The share of turns with readable reasoning differs by author (last column), so an author signature is built into the features.
 
-| author | condition | cheat | no cheat | turns |
-|---|---|---|---|---|
-| DeepSeek V4.1 Flash | cheat | 30 | 5 | 619 |
-| DeepSeek V4.1 Flash | solo | 42 | 43 | 1681 |
-| GPT-5 mini | cheat | 30 | 30 | 1094 |
-| GPT-5 mini | solo | 30 | 30 | 1244 |
-| Claude Haiku 5.5 | cheat | 30 | 30 | 882 |
-| Claude Haiku 5.5 | solo | 30 | 30 | 957 |
-| GPT-6 Luna | cheat | 30 | 12 | 569 |
-| GPT-6 Luna | solo | 39 | 39 | 1476 |
-| Qwen3.8-27B | cheat | 30 | 0 | 455 |
-| Qwen3.8-27B | solo | 52 | 38 | 2008 |
+| author | condition | cheat | no cheat | turns | readable share |
+|---|---|---|---|---|---|
+| DeepSeek V4.1 Flash | cheat | 30 | 5 | 619 | 0.88 |
+| DeepSeek V4.1 Flash | solo | 42 | 43 | 1681 | 0.86 |
+| GPT-5 mini | cheat | 30 | 30 | 1094 | 0.48 |
+| GPT-5 mini | solo | 30 | 30 | 1244 | 0.50 |
+| Claude Haiku 5.5 | cheat | 30 | 30 | 882 | 0.00 |
+| Claude Haiku 5.5 | solo | 30 | 30 | 957 | 0.00 |
+| GPT-6 Luna | cheat | 30 | 12 | 569 | 0.34 |
+| GPT-6 Luna | solo | 39 | 39 | 1476 | 0.30 |
+| Qwen3.8-27B | cheat | 30 | 0 | 455 | 1.00 |
+| Qwen3.8-27B | solo | 52 | 38 | 2008 | 1.00 |
 
 ## Does the reader separate cheating in the solo arm?
 
-Yes, in every author and across authors. Table 1 gives the agent-level probe (mean over turns) at the configuration with the highest pooled AUROC (layer all, position `both`); Table 2 sweeps layers and positions. Erasing the author moves the numbers little; erasing author, task and condition together moves them a few hundredths. The within-author permutation null tops out near 0.55 and every real value sits above all 100 draws. We therefore posit that the signal is not the author's base rate and not the task.
+The reader separates cheating in every author and across authors. Table 1 gives the agent-level probe (mean over turns) at the configuration with the highest pooled AUROC. Table 2 sweeps layers and positions. Erasing the author moves the numbers little. Erasing author, task and condition together moves them a few hundredths. Every real value sits above every draw of the within-author permutation null (Table 4). We therefore posit that the signal is neither the author's base rate nor the task.
 
 **Table 1.** Solo arm, agent-level PCA probe, layer all, position `both`. Held-out AUROC [95% bootstrap over runs].
 
@@ -58,9 +58,9 @@ Yes, in every author and across authors. Table 1 gives the agent-level probe (me
 
 ## Is it the author, the task, or the length of the run?
 
-The author is almost perfectly readable from the same features and becomes unreadable after erasure (Table 3). Metadata alone predicts cheating poorly in the pooled solo arm, though inside some authors the task predicts it well; the probe stays above those baselines after the task is erased (Table 1, last column). Run length (turns, tokens, readable fraction) predicts cheating at 0.582 in the solo arm, same folds. We therefore posit that the probe reads something about the transcript's content, not its envelope.
+The author is almost perfectly readable from the same features and becomes unreadable after erasure (Table 3). Metadata alone predicts cheating poorly in the pooled solo arm. Inside some authors the task predicts it well. The probe stays above those baselines after the task is erased (Table 1, last column). Run length predicts cheating weakly (Table 3, last row). We therefore posit that the probe reads the content of the transcript.
 
-**Table 3.** Solo arm, author-identity probe (5 classes, majority rate 0.241) and the metadata-only cheating baselines, same folds.
+**Table 3.** Solo arm: the author-identity probe (5 classes, majority rate 0.241) and the cheating AUROC of metadata-only baselines, same folds.
 
 | readout | value |
 |---|---|
@@ -74,6 +74,7 @@ The author is almost perfectly readable from the same features and becomes unrea
 | cheating AUROC from one-hot haiku (task + condition) | 0.729 |
 | cheating AUROC from one-hot luna (task + condition) | 0.419 |
 | cheating AUROC from one-hot qwen (task + condition) | 0.853 |
+| cheating AUROC from run length (turns, log tokens, readable share) | 0.582 |
 
 **Table 4.** Solo arm, labels shuffled inside each author (100 draws), layer all, position `both`.
 
@@ -94,13 +95,21 @@ The author is almost perfectly readable from the same features and becomes unrea
 
 ## Does a probe trained on four authors read the fifth?
 
-Mostly. Leave-one-author-out AUROC (B.II in Table 1) stays high for every held-out author except GPT-6 Luna, which receives the weakest transfer and is also the hardest author within itself. Luna's reasoning is encrypted and only a third of its turns carry a provider summary. We therefore conjecture that transfer depends on how much of the author's reasoning the reader gets to see.
+A probe trained on four authors reads the fifth for every author except GPT-6 Luna (B.II rows of Table 1). Luna receives the weakest transfer and is also the hardest author within itself. Luna's reasoning is encrypted, and few of its turns carry a provider summary. We therefore conjecture that transfer depends on how much of the author's reasoning the reader gets to see.
 
 ## What about the cheat arm and the pooled set?
 
-In the pooled set the prompt condition is readable at 0.988 (majority 0.622), and falls to the majority rate once condition is erased; the pooled cheating probe keeps most of its AUROC after that erasure (Table 5). The cheat arm has few honest agents for DeepSeek and none for Qwen, so its within-author rows are thin and its pooled number is secondary.
+In the pooled set the prompt condition is readable from the features and falls to the majority rate once condition is erased (Table 5). The pooled cheating probe keeps most of its AUROC after that erasure (Table 6). The cheat arm has few honest agents for DeepSeek and none for Qwen, so its within-author rows are thin and its pooled number is secondary. We therefore posit that the pooled probe does not rest on reading the prompt.
 
-**Table 5.** Both arms pooled (layer 38, `close`) and the cheat arm alone (layer 38, `close`), agent-level PCA probe.
+**Table 5.** Both arms pooled, condition readout (cheat-arm prompt vs solo prompt), layer 38, position `close`. Majority rate 0.622.
+
+| features | accuracy |
+|---|---|
+| raw | 0.988 |
+| author erased | 0.987 |
+| author, task, condition erased | 0.622 |
+
+**Table 6.** Both arms pooled (layer 38, `close`), then the cheat arm alone (layer 38, `close`), agent-level PCA probe.
 
 | probe | cheat / no cheat | raw | author erased | author, task, condition erased |
 |---|---|---|---|---|
@@ -130,9 +139,9 @@ In the pooled set the prompt condition is readable at 0.988 (majority 0.622), an
 
 ## Does a single turn carry the signal?
 
-Partly. With every turn labelled by its agent, the per-turn probe scores turns at 0.822 and agents (mean turn score) at 0.882 in the solo arm (layer 38, `close`); the turn-position baseline is 0.490, so position is not the signal (Table 6). A second labelling that keeps a cheating agent's turns only from its first cheating tool call on reaches 0.986 but its turn-position baseline reaches 0.983: that design makes lateness the label, and we do not read it as detection.
+A single turn carries part of the signal. With every turn labelled by its agent, the per-turn probe separates turns, and separates agents better once their turn scores are averaged (Table 7). Its turn-position baseline sits at chance, so position does not carry the signal (Table 8). A second labelling keeps a cheating agent's turns only from its first cheating tool call on. Its probe and its turn-position baseline reach the same high value (Table 8). That design makes lateness the label, and we do not read it as detection. We therefore posit that a turn-level monitor needs position-matched labels before its score can be read.
 
-**Table 6.** Solo arm, per-turn PCA probe, agent-labelled turns, layer 38, position `close`. Agent AUROC is the mean turn score per agent.
+**Table 7.** Solo arm, per-turn PCA probe, agent-labelled turns, layer 38, position `close`. Agent AUROC is the mean turn score per agent.
 
 | probe | cheat / no cheat | agent AUROC | turn AUROC |
 |---|---|---|---|
@@ -148,11 +157,18 @@ Partly. With every turn labelled by its agent, the per-turn probe scores turns a
 | B.II leave out GPT-6 Luna | 39 / 39 | 0.714 [0.595, 0.822] | 0.654 |
 | B.II leave out Qwen3.8-27B | 52 / 38 | 0.878 [0.805, 0.942] | 0.704 |
 
+**Table 8.** Solo arm, per-turn probes against the turn-position baseline (logistic regression on turn index and turn fraction, same folds, agent-aggregated). The onset labelling drops a cheating agent's turns before its first cheating tool call.
+
+| turn labels | layer | position | B.I pooled agent AUROC | turn-position baseline |
+|---|---|---|---|---|
+| agent | 38 | close | 0.882 [0.848, 0.914] | 0.490 |
+| onset | 26 | open | 0.986 [0.975, 0.993] | 0.983 |
+
 ## Does the result depend on the PCA step?
 
-No. A probe on every dimension (z-scored, L2 only) gives the same picture in the solo arm (Table 7; arms finished so far: solo).
+A probe on every dimension, z-scored with an L2 penalty and no PCA, gives the same picture in the solo arm (Table 9). Table 9 covers the solo arm.
 
-**Table 7.** Solo arm, full-dimension probe, layer all, position `close`.
+**Table 9.** Solo arm, full-dimension probe, layer all, position `close`.
 
 | probe | cheat / no cheat | raw | author erased | author, task, condition erased |
 |---|---|---|---|---|
@@ -170,8 +186,8 @@ No. A probe on every dimension (z-scored, L2 only) gives the same picture in the
 
 ## Limits
 
-The subsample holds about 120 runs per author and leaves out runs above 100k tokens. The cheat label counts opening the planted material, so a probe may read that the solution text entered the context rather than an intent; a text classifier on the transcript is the baseline that settles this and it is not in these tables. Haiku's think blocks are empty and Luna's hold summaries at best, so for those authors the positions read the turn boundary, not reasoning. LEACE removes linear traces only. All probes are linear.
+The subsample holds a fraction of the runs per author and leaves out the longest transcripts. The cheat label counts opening the planted material, so a probe may read that the solution text entered the context rather than an intent. A text classifier on the transcript is the baseline that settles this, and it is not in these tables. Haiku's think blocks are empty and Luna's hold summaries at best, so for those authors the positions read a turn boundary with no reasoning inside it. LEACE removes linear traces only. All probes are linear.
 
 ## Files
 
-`pca_agent/`, `full_agent/`, `pca_turn/`, `pca_turn_onset/`: `auroc.csv` (every arm, layer, position, feature set, scope), `author_probe.csv`, `condition_probe.csv`, `agents.csv`, per-configuration `results.json`, and a `RESULTS.md` from `hermeneutics/report.py`. This file is built by `hermeneutics/summary.py`.
+`pca_agent/`, `full_agent/`, `pca_turn/`, `pca_turn_onset/`: `auroc.csv` (every arm, layer, position, feature set and scope), `author_probe.csv`, `condition_probe.csv`, `agents.csv`, one `results.json` per configuration, and a per-run `RESULTS.md`.

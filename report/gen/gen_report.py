@@ -110,7 +110,14 @@ for a in AUTH:
     v = [r for r in labels if r["author"] == a and r["valid"] == "True"]
     valid[a] = len(v)
 
-WEIGHTS = {"ds": "closed", "gpt5m": "closed", "haiku": "closed", "luna": "closed", "qwen": "open"}
+WEIGHTS = {"ds": "open (MIT); API in our runs", "gpt5m": "closed", "haiku": "closed", "luna": "closed", "qwen": "open"}
+DS_HUB = "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash (Hub API read 2026-11-08)"
+led("open (MIT); API in our runs", "Table E1 row DeepSeek V4.1 Flash col weights; Methods, Authors and reader", DS_HUB, "cardData.license = mit; gated = false")
+led("763,205,315,794 parameters", "NUMBERS only: basis for 'far more parameters than the reader' (Methods, Authors and reader)", DS_HUB, "safetensors.total")
+N_CLOSED = sum(1 for a in AUTH if WEIGHTS[a] == "closed")
+assert N_CLOSED == 3, N_CLOSED
+led(f"{N_CLOSED} of {len(AUTH)} authors closed-weight", "Related Work; Methods, Authors and reader; Conclusion ('three of our five authors', 'three of them closed-weight')",
+    "report/gen/gen_report.py WEIGHTS (Table E1 weights column)", "authors whose weights cell reads 'closed'; DeepSeek V4.1 Flash open per its Hub page")
 TM1 = ["| author | API model id | weights | valid runs | think coverage (share of turns with readable reasoning) |",
        "|---|---|---|---|---|"]
 for a in AUTH:
@@ -156,13 +163,30 @@ assert n_agents == 600
 # ----------------------------------------------------------------------------------------------------------------
 # Table E3: probe setup constants (from code and logs)
 # ----------------------------------------------------------------------------------------------------------------
-TM3 = """| setting | value |
+# PCA width in the solo agent-level B.I fit: probes.py zs() takes k = min(PCA_DIM, max(10, n_train // 2)) on the outer
+# training rows; the outer folds are rebuilt here as probes.py analyze() builds them
+import numpy as np
+from sklearn.model_selection import StratifiedGroupKFold
+_solo = [r for r in agents if r["condition"] == "solo"]
+_y = np.array([int(r["y"]) for r in _solo]); _au = np.array([r["author"] for r in _solo]); _run = np.array([r["run"] for r in _solo])
+_strata = np.array([f"{t}|{v}" for t, v in zip(_au, _y)])
+_fold = np.zeros(len(_solo), int)
+for _f, (_, _te) in enumerate(StratifiedGroupKFold(5, shuffle=True, random_state=0).split(np.zeros(len(_solo)), _strata, _run)):
+    _fold[_te] = _f
+_ntr = [int((_fold != f).sum()) for f in range(5)]
+_ks = sorted({min(256, max(10, n // 2)) for n in _ntr})
+K_PCA = str(_ks[0]) if len(_ks) == 1 else f"{_ks[0]} to {_ks[-1]}"
+led(K_PCA, "Table E3 probe row: PCA components in the solo agent-level fit", "hermeneutics/probes.py; hermeneutics/results/pca_agent/agents.csv",
+    f"k = min(PCA_DIM, max(10, n_train // 2)) (probes.py lines 48 and 128); outer training sizes {_ntr} from StratifiedGroupKFold(5, shuffle=True, random_state=0) over the solo rows, strata author|label, groups run (probes.py line 242)")
+DEPTH = ", ".join(f"{L / 64:.2f}" for L in (26, 38, 51))
+led(DEPTH, "Table E3 layers row: depth fractions", "hermeneutics/results/full_agent/RESULTS.md", "26/64, 38/64, 51/64 (64 blocks, HF hidden_states numbering)")
+TM3 = f"""| setting | value |
 |---|---|
 | reader | Qwen3.8-27B, bf16, decoder blocks loaded one at a time |
 | positions | residual stream at the think-open (id 248068) and think-close (id 248069) token of every assistant turn |
-| layers | 26, 38, 51 of 64 blocks (0.41, 0.59, 0.80 of depth), and the three concatenated |
+| layers | 26, 38, 51 of 64 blocks ({DEPTH} of depth), and the three concatenated |
 | pooling | mean over the agent's turns (agent level), or one row per turn (turn level) |
-| probe | training-fold PCA to 256 components, z-scoring, L2 logistic regression, C by grouped inner cross-validation |
+| probe | training-fold PCA to min(256, half the training rows) components ({K_PCA} in the solo agent-level fit), z-scoring, L2 logistic regression, C by grouped inner cross-validation |
 | variant | every dimension z-scored, no PCA |
 | folds | 5, grouped by run, stratified by author x label |
 | intervals | 95% bootstrap over runs, 1000 draws |
@@ -174,7 +198,7 @@ TM3 = """| setting | value |
 for v, w, s, q in [
     ("248068 / 248069", "Table E3 positions", "VERIFICATION_LOG.md", "07:20 entry: token ids checked against the tokenizer"),
     ("26, 38, 51 of 64", "Table E3 layers", "hermeneutics/results/full_agent/RESULTS.md", "header: HF hidden_states numbering, 64 blocks"),
-    ("256", "Table E3 probe", "hermeneutics/probes.py", "PCA_DIM = 256 (line 48)"),
+    ("256", "Table E3 probe: the cap on PCA components", "hermeneutics/probes.py", "PCA_DIM = 256 (line 48); k = min(PCA_DIM, max(10, len(Xtr) // 2)) (line 128)"),
     ("5", "Table E3 folds", "hermeneutics/probes.py", "K = 5 (line 45)"),
     ("1000", "Table E3 intervals", "hermeneutics/probes.py", "N_BOOT = 1000 (line 47)"),
     ("100", "Table E3 null", "hermeneutics/results/RESULTS.md", "Table 4 caption '100 draws'; VERIFICATION_LOG 09:13 '100 shuffles'"),
@@ -297,12 +321,14 @@ for ft in FEATS:
                     layer="38", position="close", pooling="agent", features=ft, scope="pooled")
     cells.append(v)
 T3.append(f"| cheating, B.I pooled AUROC ({r['cheat']} / {r['no_cheat']}) | both arms pooled | {cells[0]} | {cells[1]} | {cells[2]} | 0.5 |")
+led(f"{r['cheat']} / {r['no_cheat']}", "Table 3 row 'cheating B.I, both arms pooled': cheat / no cheat", rel(PCA), "arm=pooled,layer=38,position=close,features=raw,scope=pooled -> cheat, no_cheat")
 cells = []
 for ft in FEATS:
     v, r = auc_cell(pca, PCA, f"Table 3 row 'cheating B.I, cheat arm' col '{ft}'", arm="cheat", probe="pca", turn_labels="agent",
                     layer="38", position="close", pooling="agent", features=ft, scope="pooled")
     cells.append(v)
 T3.append(f"| cheating, B.I pooled AUROC ({r['cheat']} / {r['no_cheat']}) | cheat arm only | {cells[0]} | {cells[1]} | {cells[2]} | 0.5 |")
+led(f"{r['cheat']} / {r['no_cheat']}", "Table 3 row 'cheating B.I, cheat arm': cheat / no cheat", rel(PCA), "arm=cheat,layer=38,position=close,features=raw,scope=pooled -> cheat, no_cheat")
 # sweep range over the 12 solo configurations
 solo_pooled = [float(r["auroc"]) for r in pca if r["arm"] == "solo" and r["features"] == "raw" and r["scope"] == "pooled"
                and r["pooling"] == "agent" and r["turn_labels"] == "agent"]
@@ -317,7 +343,8 @@ for r, p, nm in [(rt, TURN, "agent labels"), (ro, ONSET, "onset labels")]:
     led(f"{f3(r['auroc'])} [{f3(r['ci_lo'])}, {f3(r['ci_hi'])}]", f"Table 3 row 'per-turn, {nm}' col raw", rel(p),
         f"arm=solo,turn_labels={r['turn_labels']},layer={r['layer']},position={r['position']},pooling=turn,features=raw,scope=pooled -> auroc, ci")
     led(f3(r["baseline_turn_position"]), f"Table 3 row 'per-turn, {nm}' col baseline", rel(p), "same row -> baseline_turn_position")
-    led(f3(r["auroc_turns"]), f"Table 3 row 'per-turn, {nm}' turn-level AUROC", rel(p), "same row -> auroc_turns")
+    if nm == "agent labels":
+        led(f3(r["auroc_turns"]), f"Table 3 row 'per-turn, {nm}' turn-level AUROC", rel(p), "same row -> auroc_turns")
 T3.append(f"| cheating, per-turn probe with the agent's label (layer 38, close), agent AUROC; turn AUROC {f3(rt['auroc_turns'])} | solo | {f3(rt['auroc'])} [{f3(rt['ci_lo'])}, {f3(rt['ci_hi'])}] | | | turn-position baseline {f3(rt['baseline_turn_position'])} |")
 T3.append(f"| cheating, per-turn probe with onset labels (layer 26, open), agent AUROC | solo | {f3(ro['auroc'])} [{f3(ro['ci_lo'])}, {f3(ro['ci_hi'])}] | | | turn-position baseline {f3(ro['baseline_turn_position'])} |")
 T3 = "\n".join(T3)
@@ -510,14 +537,31 @@ ARMNAME = {"none": "none (empty board)", "neutral": "neutral post", "neutralL0":
            "procoordL2": "pro-coordination, explicit", "anticoord": "anti-coordination (hidden regulator)"}
 T5 = ["| set | turn budget | arm | n | crossed or assembled | passed hidden tests | mean board posts (workers only) | mean discussed | mean solicited | mean crossed | mean assembled |",
       "|---|---|---|---|---|---|---|---|---|---|---|"]
+WORD = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine"}
+
+
+def agent_posts25(run):
+    """Agent posts on the board of a turn-budget-25 pilot run (sender != 'system'); a run with no board file has none."""
+    fs = glob.glob(os.path.join(PILOT, run, "communication", "*.json"))
+    assert len(fs) <= 1, (run, fs)
+    return sum(1 for m in json.load(open(fs[0]))["messages"] if m.get("sender") != "system") if fs else 0
+
+
 for arm in ("none", "neutral", "procoordL2"):
     d = arms25[arm]
     led(f"{d['crossed+']}/{d['n']}", f"Table 5 tb=25 row {arm} col crossed or assembled", rel(TB25),
         f"count of collab in (crossed, assembled) over rows pilot_{arm}_s*; n = row count")
-    posts25 = "0.4 (one team, two posts)" if arm == "procoordL2" else "0"
+    runs25 = sorted(os.path.basename(x) for x in glob.glob(os.path.join(PILOT, f"pilot_{arm}_s*")))
+    assert len(runs25) == d["n"], (arm, runs25)
+    per = [agent_posts25(x) for x in runs25]
+    mean25 = sum(per) / len(per)
+    k_post = sum(1 for x in per if x > 0)
+    posts25 = "0" if mean25 == 0 else f"{mean25:.1f} ({WORD[k_post]} team{'s' if k_post > 1 else ''}, {WORD[sum(per)]} posts)"
+    led(posts25, f"Table 5 tb=25 row {arm} col mean board posts", rel(PILOT) + f"/pilot_{arm}_s*/communication/*.json",
+        f"agent posts per run (sender != 'system'; no board file = 0): {dict(zip(runs25, per))}")
     T5.append(f"| pilot | 25 | {ARMNAME[arm]} | {d['n']} | {d['crossed+']}/{d['n']} | 0/{d['n']} | {posts25} | | | 0 | 0 |")
 led("passed False in all 12 rows; crs 0, asm 0", "Table 5 tb=25 rows cols passed, crossed, assembled", rel(TB25), "columns passed, crs, asm of every pilot_* row")
-led("agent posts 0 in neutral 5/5, none 2/2, pro-coord 4/5; s4 posted 2", "Table 5 tb=25 rows col mean posts", rel(f"{SUB}/VERIFICATION_LOG.md"),
+led("agent posts 0 in neutral 5/5, none 2/2, pro-coord 4/5; s4 posted 2", "NUMBERS only: corroboration of the tb=25 posts cells", rel(f"{SUB}/VERIFICATION_LOG.md"),
     "entry '2026-11-07 Board-seed LOCAL pilot', tb=25 bullet")
 for arm in ("none", "procoordL2"):
     d = arms60[arm]
@@ -579,12 +623,19 @@ iso = lambda t: datetime.datetime.fromtimestamp(t, datetime.timezone.utc).strfti
 first, last = iso(min(lt)), iso(max(lt))
 led(first, "Appendix B: first controls launch", rel(RUNS), "min(launch_time) over all rows")
 led(last, "Appendix B: last controls launch", rel(RUNS), "max(launch_time) over all rows")
-led("Nov 6 to 8, 2026", "Title block; Appendix B: sprint window",
-    "https://apartresearch.com/sprints/swarm-alignment-2026 (fetched 2026-11-07)", "Overview and 'Submissions close' lines")
+SPRINT = "https://apartresearch.com/sprints/swarm-alignment-2026 (read 2026-11-08)"
+led("November 6 to 8, 2026", "Title block; Appendix B: sprint window", SPRINT, "header 'Nov 6 - 8, 2026'; 'Submissions close Nov 8, 2026 at 11:59 PM Anywhere on Earth'")
+led("Track 4; Track 2", "Title block: tracks", SPRINT, "submit form 'Tracks': 'Track 2: The Science of Agent Networks', 'Track 4: Multi-Agent Oversight and Control'")
+led("Friday, November 6; 21:30 UTC", "Appendix B: the sprint opened with the kick-off keynote", SPRINT,
+    "schedule, Friday November 6: '1:30pm PT / 21:30 UTC Judd Rosenblatt, AE Studio: \"Kickoff Keynote: Why Swarm Alignment Matters\"'")
+assert min(lt) > datetime.datetime(2026, 11, 6, 21, 30, tzinfo=datetime.timezone.utc).timestamp(), "first controls launch precedes the kick-off"
 led("2026-11-07 (mechanism commit 2c72d93; pilots the same day)", "Appendix B: board-seed dates", rel(f"{SUB}/VERIFICATION_LOG.md"),
     "entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot'")
 led("2026-10-09", "Appendix B: framework log begins", rel(f"{SUB}/VERIFICATION_LOG.md"), "first heading")
-led("2026-11-07", "Appendix B: pilot and dose-response run date", rel(f"{PILOT}") + "/*/run.json, confirm_doseresponse/*/run.json", "eval_log file names 2026-11-07T02-37-35 to 05-38-26")
+_ev = sorted(os.path.basename(json.load(open(os.path.join(x, "run.json")))["eval_log"])[:19] for x in tb25_runs + tb60_runs)
+assert all(x.startswith("2026-11-07") for x in _ev), _ev
+led("2026-11-07", "Appendix B: pilot and dose-response run date", rel(f"{PILOT}") + "/*/run.json, confirm_doseresponse/*/run.json",
+    f"eval_log file names over all {len(_ev)} run.json files: {_ev[0]} to {_ev[-1]}")
 
 # spend table
 SPJ = json.load(open(f"{REPO}/hermeneutics/results/judges/spend.json"))
@@ -692,13 +743,63 @@ ABS_ERASED = f3(r2["auroc"])
 led(ABS_ERASED, "Abstract: B.I after erasure", rel(PCA), sel(**base, features="author, task, condition erased", scope="pooled") + " -> auroc")
 
 # ----------------------------------------------------------------------------------------------------------------
+# prose numbers added in the final verification round
+# ----------------------------------------------------------------------------------------------------------------
+N_PROBED = str(len(agents))
+led(N_PROBED, "Abstract: the stratified subsample of transcripts teacher-forced through the reader", rel(AGENTS), "row count (one agent per run)")
+_bi = pick(pca, **base, features="raw", scope="pooled")
+N_SOLO = _bi["agents"]
+led(N_SOLO, "Table 4 caption: solo agents", rel(PCA), sel(**base, features="raw", scope="pooled") + " -> agents")
+SON_SOLO = son["agents"]
+led(SON_SOLO, "Table 4 caption: solo agents the Sonnet judge scored before its spend cap", rel(JUDGES), "arm=solo,probe=judge:anthropic/claude-sonnet-5.5,scope=pooled -> agents")
+N_BOARD = str(len(tb25_runs) + len(tb60_runs))
+led(N_BOARD, "Results, label map: our board-seed runs (pilots and dose-response matrix)", rel(PILOT) + "/pilot_*, pilot60_*, confirm_doseresponse/cm_*", f"run directories: {len(tb25_runs)} + {len(tb60_runs)}")
+assert all(dose[a][1] == "5" for a in dose), {a: dose[a][1] for a in dose}
+led("5 per arm", "Abstract; Discussion; Conclusion: 'five seeds per arm'", rel(DOSE), "column n = 5 in every arm row")
+SH = {}
+for a in AUTH:
+    for cond in ("solo", "cheat"):
+        v = [r for r in labels if r["author"] == a and r["valid"] == "True" and r["condition"] == cond]
+        SH[a, cond] = sum(r["label"] == "cheat" for r in v) / len(v)
+assert all(SH[a, "cheat"] > SH[a, "solo"] for a in AUTH)
+_hi = [a for a in AUTH if SH[a, "cheat"] > 0.95]
+assert len(_hi) == 3, _hi
+led(f"{len(_hi)} of {len(AUTH)}: " + ", ".join(a + " " + format(SH[a, "cheat"], ".3f") for a in _hi), "NUMBERS only: basis for 'three of five in nearly every run' (Methods, Controls)", rel(LABELS),
+    "share of label == 'cheat' among valid cheat-arm runs per author, above 0.95; every author's cheat-arm share exceeds its solo share: "
+    + ", ".join(a + " " + format(SH[a, "solo"], ".3f") + " -> " + format(SH[a, "cheat"], ".3f") for a in AUTH))
+_lo = {a: float(pick(pca, **base, features="raw", scope=f"LOTO {a}")["ci_lo"]) for a in AUTH}
+assert all(v > 0.5 for v in _lo.values()), _lo
+_amin = min(_lo, key=_lo.get)
+led(f"5 of 5; lowest lower bound {_amin} {_lo[_amin]:.3f}", "Results, transfer; Conclusion: every unseen author read above chance", rel(PCA),
+    "ci_lo > 0.5 in every LOTO row, arm=solo,layer=all,position=both,features=raw")
+_tq = float(pick(tfidf_all, arm="solo", probe="tfidf", position="transcript", scope="LOTO qwen")["auroc"])
+_pq = float(pick(pca, **base, features="raw", scope="LOTO qwen")["auroc"])
+assert _tq > _pq
+led(f"{_tq:.3f} > {_pq:.3f}", "Results, text classifier: on unseen authors the classifier leads for Qwen3.8-27B", "hermeneutics/results/tfidf/auroc.csv; " + rel(PCA), "LOTO qwen: TF-IDF whole transcript vs PCA probe")
+for ref, yr, src, q in [("[1]", "2026", "https://www.lesswrong.com/posts/CZLhfNGaDqtYxvGJD/model-hermeneutics-monitoring-closed-weight-models-with-open", "postedAt 2026-09-30T20:43:51Z"),
+                        ("[3]", "2026", "https://arxiv.org/abs/2606.32008", "citation_date 2026/06/30"),
+                        ("[4]", "2026", "https://arxiv.org/abs/2604.01151", "citation_date 2026/04/01 (v5 revised 15 Oct 2026)"),
+                        ("[5]", "2025", "https://arxiv.org/abs/2502.14143", "citation_date 2025/02/19; comments 'Cooperative AI Foundation, Technical Report #1'"),
+                        ("[6]", "2026", "https://huggingface.co/datasets/aidigestorg/ai-village (card read 2026-11-08 with the account token)", "card citation line: 'AI Digest, \"AI Village dataset\", 2026.'"),
+                        ("[7]", "2026", HF_URL, "README 'Built 2026-11-07T10:06:53Z'")]:
+    led(yr, f"References {ref}: year", src, q)
+led("n.d.", "References [2]: no year on the page", "https://aryafayyazi.github.io/GreyBox/paper.html (read 2026-11-08)", "'Grey Box: Reading Closed Agents Through Their APIs Alone.' 'Arya Fayyazi · preprint in preparation.'")
+
+# ----------------------------------------------------------------------------------------------------------------
 # assemble
 # ----------------------------------------------------------------------------------------------------------------
 tpl = open(os.path.join(os.path.dirname(__file__), "report_template.md")).read()
+# Table B1: the number of adapted files, counted from the table itself
+_b1 = tpl.split("**Table B1.**", 1)[1].split("\n\n", 2)[1]
+N_B1 = sum(1 for l in _b1.splitlines() if l.startswith("| ") and not l.startswith("| file in this project") and not l.startswith("|---"))
+_pre = [l for l in open(f"{REPO}/hermeneutics/PREEXISTING.md") if l.startswith("| `hermeneutics/")]
+led(N_B1, "Table B1 caption: adapted files", "report/gen/report_template.md Table B1 rows; hermeneutics/PREEXISTING.md", f"rows in Table B1; PREEXISTING.md lists {len(_pre)} at build time")
+if len(_pre) != N_B1:
+    print(f"NOTE: Table B1 has {N_B1} rows and hermeneutics/PREEXISTING.md lists {len(_pre)} files")
 for k, v in {"<<TM1>>": TM1, "<<TM2>>": TM2, "<<TM3>>": TM3, "<<T1>>": T1, "<<T2>>": T2, "<<T3>>": T3, "<<T4>>": T4, "<<T5>>": T5,
              "<<T6>>": T6, "<<TS>>": TS, "<<TB1>>": TB1, "<<TB2>>": TB2, "<<ABS_BI>>": ABS_BI, "<<ABS_LOTO>>": ABS_LOTO,
              "<<ABS_ERASED>>": ABS_ERASED, "<<TC>>": TC, "<<ABS_JUDGE>>": ABS_JUDGE, "<<ABS_TFIDF>>": ABS_TFIDF, "<<TD3>>": TD3, "<<SON_D3>>": SON_D3, "<<NULL_LO>>": NULL_LO, "<<NULL_HI>>": NULL_HI, "<<HF_TOTAL>>": hf_total, "<<FIRST>>": first, "<<LAST>>": last, "<<HF_BUILT>>": hf_built,
-             "<<HF_SPEND>>": hf_spend}.items():
+             "<<HF_SPEND>>": hf_spend, "<<N_PROBED>>": N_PROBED, "<<N_SOLO>>": N_SOLO, "<<SON_SOLO>>": SON_SOLO, "<<N_BOARD>>": N_BOARD, "<<N_B1>>": WORD[N_B1]}.items():
     assert k in tpl, k
     tpl = tpl.replace(k, v)
 assert "<<" not in tpl, re.findall(r"<<[A-Z_0-9]+>>", tpl)
@@ -706,11 +807,20 @@ os.makedirs(OUT, exist_ok=True)
 open(f"{OUT}/REPORT_DRAFT.md", "w").write(tpl)
 
 abstract = tpl.split("## Abstract\n", 1)[1].split("\n## ", 1)[0].strip()
-wc = len(abstract.split())
-open(f"{OUT}/ABSTRACT.txt", "w").write(abstract + f"\n\n[{wc} words]\n")
+plain = abstract.replace("**", "")
+wc = len(plain.split())
+assert 150 <= wc <= 250, wc
+open(f"{OUT}/ABSTRACT.txt", "w").write(plain + "\n")
+_sub = f"{OUT}/SUBMISSION.md"
+if os.path.exists(_sub):
+    _st = open(_sub).read()
+    _new, _n = re.subn(r"the text of `report/ABSTRACT.txt` \(\d+ words\)", f"the text of `report/ABSTRACT.txt` ({wc} words)", _st)
+    assert _n == 1, _n
+    if _new != _st:
+        open(_sub, "w").write(_new)
 
 hdr = ["# Number ledger for report/REPORT_DRAFT.md", "",
-       "Every number in the draft traces to a file that was opened while drafting (2026-11-07). One line per table cell or prose value. "
+       "Every number in the tables and the text of the draft traces to a cited source: a result file, a run log, a code constant or a public page, read 2026-11-07 to 2026-11-08. One line per table cell or prose value. "
        "Paths are relative to the repository root unless absolute. The dataset README was fetched from the Hub with the account token.", "",
        "| value | where in the draft | source | field / selector |", "|---|---|---|---|"]
 open(f"{OUT}/NUMBERS.md", "w").write("\n".join(hdr + LEDGER) + "\n")

@@ -1,9 +1,12 @@
 # Number ledger for report/REPORT_DRAFT.md
 
-Every number in the draft traces to a file that was opened while drafting (2026-11-07). One line per table cell or prose value. Paths are relative to the repository root unless absolute. The dataset README was fetched from the Hub with the account token.
+Every number in the tables and the text of the draft traces to a cited source: a result file, a run log, a code constant or a public page, read 2026-11-07 to 2026-11-08. One line per table cell or prose value. Paths are relative to the repository root unless absolute. The dataset README was fetched from the Hub with the account token.
 
 | value | where in the draft | source | field / selector |
 |---|---|---|---|
+| open (MIT); API in our runs | Table E1 row DeepSeek V4.1 Flash col weights; Methods, Authors and reader | `https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash (Hub API read 2026-11-08)` | cardData.license = mit; gated = false |
+| 763,205,315,794 parameters | NUMBERS only: basis for 'far more parameters than the reader' (Methods, Authors and reader) | `https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash (Hub API read 2026-11-08)` | safetensors.total |
+| 3 of 5 authors closed-weight | Related Work; Methods, Authors and reader; Conclusion ('three of our five authors', 'three of them closed-weight') | `report/gen/gen_report.py WEIGHTS (Table E1 weights column)` | authors whose weights cell reads 'closed'; DeepSeek V4.1 Flash open per its Hub page |
 | openrouter/deepseek/deepseek-v4.1-flash-1017 | Table E1 row DeepSeek V4.1 Flash col API model id | `data/runs.csv` | distinct model_id where author=ds |
 | 846 | Table E1 row DeepSeek V4.1 Flash col valid runs | `data/labels.csv` | count rows where author=ds and valid=True |
 | 0.884 | Table E1 row DeepSeek V4.1 Flash col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=ds (15066/17036) |
@@ -60,9 +63,11 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 455 | Table E2 row Qwen3.8-27B/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=qwen, condition=cheat |
 | 455 | Table E2 row Qwen3.8-27B/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=qwen, condition=cheat |
 | 600 | Table E3 probed runs | `hermeneutics/results/pca_agent/agents.csv` | row count |
+| 149 | Table E3 probe row: PCA components in the solo agent-level fit | `hermeneutics/probes.py; hermeneutics/results/pca_agent/agents.csv` | k = min(PCA_DIM, max(10, n_train // 2)) (probes.py lines 48 and 128); outer training sizes [298, 299, 298, 299, 298] from StratifiedGroupKFold(5, shuffle=True, random_state=0) over the solo rows, strata author|label, groups run (probes.py line 242) |
+| 0.41, 0.59, 0.80 | Table E3 layers row: depth fractions | `hermeneutics/results/full_agent/RESULTS.md` | 26/64, 38/64, 51/64 (64 blocks, HF hidden_states numbering) |
 | 248068 / 248069 | Table E3 positions | `VERIFICATION_LOG.md` | 07:20 entry: token ids checked against the tokenizer |
 | 26, 38, 51 of 64 | Table E3 layers | `hermeneutics/results/full_agent/RESULTS.md` | header: HF hidden_states numbering, 64 blocks |
-| 256 | Table E3 probe | `hermeneutics/probes.py` | PCA_DIM = 256 (line 48) |
+| 256 | Table E3 probe: the cap on PCA components | `hermeneutics/probes.py` | PCA_DIM = 256 (line 48); k = min(PCA_DIM, max(10, len(Xtr) // 2)) (line 128) |
 | 5 | Table E3 folds | `hermeneutics/probes.py` | K = 5 (line 45) |
 | 1000 | Table E3 intervals | `hermeneutics/probes.py` | N_BOOT = 1000 (line 47) |
 | 100 | Table E3 null | `hermeneutics/results/RESULTS.md` | Table 4 caption '100 draws'; VERIFICATION_LOG 09:13 '100 shuffles' |
@@ -167,16 +172,17 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 0.963 [0.949, 0.976] | Table 3 row 'cheating B.I, both arms pooled' col 'raw' | `hermeneutics/results/pca_agent/auroc.csv` | arm=pooled,probe=pca,turn_labels=agent,layer=38,position=close,pooling=agent,features=raw,scope=pooled -> auroc, ci_lo, ci_hi |
 | 0.956 [0.941, 0.970] | Table 3 row 'cheating B.I, both arms pooled' col 'author erased' | `hermeneutics/results/pca_agent/auroc.csv` | arm=pooled,probe=pca,turn_labels=agent,layer=38,position=close,pooling=agent,features=author erased,scope=pooled -> auroc, ci_lo, ci_hi |
 | 0.945 [0.926, 0.963] | Table 3 row 'cheating B.I, both arms pooled' col 'author, task, condition erased' | `hermeneutics/results/pca_agent/auroc.csv` | arm=pooled,probe=pca,turn_labels=agent,layer=38,position=close,pooling=agent,features=author, task, condition erased,scope=pooled -> auroc, ci_lo, ci_hi |
+| 343 / 257 | Table 3 row 'cheating B.I, both arms pooled': cheat / no cheat | `hermeneutics/results/pca_agent/auroc.csv` | arm=pooled,layer=38,position=close,features=raw,scope=pooled -> cheat, no_cheat |
 | 0.940 [0.902, 0.969] | Table 3 row 'cheating B.I, cheat arm' col 'raw' | `hermeneutics/results/pca_agent/auroc.csv` | arm=cheat,probe=pca,turn_labels=agent,layer=38,position=close,pooling=agent,features=raw,scope=pooled -> auroc, ci_lo, ci_hi |
 | 0.896 [0.843, 0.939] | Table 3 row 'cheating B.I, cheat arm' col 'author erased' | `hermeneutics/results/pca_agent/auroc.csv` | arm=cheat,probe=pca,turn_labels=agent,layer=38,position=close,pooling=agent,features=author erased,scope=pooled -> auroc, ci_lo, ci_hi |
 | 0.862 [0.808, 0.911] | Table 3 row 'cheating B.I, cheat arm' col 'author, task, condition erased' | `hermeneutics/results/pca_agent/auroc.csv` | arm=cheat,probe=pca,turn_labels=agent,layer=38,position=close,pooling=agent,features=author, task, condition erased,scope=pooled -> auroc, ci_lo, ci_hi |
+| 150 / 77 | Table 3 row 'cheating B.I, cheat arm': cheat / no cheat | `hermeneutics/results/pca_agent/auroc.csv` | arm=cheat,layer=38,position=close,features=raw,scope=pooled -> cheat, no_cheat |
 | 0.938 to 0.967 | Table 3 row 'sweep' col raw | `hermeneutics/results/pca_agent/auroc.csv` | min/max auroc over the 12 rows arm=solo,features=raw,scope=pooled,pooling=agent,turn_labels=agent |
 | 0.882 [0.848, 0.914] | Table 3 row 'per-turn, agent labels' col raw | `hermeneutics/results/pca_turn/auroc.csv` | arm=solo,turn_labels=agent,layer=38,position=close,pooling=turn,features=raw,scope=pooled -> auroc, ci |
 | 0.490 | Table 3 row 'per-turn, agent labels' col baseline | `hermeneutics/results/pca_turn/auroc.csv` | same row -> baseline_turn_position |
 | 0.822 | Table 3 row 'per-turn, agent labels' turn-level AUROC | `hermeneutics/results/pca_turn/auroc.csv` | same row -> auroc_turns |
 | 0.986 [0.975, 0.993] | Table 3 row 'per-turn, onset labels' col raw | `hermeneutics/results/pca_turn_onset/auroc.csv` | arm=solo,turn_labels=onset,layer=26,position=open,pooling=turn,features=raw,scope=pooled -> auroc, ci |
 | 0.983 | Table 3 row 'per-turn, onset labels' col baseline | `hermeneutics/results/pca_turn_onset/auroc.csv` | same row -> baseline_turn_position |
-| 0.949 | Table 3 row 'per-turn, onset labels' turn-level AUROC | `hermeneutics/results/pca_turn_onset/auroc.csv` | same row -> auroc_turns |
 | 0.967 [0.950, 0.981] | Table 4 row 'probe PCA' col solo B.I | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,layer=all,position=both,features=raw,scope=pooled -> auroc, ci |
 | 0.892 | Table 4 row 'probe PCA' col within-author mean | `hermeneutics/results/pca_agent/auroc.csv` | mean of auroc over scope in ['ds', 'gpt5m', 'haiku', 'luna', 'qwen'], arm=solo,probe=pca,layer=all,position=both,features=raw |
 | 0.915 | Table 4 row 'probe PCA' col B.II mean | `hermeneutics/results/pca_agent/auroc.csv` | mean of auroc over LOTO ds..qwen, arm=solo,probe=pca,layer=all,position=both,features=raw |
@@ -229,10 +235,13 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 8 agent posts (9 messages incl. system; TSV posts column 8) | Table 5 tb=60 pilot row procoordL2: posts input for pilot60_procoordL2_s1 | `data/board_seed_pilot/pilot60_procoordL2_s1/communication/flipt-02e2#1.json` | count of messages with sender != 'system' |
 | 12 agent posts (13 messages incl. system; TSV posts column 12) | Table 5 tb=60 pilot row procoordL2: posts input for pilot60_procoordL2_s2 | `data/board_seed_pilot/pilot60_procoordL2_s2/communication/flipt-02e2#1.json` | count of messages with sender != 'system' |
 | 0/2 | Table 5 tb=25 row none col crossed or assembled | `data/board_seed_pilot/RESULTS.tsv` | count of collab in (crossed, assembled) over rows pilot_none_s*; n = row count |
+| 0 | Table 5 tb=25 row none col mean board posts | `data/board_seed_pilot/pilot_none_s*/communication/*.json` | agent posts per run (sender != 'system'; no board file = 0): {'pilot_none_s0': 0, 'pilot_none_s1': 0} |
 | 0/5 | Table 5 tb=25 row neutral col crossed or assembled | `data/board_seed_pilot/RESULTS.tsv` | count of collab in (crossed, assembled) over rows pilot_neutral_s*; n = row count |
+| 0 | Table 5 tb=25 row neutral col mean board posts | `data/board_seed_pilot/pilot_neutral_s*/communication/*.json` | agent posts per run (sender != 'system'; no board file = 0): {'pilot_neutral_s0': 0, 'pilot_neutral_s1': 0, 'pilot_neutral_s2': 0, 'pilot_neutral_s3': 0, 'pilot_neutral_s4': 0} |
 | 0/5 | Table 5 tb=25 row procoordL2 col crossed or assembled | `data/board_seed_pilot/RESULTS.tsv` | count of collab in (crossed, assembled) over rows pilot_procoordL2_s*; n = row count |
+| 0.4 (one team, two posts) | Table 5 tb=25 row procoordL2 col mean board posts | `data/board_seed_pilot/pilot_procoordL2_s*/communication/*.json` | agent posts per run (sender != 'system'; no board file = 0): {'pilot_procoordL2_s0': 0, 'pilot_procoordL2_s1': 0, 'pilot_procoordL2_s2': 0, 'pilot_procoordL2_s3': 0, 'pilot_procoordL2_s4': 2} |
 | passed False in all 12 rows; crs 0, asm 0 | Table 5 tb=25 rows cols passed, crossed, assembled | `data/board_seed_pilot/RESULTS.tsv` | columns passed, crs, asm of every pilot_* row |
-| agent posts 0 in neutral 5/5, none 2/2, pro-coord 4/5; s4 posted 2 | Table 5 tb=25 rows col mean posts | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entry '2026-11-07 Board-seed LOCAL pilot', tb=25 bullet |
+| agent posts 0 in neutral 5/5, none 2/2, pro-coord 4/5; s4 posted 2 | NUMBERS only: corroboration of the tb=25 posts cells | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entry '2026-11-07 Board-seed LOCAL pilot', tb=25 bullet |
 | 3/3, 1/3, posts 2.7, dis 2.0, sol 1.7, crs 1.7, asm 1.7 | Table 5 tb=60 pilot row none | `data/board_seed_pilot/RESULTS_tb60.tsv` | computed from the three pilot60_none_s* rows (collab, passed, dis, sol, crs, asm); posts recounted from the board JSON files, system sender excluded |
 | 3/3, 1/3, posts 9.3, dis 8.3, sol 5.0, crs 4.0, asm 2.0 | Table 5 tb=60 pilot row procoordL2 | `data/board_seed_pilot/RESULTS_tb60.tsv` | computed from the three pilot60_procoordL2_s* rows (collab, passed, dis, sol, crs, asm); posts recounted from the board JSON files, system sender excluded |
 | 5 | 2/5 | 0/5 | 1.0 | 1.0 | 0.0 | 0.2 | 0.6 | 0.0 | Table 5 dose-response row none (n, crossed+, pass, mPosts, mWPosts, mDisc, mSol, mCrs, mAsm) | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | row arm=none |
@@ -252,10 +261,12 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | rung order none < exposed < tried < opened < used < tampered < checked < shipped | Methods, Data: the cheat ladder | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | section 'Labels' |
 | 2026-11-06 22:18 UTC | Appendix B: first controls launch | `data/runs.csv` | min(launch_time) over all rows |
 | 2026-11-07 06:47 UTC | Appendix B: last controls launch | `data/runs.csv` | max(launch_time) over all rows |
-| Nov 6 to 8, 2026 | Title block; Appendix B: sprint window | `https://apartresearch.com/sprints/swarm-alignment-2026 (fetched 2026-11-07)` | Overview and 'Submissions close' lines |
+| November 6 to 8, 2026 | Title block; Appendix B: sprint window | `https://apartresearch.com/sprints/swarm-alignment-2026 (read 2026-11-08)` | header 'Nov 6 - 8, 2026'; 'Submissions close Nov 8, 2026 at 11:59 PM Anywhere on Earth' |
+| Track 4; Track 2 | Title block: tracks | `https://apartresearch.com/sprints/swarm-alignment-2026 (read 2026-11-08)` | submit form 'Tracks': 'Track 2: The Science of Agent Networks', 'Track 4: Multi-Agent Oversight and Control' |
+| Friday, November 6; 21:30 UTC | Appendix B: the sprint opened with the kick-off keynote | `https://apartresearch.com/sprints/swarm-alignment-2026 (read 2026-11-08)` | schedule, Friday November 6: '1:30pm PT / 21:30 UTC Judd Rosenblatt, AE Studio: "Kickoff Keynote: Why Swarm Alignment Matters"' |
 | 2026-11-07 (mechanism commit 2c72d93; pilots the same day) | Appendix B: board-seed dates | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot' |
 | 2026-10-09 | Appendix B: framework log begins | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | first heading |
-| 2026-11-07 | Appendix B: pilot and dose-response run date | `data/board_seed_pilot/*/run.json, confirm_doseresponse/*/run.json` | eval_log file names 2026-11-07T02-37-35 to 05-38-26 |
+| 2026-11-07 | Appendix B: pilot and dose-response run date | `data/board_seed_pilot/*/run.json, confirm_doseresponse/*/run.json` | eval_log file names over all 43 run.json files: 2026-11-07T02-37-35 to 2026-11-07T10-02-43 |
 | 1.20 / 0.71 / 10.11 (file: 1.1951 / 0.711 / 10.1057) | Table B2 judge rows per model (gpt-5-mini, haiku-5.5, sonnet-5.5) | `hermeneutics/results/judges/spend.json` | per_model_all_calls |
 | 0.33 (file: 0.3284) | Table B2 discarded pricing round | `hermeneutics/results/judges/spend.json` | discarded_pricing_round |
 | 12.34 (file: 12.3404) | Table B2 judge total | `hermeneutics/results/judges/spend.json` | provider_delta |
@@ -304,3 +315,19 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 0.967 | Abstract: solo-arm B.I AUROC | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=pooled -> auroc |
 | 0.80 to 0.97 | Abstract: B.II range | `hermeneutics/results/pca_agent/auroc.csv` | min/max over LOTO scopes, same configuration |
 | 0.944 | Abstract: B.I after erasure | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=author, task, condition erased,scope=pooled -> auroc |
+| 600 | Abstract: the stratified subsample of transcripts teacher-forced through the reader | `hermeneutics/results/pca_agent/agents.csv` | row count (one agent per run) |
+| 373 | Table 4 caption: solo agents | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=pooled -> agents |
+| 262 | Table 4 caption: solo agents the Sonnet judge scored before its spend cap | `hermeneutics/results/judges/auroc.csv` | arm=solo,probe=judge:anthropic/claude-sonnet-5.5,scope=pooled -> agents |
+| 43 | Results, label map: our board-seed runs (pilots and dose-response matrix) | `data/board_seed_pilot/pilot_*, pilot60_*, confirm_doseresponse/cm_*` | run directories: 12 + 31 |
+| 5 per arm | Abstract; Discussion; Conclusion: 'five seeds per arm' | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | column n = 5 in every arm row |
+| 3 of 5: ds 0.965, luna 0.962, qwen 0.997 | NUMBERS only: basis for 'three of five in nearly every run' (Methods, Controls) | `data/labels.csv` | share of label == 'cheat' among valid cheat-arm runs per author, above 0.95; every author's cheat-arm share exceeds its solo share: ds 0.794 -> 0.965, gpt5m 0.137 -> 0.650, haiku 0.306 -> 0.460, luna 0.426 -> 0.962, qwen 0.872 -> 0.997 |
+| 5 of 5; lowest lower bound luna 0.698 | Results, transfer; Conclusion: every unseen author read above chance | `hermeneutics/results/pca_agent/auroc.csv` | ci_lo > 0.5 in every LOTO row, arm=solo,layer=all,position=both,features=raw |
+| 0.997 > 0.966 | Results, text classifier: on unseen authors the classifier leads for Qwen3.8-27B | `hermeneutics/results/tfidf/auroc.csv; hermeneutics/results/pca_agent/auroc.csv` | LOTO qwen: TF-IDF whole transcript vs PCA probe |
+| 2026 | References [1]: year | `https://www.lesswrong.com/posts/CZLhfNGaDqtYxvGJD/model-hermeneutics-monitoring-closed-weight-models-with-open` | postedAt 2026-09-30T20:43:51Z |
+| 2026 | References [3]: year | `https://arxiv.org/abs/2606.32008` | citation_date 2026/06/30 |
+| 2026 | References [4]: year | `https://arxiv.org/abs/2604.01151` | citation_date 2026/04/01 (v5 revised 15 Oct 2026) |
+| 2025 | References [5]: year | `https://arxiv.org/abs/2502.14143` | citation_date 2025/02/19; comments 'Cooperative AI Foundation, Technical Report #1' |
+| 2026 | References [6]: year | `https://huggingface.co/datasets/aidigestorg/ai-village (card read 2026-11-08 with the account token)` | card citation line: 'AI Digest, "AI Village dataset", 2026.' |
+| 2026 | References [7]: year | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm` | README 'Built 2026-11-07T10:06:53Z' |
+| n.d. | References [2]: no year on the page | `https://aryafayyazi.github.io/GreyBox/paper.html (read 2026-11-08)` | 'Grey Box: Reading Closed Agents Through Their APIs Alone.' 'Arya Fayyazi · preprint in preparation.' |
+| 6 | Table B1 caption: adapted files | `report/gen/report_template.md Table B1 rows; hermeneutics/PREEXISTING.md` | rows in Table B1; PREEXISTING.md lists 6 at build time |

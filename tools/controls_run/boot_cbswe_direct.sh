@@ -7,7 +7,7 @@ tport=$(perl -e 'alarm 10; exec @ARGV' ssh -G "arena9-$tgt" 2>/dev/null | awk '/
 echo "[$tgt] cbswe from=$src start=$(date +%T) tport=$tport" >> "$log"
 if [ -z "$tport" ]; then echo "[$tgt] NO PORT - abort" >> "$log"; exit 2; fi
 perl -e 'alarm 14400; exec @ARGV' ssh -A -o ConnectTimeout=10 -o BatchMode=yes "arena9-$src" \
-  "docker save cbswe-flipt-02e2:native cbswe-vuls-1832:native | ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ServerAliveInterval=30 -p $tport root@cute.sus.cat 'docker load'" >> "$log" 2>&1
+  "docker save cbswe-flipt-02e2:native cbswe-vuls-1832:native | ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ServerAliveInterval=30 -p $tport root@ARENA9_GATEWAY 'docker load'" >> "$log" 2>&1
 echo "[$tgt] cbswe rc=$? end=$(date +%T)" >> "$log"
 # quick verify of images on target
 res=$(bash verify2.sh "$tgt")

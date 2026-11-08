@@ -6,7 +6,7 @@ src="$1"; tgt="$2"; log="probe/boot_$tgt.log"; : > "$log"
 tport=$(perl -e 'alarm 10; exec @ARGV' ssh -G "arena9-$tgt" 2>/dev/null | awk '/^port /{print $2}')
 echo "[$tgt] DIRECT from=$src start=$(date +%T) tport=$tport" >> "$log"
 if [ -z "$tport" ]; then echo "[$tgt] NO PORT - abort" >> "$log"; exit 2; fi
-RT="ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ServerAliveInterval=30 -p $tport root@cute.sus.cat"
+RT="ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ServerAliveInterval=30 -p $tport root@ARENA9_GATEWAY"
 A() { perl -e 'alarm 3600; exec @ARGV' ssh -A -n -o ConnectTimeout=10 -o BatchMode=yes "arena9-$src" "$1"; }
 echo "[$tgt] prep $(date +%T)" >> "$log"
 A "$RT 'mkdir -p /root/arena-capstone/submodule /root/.local/share/uv/python; rm -rf /root/arena-capstone/submodule/spar-guardian-agents'" >> "$log" 2>&1

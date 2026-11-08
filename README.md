@@ -34,8 +34,8 @@ The sprint rules ask that code written before the sprint be marked. The sprint o
 bash report/build_pdf.sh                      # Markdown to LaTeX to PDF (xelatex), prints the page count
 ```
 
-Every table cell and every number written in digits in the report has a line in `report/NUMBERS.md` naming its source and selector: a result file and its cell, a run log, a code constant, a repository document, or, for a few facts (such as DeepSeek V4.1 Flash's licence and size, the sprint's dates and tracks, and reference years), the public page and the field read. The tables were checked cell by cell against those sources by independent verification passes; the entries are in `VERIFICATION_LOG.md`.
+Every number in the tables and every number written in digits in the text has a line in `report/NUMBERS.md` naming its source and selector: a result file and its cell, a run log, a code constant, a repository document, or, for a few facts (such as DeepSeek V4.1 Flash's licence and size, the sprint's dates and tracks, and reference years), the public page and the field read. The tables were checked cell by cell against those sources by independent verification passes; the entries are in `VERIFICATION_LOG.md`.
 
 ## LLM use
 
-Claude Code (Anthropic) ran the experiment pipeline, built the tables from the result files, drafted the text and ran the verification passes under the author's direction. The author set the research questions and the vision, took every design decision and edited the text.
+Claude Code (Anthropic) ran the experiment pipeline, built every table from its cited sources through a number ledger, drafted the text and ran the verification passes under the author's direction. The author set the research questions and the vision, took every design decision and edited the text.

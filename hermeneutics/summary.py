@@ -207,8 +207,8 @@ def main(path):
         for s, v in dd.items():
             out.append(f"| {f} | {AUTHOR_NAME.get(s, s)} | {f3(v['real'])} | {f3(v['null_mean'])} | {f3(v['null_95'])} | {v['p']:.3f} |")
     out += ["", "## Does a probe trained on four authors read the fifth?\n",
-            "A probe trained on four authors reads the fifth for every author except GPT-6 Luna (B.II rows of Table 1). Luna "
-            "receives the weakest transfer and is also the hardest author within itself. Luna's reasoning is encrypted, and "
+            "A probe trained on four authors reads the fifth well above chance for every author (B.II rows of Table 1). "
+            "Transfer is weakest for GPT-6 Luna, which is also the hardest author within itself. Luna's reasoning is encrypted, and "
             "few of its turns carry a provider summary. We therefore conjecture that transfer depends on how much of the "
             "author's reasoning the reader gets to see.\n",
             "## What about the cheat arm and the pooled set?\n",

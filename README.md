@@ -8,7 +8,7 @@ We ask whether a small open-weight **reader** model, Qwen3.8-27B, can monitor la
 
 | path | what it holds |
 |---|---|
-| `report/` | the report (`REPORT_DRAFT.md`), its number ledger (`NUMBERS.md`, one line per number with its source file and selector), the abstract, the generator (`gen/gen_report.py`, `gen/report_template.md`) and the LaTeX build (`tex/`, `build_pdf.sh`) |
+| `report/` | the report (`REPORT_DRAFT.md`), its number ledger (`NUMBERS.md`, one line per number with its source and selector), the abstract, the generator (`gen/gen_report.py`, `gen/report_template.md`) and the LaTeX build (`tex/`, `build_pdf.sh`) |
 | `hermeneutics/` | the probe pipeline: transcript rendering, think-position extraction, labels, probes, text baselines, judges, result summaries; `results/RESULTS.md` is script-generated from the CSV and JSON result files beside it |
 | `submodule/spar-guardian-agents` | the agent framework that produced the transcripts (branch `board-seed-injection`), including the board-seed mechanism `src/swarm/board_seed.py` |
 | `tools/controls_run/` | the scripts that drove the five-author controls run across the hosts (archival; hostnames replaced by placeholders) |
@@ -34,7 +34,7 @@ The sprint rules ask that code written before the sprint be marked. The sprint o
 bash report/build_pdf.sh                      # Markdown to LaTeX to PDF (xelatex), prints the page count
 ```
 
-Every number in the report has a line in `report/NUMBERS.md` naming the file and the cell it comes from. The result tables were checked cell by cell against those files by an independent verification pass; the entries are in `VERIFICATION_LOG.md`.
+Every number in the report has a line in `report/NUMBERS.md` naming its source and selector: a result file and its cell, a run log, a code constant, or, for a few facts (DeepSeek V4.1 Flash's licence and size, the sprint's dates, reference years), the public page and the field read. The tables were checked cell by cell against those sources by independent verification passes; the entries are in `VERIFICATION_LOG.md`.
 
 ## LLM use
 

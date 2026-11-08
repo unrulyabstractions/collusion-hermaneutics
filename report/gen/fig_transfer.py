@@ -1,8 +1,8 @@
 """Figure 1: unseen-author transfer (type B.II, leave one author out), solo arm.
 
-Reads the same result files and the same selectors as Table 2 in report/gen/gen_report.py, plots one row group per
+Reads the same result files and the same selectors as Table D4 in report/gen/gen_report.py, plots one row group per
 held-out author with four methods (three reader probes and the TF-IDF text baseline), and cross-checks every plotted
-value against the Table 2 cells in report/REPORT_DRAFT.md at 3 decimals. Any mismatch exits non-zero.
+value against the Table D4 cells in report/REPORT_DRAFT.md at 3 decimals. Any mismatch exits non-zero.
 
 Writes report/figures/fig1_transfer.{pdf,png} and report/figures/fig1_transfer_values.json.
 Run: .venv/bin/python report/gen/fig_transfer.py
@@ -25,12 +25,12 @@ OUT = f"{REPO}/report/figures"
 DRAFT = f"{REPO}/report/REPORT_DRAFT.md"
 RENDER = "data/render_summary.csv"
 
-# Table 2 row order and display names (gen_report.py AUTH / NAME)
+# Table D4 row order and display names (gen_report.py AUTH / NAME)
 AUTH = ["ds", "gpt5m", "haiku", "luna", "qwen"]
 NAME = {"ds": "DeepSeek V4.1 Flash", "gpt5m": "GPT-5 mini", "haiku": "Claude Haiku 5.5", "luna": "GPT-6 Luna",
         "qwen": "Qwen3.8-27B"}
 
-# Each method: the Table 2 selector (gen_report.py, Table 2 block), the Table 2 column it must equal, and its marks.
+# Each method: the Table D4 selector (gen_report.py, Table D4 block), the Table D4 column it must equal, and its marks.
 # Colours: categorical slots 1-3 of the dataviz reference palette for the three reader probes; the text baseline is
 # the neutral ink with a hollow marker. Shapes carry identity a second time, so colour is never the only channel.
 METHODS = [
@@ -81,7 +81,7 @@ def f3(x):
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# values, by the Table 2 selectors
+# values, by the Table D4 selectors
 # ---------------------------------------------------------------------------------------------------------------
 render = rows(RENDER)
 cover = {}
@@ -102,12 +102,12 @@ for a in AUTH:
                            think_coverage=cover[a]["value"], think_coverage_source=f"{RENDER}: {cover[a]['selector']}"))
 
 # ---------------------------------------------------------------------------------------------------------------
-# cross-check against the Table 2 cells of REPORT_DRAFT.md
+# cross-check against the Table D4 cells of REPORT_DRAFT.md
 # ---------------------------------------------------------------------------------------------------------------
 lines = open(DRAFT).read().splitlines()
-start = [i for i, ln in enumerate(lines) if ln.startswith("**Table 2.**")]
+start = [i for i, ln in enumerate(lines) if ln.startswith("**Table D4.**")]
 if len(start) != 1:
-    sys.exit(f"FAIL: found {len(start)} '**Table 2.**' lines in {DRAFT}")
+    sys.exit(f"FAIL: found {len(start)} '**Table D4.**' lines in {DRAFT}")
 tab = []
 for ln in lines[start[0] + 1:]:
     if ln.startswith("|"):
@@ -124,17 +124,17 @@ for ln in tab[2:]:
 def column(names):
     hit = [h for h in header if h in names]
     if len(hit) != 1:
-        sys.exit(f"FAIL: Table 2 header {header} has no unique column among {names}")
+        sys.exit(f"FAIL: Table D4 header {header} has no unique column among {names}")
     return hit[0]
 
 
 CELL = re.compile(r"^([0-9.]+) \[([0-9.]+), ([0-9.]+)\]$")
 bad = []
-print(f"{'held-out author':<20} {'method':<22} {'plotted':<24} {'Table 2 cell':<24} match")
+print(f"{'held-out author':<20} {'method':<22} {'plotted':<24} {'Table D4 cell':<24} match")
 for a in AUTH:
     row = body.get(NAME[a])
     if row is None:
-        sys.exit(f"FAIL: Table 2 has no row '{NAME[a]}'")
+        sys.exit(f"FAIL: Table D4 has no row '{NAME[a]}'")
     want = row[column(["think coverage"])]
     got = f3(cover[a]["value"])
     ok = got == want
@@ -151,8 +151,8 @@ for a in AUTH:
 if bad:
     for b in bad:
         print("MISMATCH:", b, file=sys.stderr)
-    sys.exit(f"FAIL: {len(bad)} plotted values disagree with Table 2 at 3 decimals")
-print(f"cross-check: all {len(AUTH) * (len(METHODS) + 1)} values equal Table 2 at 3 decimals")
+    sys.exit(f"FAIL: {len(bad)} plotted values disagree with Table D4 at 3 decimals")
+print(f"cross-check: all {len(AUTH) * (len(METHODS) + 1)} values equal Table D4 at 3 decimals")
 
 # ---------------------------------------------------------------------------------------------------------------
 # figure
@@ -222,7 +222,7 @@ for p in points:
         ax.plot([p["auroc"]], [y], marker=m["marker"], ms=m["ms"], mfc=m["color"], mec=SURFACE, mew=0.8,
                 zorder=3, clip_on=False, ls="none")
 
-# row-group labels: author name, and the think coverage on the line below (Table 2 shows it at 3 decimals)
+# row-group labels: author name, and the think coverage on the line below (Table D4 shows it at 3 decimals)
 tr = blended_transform_factory(ax.transAxes, ax.transData)
 for g, a in enumerate(AUTH):
     yc = -(g * (n_m + GAP) + (n_m - 1) / 2)

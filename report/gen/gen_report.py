@@ -883,12 +883,14 @@ open(f"{OUT}/REPORT_DRAFT.md", "w").write(tpl)
 abstract = tpl.split("## Abstract\n", 1)[1].split("\n## ", 1)[0].strip()
 plain = abstract.replace("**", "")
 wc = len(plain.split())
-assert 150 <= wc <= 250, wc
+wc_split = len([w for w in re.split(r"[\s\-]+", plain) if w])  # word processors may count hyphenated parts apart
+assert 150 <= wc <= 238 and wc_split <= 248, (wc, wc_split)  # the form allows 150 to 250; keep a margin for either count
 open(f"{OUT}/ABSTRACT.txt", "w").write(plain + "\n")
 _sub = f"{OUT}/SUBMISSION.md"
 if os.path.exists(_sub):
     _st = open(_sub).read()
-    _new, _n = re.subn(r"the text of `report/ABSTRACT.txt` \(\d+ words\)", f"the text of `report/ABSTRACT.txt` ({wc} words)", _st)
+    _new, _n = re.subn(r"the text of `report/ABSTRACT.txt` \(\d+ words(?:; \d+ with hyphenated words split)?\)",
+                       f"the text of `report/ABSTRACT.txt` ({wc} words; {wc_split} with hyphenated words split)", _st)
     assert _n == 1, _n
     if _new != _st:
         open(_sub, "w").write(_new)
@@ -901,7 +903,7 @@ open(f"{OUT}/NUMBERS.md", "w").write("\n".join(hdr + LEDGER) + "\n")
 
 body = tpl.split("## Abstract\n", 1)[1].split("\n## References", 1)[0]
 body_wo_tables = "\n".join(l for l in body.splitlines() if not l.startswith("|"))
-print("abstract words", wc)
+print("abstract words", wc, "| with hyphenated words split", wc_split)
 print("body words incl. tables", len(body.split()))
 print("body words excl. table rows", len(body_wo_tables.split()))
 print("ledger lines", len(LEDGER))

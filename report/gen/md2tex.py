@@ -548,8 +548,10 @@ class Emitter:
         # appendix subsections ("### Appendix X: ...") are fenced too, so each appendix keeps its own tables
         fenced = h.level == 2 or (h.level == 3 and h.text.startswith("Appendix"))
         barrier = "" if (TABLE_PLACEMENT == "H" or not fenced) else "\\FloatBarrier\n"
-        if barrier and h.level == 3:   # an appendix heading starts a new page unless 40% of one is left
-            barrier += "\\needspace{0.4\\textheight}\n"
+        # the appendix starts on a new page, and so does each appendix after A, so no heading is stranded
+        if barrier and ((h.level == 2 and h.text.strip() == "Appendix")
+                        or (h.level == 3 and not h.text.startswith("Appendix A"))):
+            barrier += "\\clearpage\n"
         return barrier + cmd + "{" + self.inl(h.text) + self.mark(h.level, h.text) + "}"
 
     def para(self, p: Para, noindent: bool = False) -> str:

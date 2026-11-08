@@ -71,7 +71,7 @@ class Para:
 @dataclass
 class ListItem:
     text: str
-    sub: "ListBlock | None" = None
+    subs: list = field(default_factory=list)   # nested ListBlocks
 
 
 @dataclass
@@ -145,7 +145,10 @@ def parse_list(lines: list[str], i: int) -> tuple[ListBlock, int]:
         if m:
             indent = len(m.group(1).expandtabs(4))
             marker = m.group(2)
-            raw.append((indent, marker[0].isdigit(), marker, m.group(3)))
+            ordered = marker[0].isdigit()
+            if raw and indent <= raw[0][0] and ordered != raw[0][1]:
+                break   # a change of marker type at the top level starts a new list
+            raw.append((indent, ordered, marker, m.group(3)))
             i += 1
             continue
         if line.strip() == "":
@@ -179,8 +182,10 @@ def parse_list(lines: list[str], i: int) -> tuple[ListBlock, int]:
                 break
             if ind > indent and block.items:
                 sub, pos = build(pos, ind)
-                block.items[-1].sub = sub
+                block.items[-1].subs.append(sub)
                 continue
+            if ordered != block.ordered:
+                break   # a new list of the other kind at this level
             block.items.append(ListItem(text=text))
             pos += 1
         return block, pos
@@ -553,8 +558,8 @@ class Emitter:
         out = [f"\\begin{{{env}}}[{opts}]"]
         for it in lb.items:
             out.append("\\item\\relax " + self.inl(it.text))
-            if it.sub is not None:
-                out.append(self.list_block(it.sub))
+            for sub in it.subs:
+                out.append(self.list_block(sub))
         out.append(f"\\end{{{env}}}")
         return "\n".join(out)
 

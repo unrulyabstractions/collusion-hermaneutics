@@ -202,50 +202,56 @@ def tfidf_solo(scope):
     r = [x for x in TFIDF_EARLY if x["arm"] == "solo" and x["position"] == "transcript" and x["scope"] == scope]
     assert len(r) == 1, scope
     return r[0]
-T1 = ["| probe | cheat / no cheat | raw | author erased | author, task, condition erased | null 95th pct (raw) | null p | metadata-only baseline | TF-IDF, whole transcript, same folds |",
-      "|---|---|---|---|---|---|---|---|---|"]
-for scope, label, nk in [("pooled", "B.I pooled, held-out runs", "pooled (author + task + condition)")] + \
-        [(a, f"A within {NAME[a]}", f"{a} (task + condition)") for a in AUTH]:
+T1 = ["| probe | cheat / no cheat | raw | author erased | author, task, condition erased | metadata-only baseline | TF-IDF, whole transcript |",
+      "|---|---|---|---|---|---|---|"]
+NULL95 = []
+for scope, label, nk in [("pooled", "B.I pooled", "pooled (author + task + condition)")] + \
+        [(a, f"A: {NAME[a]}", f"{a} (task + condition)") for a in AUTH]:
     cells = []
     for ft in FEATS:
         v, r = auc_cell(pca, PCA, f"Table 1 row '{label}' col '{ft}'", **base, features=ft, scope=scope)
         cells.append(v)
     r = pick(pca, **base, features="raw", scope=scope)
-    n95, p = f3(r["null_95"]), f3(r["null_p"])
-    led(n95, f"Table 1 row '{label}' col null 95th", rel(PCA), sel(**base, features="raw", scope=scope) + " -> null_95")
-    led(p, f"Table 1 row '{label}' col null p", rel(PCA), sel(**base, features="raw", scope=scope) + " -> null_p")
+    n95, pv = f3(r["null_95"]), f3(r["null_p"])
+    NULL95.append(float(r["null_95"]))
+    led(n95, f"NUMBERS only: Table 1 row '{label}' null 95th percentile (the caption gives the range over rows)", rel(PCA), sel(**base, features="raw", scope=scope) + " -> null_95")
+    led(pv, f"NUMBERS only: Table 1 row '{label}' null p (the caption states the 1/101 floor)", rel(PCA), sel(**base, features="raw", scope=scope) + " -> null_p")
+    assert abs(float(r["null_p"]) - 1 / 101) < 1e-6, (label, r["null_p"])
     nb = f3(nuis_val(nk))
     led(nb, f"Table 1 row '{label}' col metadata baseline", rel(RESJ), f"nuisance['{nk}']")
     tf = tfidf_solo(scope)
     tfv = f"{f3(tf['auroc'])} [{f3(tf['ci_lo'])}, {f3(tf['ci_hi'])}]" if scope == "pooled" else f3(tf["auroc"])
     led(tfv, f"Table 1 row '{label}' col TF-IDF whole transcript", "hermeneutics/results/tfidf/auroc.csv", f"arm=solo,position=transcript,scope={scope} -> auroc" + (", ci" if scope == "pooled" else ""))
-    T1.append(f"| {label} | {r['cheat']} / {r['no_cheat']} | {cells[0]} | {cells[1]} | {cells[2]} | {n95} | {p} | {nb} | {tfv} |")
-    led(f"{r['cheat']} / {r['no_cheat']}", f"Table 1 row '{label}' col cheat / no cheat", rel(PCA),
-        sel(**base, features="raw", scope=scope) + " -> cheat, no_cheat")
-# full-dimension variant row and run-length baseline row
-v, r = auc_cell(full, FULL, "Table 1 row 'B.I pooled, full-dimension variant' col raw", arm="solo", probe="full",
+    led(f"{r['cheat']} / {r['no_cheat']}", f"Table 1 row '{label}' col cheat / no cheat", rel(PCA), sel(**base, features="raw", scope=scope) + " -> cheat, no_cheat")
+    T1.append(f"| {label} | {r['cheat']} / {r['no_cheat']} | {cells[0]} | {cells[1]} | {cells[2]} | {nb} | {tfv} |")
+v, r = auc_cell(full, FULL, "Table 1 row 'B.I pooled, every dimension' col raw", arm="solo", probe="full",
                 turn_labels="agent", layer="all", position="close", pooling="agent", features="raw", scope="pooled")
-v2, _ = auc_cell(full, FULL, "Table 1 row 'B.I pooled, full-dimension variant' col author erased", arm="solo", probe="full",
+v2, _ = auc_cell(full, FULL, "Table 1 row 'B.I pooled, every dimension' col author erased", arm="solo", probe="full",
                  turn_labels="agent", layer="all", position="close", pooling="agent", features="author erased", scope="pooled")
-v3, _ = auc_cell(full, FULL, "Table 1 row 'B.I pooled, full-dimension variant' col all erased", arm="solo", probe="full",
+v3, _ = auc_cell(full, FULL, "Table 1 row 'B.I pooled, every dimension' col all erased", arm="solo", probe="full",
                  turn_labels="agent", layer="all", position="close", pooling="agent",
                  features="author, task, condition erased", scope="pooled")
-T1.append(f"| B.I pooled, full-dimension variant (layer all, position close) | {r['cheat']} / {r['no_cheat']} | {v} | {v2} | {v3} | {f3(r['null_95'])} | {f3(r['null_p'])} | | |")
-led(f3(r["null_95"]), "Table 1 full-dimension row col null 95th", rel(FULL),
+NULL95.append(float(r["null_95"]))
+led(f3(r["null_95"]), "NUMBERS only: Table 1 every-dimension row null 95th percentile (the caption gives the range over rows)", rel(FULL),
     "arm=solo,probe=full,layer=all,position=close,features=raw,scope=pooled -> null_95")
-led(f3(r["null_p"]), "Table 1 full-dimension row col null p", rel(FULL),
+led(f3(r["null_p"]), "NUMBERS only: Table 1 every-dimension row null p (the caption states the 1/101 floor)", rel(FULL),
     "arm=solo,probe=full,layer=all,position=close,features=raw,scope=pooled -> null_p")
-# run-length baseline from RESULTS.md Table 3 (computed by summary.py at build time)
+assert abs(float(r["null_p"]) - 1 / 101) < 1e-6
+T1.append(f"| B.I pooled, every dimension | {r['cheat']} / {r['no_cheat']} | {v} | {v2} | {v3} | | |")
+NULL_LO, NULL_HI = f"{min(NULL95):.3f}", f"{max(NULL95):.3f}"
+led(f"{NULL_LO} to {NULL_HI}", "Table 1 caption: range of the within-author label-shuffle null's 95th percentile over the probe rows",
+    rel(PCA) + "; " + rel(FULL), "min and max of null_95 over the seven probe rows of Table 1 (solo arm, raw features)")
+led("1/101", "Table 1 caption: the shuffle p floor", rel(PCA), "null_p = 0.0099 in every Table 1 probe row (100 shuffles, p = (k+1)/(n+1))")
 md = open(RESMD).read()
 m = re.search(r"cheating AUROC from run length \(turns, log tokens, readable share\) \| ([0-9.]+) \|", md)
 runlen = m.group(1)
-led(runlen, "Table 1 row 'run-length baseline'", rel(RESMD), "Table 3 last row (summary.py recomputes it from agents.csv at build time)")
+led(runlen, "Table 1 row 'baseline: run length'", rel(RESMD), "Table 3 last row (summary.py recomputes it from agents.csv at build time)")
 m = re.search(r"cheating AUROC from one-hot pooled \(author only\) \| ([0-9.]+) \|", md)
 authonly = m.group(1)
-led(authonly, "Table 1 row 'author-only one-hot baseline'", rel(RESJ), "nuisance['pooled (author only)'] (also RESULTS.md Table 3)")
+led(authonly, "Table 1 row 'baseline: author one-hot'", rel(RESJ), "nuisance['pooled (author only)'] (also RESULTS.md Table 3)")
 assert abs(float(authonly) - float(nuis_val("pooled (author only)"))) < 5e-4
-T1.append(f"| baseline: one-hot author only, pooled | 193 / 180 | {authonly} | | | | | | |")
-T1.append(f"| baseline: run length (turns, log tokens, readable share), pooled | 193 / 180 | {runlen} | | | | | | |")
+T1.append(f"| baseline: author one-hot | 193 / 180 | {authonly} | | | | |")
+T1.append(f"| baseline: run length | 193 / 180 | {runlen} | | | | |")
 T1 = "\n".join(T1)
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -372,16 +378,13 @@ def t4_row(label, tab, path, selector_base, label_short, has_loto=True, n_note="
         rr = scope_rows(tab, arm=arm, scope="pooled", **selector_base)
         if len(rr) == 1 and rr[0]["auroc"]:
             x = f3(rr[0]["auroc"])
-            led(x, f"Table 4 row '{label_short}' col {arm}-arm B.I", rel(path), sel(arm=arm, scope="pooled", **selector_base) + " -> auroc")
+            led(x, f"Table D3 row '{label_short}' col {arm}-arm B.I", rel(path), sel(arm=arm, scope="pooled", **selector_base) + " -> auroc")
         else:
             x = "n/a"
         cells.append(x)
-    return f"| {label} | {agents_note} | " + " | ".join(cells) + " |"
+    return (f"| {label} | {agents_note} | " + " | ".join(cells[:3]) + " |", f"| {label} | " + " | ".join(cells[3:]) + " |")
 
 
-T4 = ["| method | solo agents scored | solo arm, B.I pooled AUROC [95% CI] | solo, within-author mean (A) | solo, B.II mean (unseen author) | both arms pooled, B.I | cheat arm, B.I |",
-      "|---|---|---|---|---|---|---|"]
-# probe rows: solo at layer all; pooled and cheat arms at layer 38 close (the configurations tabled in RESULTS.md)
 def probe_row(label, tab, path, probe, solo_layer, solo_pos, label_short):
     cells = []
     r = pick(tab, arm="solo", probe=probe, turn_labels="agent", layer=solo_layer, position=solo_pos, pooling="agent", features="raw", scope="pooled")
@@ -400,24 +403,36 @@ def probe_row(label, tab, path, probe, solo_layer, solo_pos, label_short):
         rr = [x for x in tab if x["arm"] == arm and x["probe"] == probe and x.get("turn_labels", "") in ("agent", "") and x["layer"] == "38" and x["position"] == "close" and x["pooling"] == "agent" and x["features"] == "raw" and x["scope"] == "pooled"]
         if len(rr) == 1:
             x = f3(rr[0]["auroc"])
-            led(x, f"Table 4 row '{label_short}' col {arm}-arm B.I", rel(path), sel(arm=arm, probe=probe, layer=38, position="close", features="raw", scope="pooled") + " -> auroc")
+            led(x, f"Table D3 row '{label_short}' col {arm}-arm B.I", rel(path), sel(arm=arm, probe=probe, layer=38, position="close", features="raw", scope="pooled") + " -> auroc")
         else:
             x = "n/a (layer 38 not run)"
         cells.append(x)
-    return f"| {label} | {r['agents']} | " + " | ".join(cells) + " |"
+    return (f"| {label} | {r['agents']} | " + " | ".join(cells[:3]) + " |", f"| {label} | " + " | ".join(cells[3:]) + " |")
 
-
-T4.append(probe_row("activation probe, reader (PCA, agent means; solo at layers concatenated, both positions; other arms at layer 38, close)", pca, PCA, "pca", "all", "both", "probe PCA"))
-T4.append(probe_row("activation probe, reader (every dimension; solo at layers concatenated, close position; other arms at layer 38, close)", full, FULL, "full", "all", "close", "probe full-dim"))
-T4.append(t4_row("TF-IDF + logistic regression, whole rendered transcript", tfidf_all, f"{REPO}/hermeneutics/results/tfidf*/auroc.csv", dict(probe="tfidf", position="transcript"), "TF-IDF transcript"))
-T4.append(t4_row("TF-IDF + logistic regression, the agent's own words only", tfidf_all, f"{REPO}/hermeneutics/results/tfidf*/auroc.csv", dict(probe="tfidf", position="agent"), "TF-IDF own words"))
-T4.append(t4_row("lexical-only reader null: TF-IDF on the think windows", tfidf_all, f"{REPO}/hermeneutics/results/tfidf*/auroc.csv", dict(probe="tfidf", position="think"), "lexical null"))
-T4.append(t4_row("judge: Claude Haiku 5.5 (author-level; reasoning off)", judges, JUDGES, dict(probe="judge:anthropic/claude-haiku-5.5"), "judge Haiku", has_loto=False))
-T4.append(t4_row("judge: Claude Sonnet 5.5 (above the authors; low reasoning effort; stopped by the spend cap)", judges, JUDGES, dict(probe="judge:anthropic/claude-sonnet-5.5"), "judge Sonnet", has_loto=False, n_note=" of 373"))
-T4.append(t4_row("judge: GPT-5 mini (author-level; minimal reasoning)", judges, JUDGES, dict(probe="judge:openai/gpt-5-mini"), "judge GPT-5 mini", has_loto=False))
-T4.append("| random-weights reader (same architecture, untrained) | not run | not run | not run | not run | not run | not run |")
-T4.append("| reader interrogation (ask the reader) | not run | not run | not run | not run | not run | not run |")
+T4 = ["| method | solo agents scored | solo B.I pooled AUROC [95% CI] | within-author mean (A) | B.II mean (unseen author) |",
+      "|---|---|---|---|---|"]
+TD3 = ["| method | both arms pooled, B.I | cheat arm, B.I |", "|---|---|---|"]
+def add(pair):
+    T4.append(pair[0]); TD3.append(pair[1])
+add(probe_row("probe, PCA", pca, PCA, "pca", "all", "both", "probe PCA"))
+add(probe_row("probe, every dimension", full, FULL, "full", "all", "close", "probe full-dim"))
+add(t4_row("TF-IDF, whole transcript", tfidf_all, f"{REPO}/hermeneutics/results/tfidf*/auroc.csv", dict(probe="tfidf", position="transcript"), "TF-IDF transcript"))
+add(t4_row("TF-IDF, agent's words", tfidf_all, f"{REPO}/hermeneutics/results/tfidf*/auroc.csv", dict(probe="tfidf", position="agent"), "TF-IDF own words"))
+add(t4_row("lexical null (think windows)", tfidf_all, f"{REPO}/hermeneutics/results/tfidf*/auroc.csv", dict(probe="tfidf", position="think"), "lexical null"))
+add(t4_row("judge: Claude Haiku 5.5", judges, JUDGES, dict(probe="judge:anthropic/claude-haiku-5.5"), "judge Haiku", has_loto=False))
+add(t4_row("judge: Claude Sonnet 5.5", judges, JUDGES, dict(probe="judge:anthropic/claude-sonnet-5.5"), "judge Sonnet", has_loto=False, n_note=" of 373"))
+add(t4_row("judge: GPT-5 mini", judges, JUDGES, dict(probe="judge:openai/gpt-5-mini"), "judge GPT-5 mini", has_loto=False))
+T4.append("| random-weights reader | not run | not run | not run | not run |")
+T4.append("| reader interrogation | not run | not run | not run | not run |")
+TD3.append("| random-weights reader | not run | not run |")
+TD3.append("| reader interrogation | not run | not run |")
 T4 = "\n".join(T4)
+TD3 = "\n".join(TD3)
+son_p = pick(judges, arm="pooled", probe="judge:anthropic/claude-sonnet-5.5", scope="pooled")
+son_c = pick(judges, arm="cheat", probe="judge:anthropic/claude-sonnet-5.5", scope="pooled")
+SON_D3 = f"{son_p['agents']} of 600 and {son_c['agents']} of 227"
+led(SON_D3, "Table D3 caption: the Sonnet judge's agents in the pooled and cheat arms", rel(JUDGES),
+    "arm=pooled and arm=cheat, probe=judge:anthropic/claude-sonnet-5.5, scope=pooled -> agents")
 # judge coverage and cost from the judges file
 son = pick(judges, arm="solo", probe="judge:anthropic/claude-sonnet-5.5", scope="pooled")
 led(f"{son['agents']} of 373", "Table 4 Sonnet row col solo agents scored", rel(JUDGES), f"arm=solo,probe=judge:anthropic/claude-sonnet-5.5,scope=pooled -> agents (coverage {float(son['coverage']):.3f} of all 600)")
@@ -682,7 +697,7 @@ led(ABS_ERASED, "Abstract: B.I after erasure", rel(PCA), sel(**base, features="a
 tpl = open(os.path.join(os.path.dirname(__file__), "report_template.md")).read()
 for k, v in {"<<TM1>>": TM1, "<<TM2>>": TM2, "<<TM3>>": TM3, "<<T1>>": T1, "<<T2>>": T2, "<<T3>>": T3, "<<T4>>": T4, "<<T5>>": T5,
              "<<T6>>": T6, "<<TS>>": TS, "<<TB1>>": TB1, "<<TB2>>": TB2, "<<ABS_BI>>": ABS_BI, "<<ABS_LOTO>>": ABS_LOTO,
-             "<<ABS_ERASED>>": ABS_ERASED, "<<TC>>": TC, "<<ABS_JUDGE>>": ABS_JUDGE, "<<ABS_TFIDF>>": ABS_TFIDF, "<<HF_TOTAL>>": hf_total, "<<FIRST>>": first, "<<LAST>>": last, "<<HF_BUILT>>": hf_built,
+             "<<ABS_ERASED>>": ABS_ERASED, "<<TC>>": TC, "<<ABS_JUDGE>>": ABS_JUDGE, "<<ABS_TFIDF>>": ABS_TFIDF, "<<TD3>>": TD3, "<<SON_D3>>": SON_D3, "<<NULL_LO>>": NULL_LO, "<<NULL_HI>>": NULL_HI, "<<HF_TOTAL>>": hf_total, "<<FIRST>>": first, "<<LAST>>": last, "<<HF_BUILT>>": hf_built,
              "<<HF_SPEND>>": hf_spend}.items():
     assert k in tpl, k
     tpl = tpl.replace(k, v)

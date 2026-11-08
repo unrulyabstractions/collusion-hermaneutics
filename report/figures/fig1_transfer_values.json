@@ -1,0 +1,222 @@
+[
+ {
+  "author": "DeepSeek V4.1 Flash",
+  "method": "PCA probe",
+  "auroc": 0.8920265780730896,
+  "lo": 0.8131320114667941,
+  "hi": 0.9522309523809523,
+  "source_file": "hermeneutics/results/pca_agent/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=LOTO ds",
+  "think_coverage": 0.8843625264146513,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=ds (15066/17036)"
+ },
+ {
+  "author": "DeepSeek V4.1 Flash",
+  "method": "Every-dimension probe",
+  "auroc": 0.9235880398671096,
+  "lo": 0.862624584717608,
+  "hi": 0.9745025510204082,
+  "source_file": "hermeneutics/results/full_agent/auroc.csv",
+  "selector": "arm=solo,probe=full,turn_labels=agent,layer=all,position=close,pooling=agent,features=raw,scope=LOTO ds",
+  "think_coverage": 0.8843625264146513,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=ds (15066/17036)"
+ },
+ {
+  "author": "DeepSeek V4.1 Flash",
+  "method": "Per-turn probe",
+  "auroc": 0.8122923588039866,
+  "lo": 0.7066372386537482,
+  "hi": 0.9069786973619104,
+  "source_file": "hermeneutics/results/pca_turn/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=38,position=close,pooling=turn,features=raw,scope=LOTO ds",
+  "think_coverage": 0.8843625264146513,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=ds (15066/17036)"
+ },
+ {
+  "author": "DeepSeek V4.1 Flash",
+  "method": "TF-IDF text baseline",
+  "auroc": 0.96843853820598,
+  "lo": 0.932909214092141,
+  "hi": 0.9954319923978461,
+  "source_file": "hermeneutics/results/tfidf/auroc.csv",
+  "selector": "arm=solo,position=transcript,scope=LOTO ds",
+  "think_coverage": 0.8843625264146513,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=ds (15066/17036)"
+ },
+ {
+  "author": "GPT-5 mini",
+  "method": "PCA probe",
+  "auroc": 0.9455555555555555,
+  "lo": 0.8843144903802579,
+  "hi": 0.9920814479638009,
+  "source_file": "hermeneutics/results/pca_agent/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=LOTO gpt5m",
+  "think_coverage": 0.4805706776797447,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=gpt5m (7680/15981)"
+ },
+ {
+  "author": "GPT-5 mini",
+  "method": "Every-dimension probe",
+  "auroc": 0.9777777777777779,
+  "lo": 0.9397236877705627,
+  "hi": 0.9988876529477196,
+  "source_file": "hermeneutics/results/full_agent/auroc.csv",
+  "selector": "arm=solo,probe=full,turn_labels=agent,layer=all,position=close,pooling=agent,features=raw,scope=LOTO gpt5m",
+  "think_coverage": 0.4805706776797447,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=gpt5m (7680/15981)"
+ },
+ {
+  "author": "GPT-5 mini",
+  "method": "Per-turn probe",
+  "auroc": 0.7233333333333333,
+  "lo": 0.5781411341993185,
+  "hi": 0.8493303571428571,
+  "source_file": "hermeneutics/results/pca_turn/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=38,position=close,pooling=turn,features=raw,scope=LOTO gpt5m",
+  "think_coverage": 0.4805706776797447,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=gpt5m (7680/15981)"
+ },
+ {
+  "author": "GPT-5 mini",
+  "method": "TF-IDF text baseline",
+  "auroc": 0.9788888888888889,
+  "lo": 0.9333333333333335,
+  "hi": 1.0,
+  "source_file": "hermeneutics/results/tfidf/auroc.csv",
+  "selector": "arm=solo,position=transcript,scope=LOTO gpt5m",
+  "think_coverage": 0.4805706776797447,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=gpt5m (7680/15981)"
+ },
+ {
+  "author": "Claude Haiku 5.5",
+  "method": "PCA probe",
+  "auroc": 0.9733333333333334,
+  "lo": 0.9337710437710437,
+  "hi": 0.9966517857142857,
+  "source_file": "hermeneutics/results/pca_agent/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=LOTO haiku",
+  "think_coverage": 0.0,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=haiku (0/13141)"
+ },
+ {
+  "author": "Claude Haiku 5.5",
+  "method": "Every-dimension probe",
+  "auroc": 0.9277777777777777,
+  "lo": 0.8530009920634921,
+  "hi": 0.9841278819219996,
+  "source_file": "hermeneutics/results/full_agent/auroc.csv",
+  "selector": "arm=solo,probe=full,turn_labels=agent,layer=all,position=close,pooling=agent,features=raw,scope=LOTO haiku",
+  "think_coverage": 0.0,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=haiku (0/13141)"
+ },
+ {
+  "author": "Claude Haiku 5.5",
+  "method": "Per-turn probe",
+  "auroc": 0.9277777777777777,
+  "lo": 0.8552620503278399,
+  "hi": 0.9820426487093153,
+  "source_file": "hermeneutics/results/pca_turn/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=38,position=close,pooling=turn,features=raw,scope=LOTO haiku",
+  "think_coverage": 0.0,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=haiku (0/13141)"
+ },
+ {
+  "author": "Claude Haiku 5.5",
+  "method": "TF-IDF text baseline",
+  "auroc": 0.9722222222222222,
+  "lo": 0.9245598214285714,
+  "hi": 1.0,
+  "source_file": "hermeneutics/results/tfidf/auroc.csv",
+  "selector": "arm=solo,position=transcript,scope=LOTO haiku",
+  "think_coverage": 0.0,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=haiku (0/13141)"
+ },
+ {
+  "author": "GPT-6 Luna",
+  "method": "PCA probe",
+  "auroc": 0.8001314924391847,
+  "lo": 0.6979863721804511,
+  "hi": 0.8863636363636364,
+  "source_file": "hermeneutics/results/pca_agent/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=LOTO luna",
+  "think_coverage": 0.33472345662131675,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=luna (4896/14627)"
+ },
+ {
+  "author": "GPT-6 Luna",
+  "method": "Every-dimension probe",
+  "auroc": 0.7843523997370151,
+  "lo": 0.676435899941372,
+  "hi": 0.8744434394689642,
+  "source_file": "hermeneutics/results/full_agent/auroc.csv",
+  "selector": "arm=solo,probe=full,turn_labels=agent,layer=all,position=close,pooling=agent,features=raw,scope=LOTO luna",
+  "think_coverage": 0.33472345662131675,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=luna (4896/14627)"
+ },
+ {
+  "author": "GPT-6 Luna",
+  "method": "Per-turn probe",
+  "auroc": 0.7140039447731755,
+  "lo": 0.5950993993135011,
+  "hi": 0.8221190937615356,
+  "source_file": "hermeneutics/results/pca_turn/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=38,position=close,pooling=turn,features=raw,scope=LOTO luna",
+  "think_coverage": 0.33472345662131675,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=luna (4896/14627)"
+ },
+ {
+  "author": "GPT-6 Luna",
+  "method": "TF-IDF text baseline",
+  "auroc": 0.7975016436554898,
+  "lo": 0.6868050180244474,
+  "hi": 0.900076919300198,
+  "source_file": "hermeneutics/results/tfidf/auroc.csv",
+  "selector": "arm=solo,position=transcript,scope=LOTO luna",
+  "think_coverage": 0.33472345662131675,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=luna (4896/14627)"
+ },
+ {
+  "author": "Qwen3.8-27B",
+  "method": "PCA probe",
+  "auroc": 0.965587044534413,
+  "lo": 0.9254318004979769,
+  "hi": 0.9928607853136154,
+  "source_file": "hermeneutics/results/pca_agent/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=LOTO qwen",
+  "think_coverage": 1.0,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=qwen (13199/13199)"
+ },
+ {
+  "author": "Qwen3.8-27B",
+  "method": "Every-dimension probe",
+  "auroc": 0.9387651821862348,
+  "lo": 0.8864886225547787,
+  "hi": 0.9797631578947369,
+  "source_file": "hermeneutics/results/full_agent/auroc.csv",
+  "selector": "arm=solo,probe=full,turn_labels=agent,layer=all,position=close,pooling=agent,features=raw,scope=LOTO qwen",
+  "think_coverage": 1.0,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=qwen (13199/13199)"
+ },
+ {
+  "author": "Qwen3.8-27B",
+  "method": "Per-turn probe",
+  "auroc": 0.8775303643724697,
+  "lo": 0.8054263319923697,
+  "hi": 0.9417330473856209,
+  "source_file": "hermeneutics/results/pca_turn/auroc.csv",
+  "selector": "arm=solo,probe=pca,turn_labels=agent,layer=38,position=close,pooling=turn,features=raw,scope=LOTO qwen",
+  "think_coverage": 1.0,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=qwen (13199/13199)"
+ },
+ {
+  "author": "Qwen3.8-27B",
+  "method": "TF-IDF text baseline",
+  "auroc": 0.9974696356275303,
+  "lo": 0.9900982747948164,
+  "hi": 1.0,
+  "source_file": "hermeneutics/results/tfidf/auroc.csv",
+  "selector": "arm=solo,position=transcript,scope=LOTO qwen",
+  "think_coverage": 1.0,
+  "think_coverage_source": "data/render_summary.csv: sum(n_readable)/sum(turns) over rows where author=qwen (13199/13199)"
+ }
+]

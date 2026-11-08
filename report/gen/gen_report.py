@@ -420,13 +420,12 @@ T4.append("| reader interrogation (ask the reader) | not run | not run | not run
 T4 = "\n".join(T4)
 # judge coverage and cost from the judges file
 son = pick(judges, arm="solo", probe="judge:anthropic/claude-sonnet-5.5", scope="pooled")
-led(f"{son['agents']} of 373 solo agents; coverage {float(son['coverage']):.3f}", "Table 4 Sonnet row col agents; section 4.4 prose", rel(JUDGES), "arm=solo,probe=judge:anthropic/claude-sonnet-5.5,scope=pooled -> agents, coverage")
+led(f"{son['agents']} of 373", "Table 4 Sonnet row col solo agents scored", rel(JUDGES), f"arm=solo,probe=judge:anthropic/claude-sonnet-5.5,scope=pooled -> agents (coverage {float(son['coverage']):.3f} of all 600)")
 for m in ("openai/gpt-5-mini", "anthropic/claude-haiku-5.5", "anthropic/claude-sonnet-5.5"):
     r = pick(judges, arm="solo", probe=f"judge:{m}", scope="pooled")
     led(f"${float(r['cost_usd']):.2f}", f"NUMBERS only: judge {m} cost of every call in the result file", rel(JUDGES), "cost_usd (all calls; equals spend.json per_model_all_calls)")
     led(f"${float(r['cost_scored_usd']):.2f}", f"NUMBERS only: judge {m} cost of the calls that parsed to a score", rel(JUDGES), "cost_scored_usd")
 loto = [float(pick(pca, **base, features="raw", scope=f"LOTO {a}")["auroc"]) for a in AUTH]
-led(f"{min(loto):.3f} to {max(loto):.3f}", "Abstract and 4.4: B.II range of the PCA probe", rel(PCA), "min/max auroc over scope in LOTO ds..qwen, arm=solo,layer=all,position=both,features=raw")
 jud_pooled = [float(pick(judges, arm="solo", probe=f"judge:{m}", scope="pooled")["auroc"]) for m in ("openai/gpt-5-mini", "anthropic/claude-haiku-5.5", "anthropic/claude-sonnet-5.5")]
 ABS_JUDGE = f"{min(jud_pooled):.2f} to {max(jud_pooled):.2f}"
 led(ABS_JUDGE, "Abstract: judge AUROC range", rel(JUDGES), "min/max auroc over the three judges, arm=solo, scope=pooled")
@@ -518,12 +517,22 @@ for arm in ("none", "neutralL0", "procoordL1", "procoordL2", "anticoord"):
     extra = f" (all posts {r[4]}, the regulator included)" if arm == "anticoord" else ""
     T5.append(f"| dose-response | 60 | {ARMNAME[arm]} | {r[1]} | {r[2]} | {r[3]} | {posts}{extra} | {r[6]} | {r[7]} | {r[8]} | {r[9]} |")
 T5 = "\n".join(T5)
+# turn budgets, read from every run.json of the pilots and the dose-response matrix
+def budget(run_dir):
+    tb = json.load(open(os.path.join(run_dir, "run.json")))["config"]["turn_budget"]
+    return tb["budget"] if isinstance(tb, dict) else tb
+tb25_runs = sorted(glob.glob(os.path.join(PILOT, "pilot_*")))
+tb60_runs = sorted(glob.glob(os.path.join(PILOT, "pilot60_*"))) + sorted(glob.glob(os.path.join(PILOT, "confirm_doseresponse", "cm_*")))
+assert len(tb25_runs) == 12 and len(tb60_runs) == 6 + 25, (len(tb25_runs), len(tb60_runs))
+assert {budget(r) for r in tb25_runs} == {25} and {budget(r) for r in tb60_runs} == {60}
+led("25 / 60", "Table 5 col turn budget and caption; Methods, Data (two turn budgets)", rel(PILOT) + "/*/run.json, confirm_doseresponse/*/run.json",
+    f"config.turn_budget: 25 in the {len(tb25_runs)} pilot_* runs; 60 in the {len(tb60_runs)} pilot60_* and cm_* runs")
 # spend lines for the pilot
 for path, pat, where in [(TB25, r"TOTAL billed: \$([0-9.]+) over (\d+) runs", "pilot tb=25 spend"),
                          (TB60, r"TOTAL tb=60 billed: \$([0-9.]+) over (\d+) runs", "pilot tb=60 spend"),
                          (DOSE, r"TOTAL billed: \$([0-9.]+) over (\d+) runs", "dose-response spend")]:
     m = re.search(pat, open(path).read())
-    led(f"${m.group(1)} over {m.group(2)} runs", f"Table B2 (spend) row {where}", rel(path), "TOTAL line")
+    led(f"${float(m.group(1)):.2f} (file: {m.group(1)}) over {m.group(2)} runs", f"Table B2 (spend) row {where}", rel(path), "TOTAL line")
 SPEND = {}
 for path, pat, key in [(TB25, r"TOTAL billed: \$([0-9.]+)", "tb25"), (TB60, r"TOTAL tb=60 billed: \$([0-9.]+)", "tb60"),
                        (DOSE, r"TOTAL billed: \$([0-9.]+)", "dose")]:
@@ -540,16 +549,12 @@ hf_spend = re.search(r"Total billed for this study: \$([0-9.]+)", hf).group(1)
 hf_canon = re.search(r"\*\*\$([0-9.]+)\*\* for the 4,157 valid deduplicated runs", hf).group(1)
 hf_built = re.search(r"Built (2026-11-07T10:06:53Z)", hf).group(1)
 HF_URL = "https://huggingface.co/datasets/unrulyabstractions/apart-swarm"
-for v, w, q in [(hf_total, "Table B2 row 'controls dataset' col runs; Appendix A", "line 3: 'with **4,157** unique completed, validated runs'"),
-                (hf_matrix, "Table B2 row 'controls dataset' col designed matrix", "line 3: 'designed matrix of **4,424** runs'"),
-                (f"{hf_extra.group(1)} / {hf_extra.group(2)}", "Table B2 row 'controls dataset' col duplicate copies / transcripts", "line 3"),
-                (f"${hf_spend}", "Table B2 row 'controls dataset' col spend", "Spend: 'Total billed for this study: $192.85'"),
+for v, w, q in [(hf_total, "Table B2 row 'controls dataset' col runs; Appendix B", "line 3: 'with **4,157** unique completed, validated runs'"),
+                                                (f"${hf_spend}", "Table B2 row 'controls dataset' col spend", "Spend: 'Total billed for this study: $192.85'"),
                 (f"${hf_canon}", "Table B2 row 'controls dataset' col spend on canonical runs", "Spend bullet 1"),
-                (hf_built, "Appendix A: publish time", "line 3: 'Built 2026-11-07T10:06:53Z'"),
-                ("n_agents = 1 in every run; collaboration and engagement null 0 of 4466", "Method: single-agent scope", "section 'Single-agent scope'"),
-                ("judged false in every run", "Method: no LLM judge", "section 'No LLM judge'"),
-                ("label = cheat if used or tampered; honest if shipped; else other", "Method: coarse label", "section 'Labels'"),
-                ("rung order none < exposed < tried < opened < used < tampered < checked < shipped", "Method: cheat ladder", "section 'Labels'")]:
+                (hf_built, "Appendix B: publish time", "line 3: 'Built 2026-11-07T10:06:53Z'"),
+                ("n_agents = 1 in every run (single-agent scope)", "Methods, Data (one agent per run); Table F1 column header", "section 'Single-agent scope'"),
+                                                ("rung order none < exposed < tried < opened < used < tampered < checked < shipped", "Methods, Data: the cheat ladder", "section 'Labels'")]:
     led(v, w, f"{HF_URL}/raw/main/README.md (fetched 2026-11-07 with the account token)", q)
 
 # collection window
@@ -557,14 +562,14 @@ import datetime
 lt = [float(r["launch_time"]) for r in runs if r["launch_time"]]
 iso = lambda t: datetime.datetime.fromtimestamp(t, datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 first, last = iso(min(lt)), iso(max(lt))
-led(first, "Appendix A: first controls launch", rel(RUNS), "min(launch_time) over all rows")
-led(last, "Appendix A: last controls launch", rel(RUNS), "max(launch_time) over all rows")
-led("Nov 6 to 8, 2026; submissions close Nov 8 11:59 PM AoE", "Appendix A: sprint window",
+led(first, "Appendix B: first controls launch", rel(RUNS), "min(launch_time) over all rows")
+led(last, "Appendix B: last controls launch", rel(RUNS), "max(launch_time) over all rows")
+led("Nov 6 to 8, 2026", "Title block; Appendix B: sprint window",
     "https://apartresearch.com/sprints/swarm-alignment-2026 (fetched 2026-11-07)", "Overview and 'Submissions close' lines")
-led("2026-11-07 (mechanism commit 2c72d93; pilots the same day)", "Appendix A: board-seed dates", rel(f"{SUB}/VERIFICATION_LOG.md"),
+led("2026-11-07 (mechanism commit 2c72d93; pilots the same day)", "Appendix B: board-seed dates", rel(f"{SUB}/VERIFICATION_LOG.md"),
     "entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot'")
-led("2026-10-09", "Appendix A: framework log begins", rel(f"{SUB}/VERIFICATION_LOG.md"), "first heading")
-led("2026-11-07T02-37-35 to 05-38-26 (eval log names)", "Appendix A: pilot run times", rel(f"{PILOT}") + "/*/run.json, confirm_doseresponse/*/run.json", "eval_log file names")
+led("2026-10-09", "Appendix B: framework log begins", rel(f"{SUB}/VERIFICATION_LOG.md"), "first heading")
+led("2026-11-07", "Appendix B: pilot and dose-response run date", rel(f"{PILOT}") + "/*/run.json, confirm_doseresponse/*/run.json", "eval_log file names 2026-11-07T02-37-35 to 05-38-26")
 
 # spend table
 SPJ = json.load(open(f"{REPO}/hermeneutics/results/judges/spend.json"))
@@ -582,13 +587,16 @@ TS = f"""| item | runs | spend (USD) | source |
 | judge baselines, total as the provider ledger moved | | {SPJ['provider_delta']:.2f} | judge spend ledger |
 | reader forward passes and probes | 600 runs probed | 0 (free GPU host) | verification log |"""
 SPEND_JSON = f"{REPO}/hermeneutics/results/judges/spend.json"
-for k, w in [("per_model_all_calls", "Table B2 judge rows per model"), ("discarded_pricing_round", "Table B2 discarded pricing round"),
-             ("provider_delta", "Table B2 judge total"), ("provider_before", "NUMBERS only"), ("provider_after", "NUMBERS only"),
-             ("score_files_all_calls", "NUMBERS only"), ("score_files_scored_calls", "NUMBERS only")]:
-    led(SPJ[k], w, rel(SPEND_JSON), k)
-led("$12.34 (12.3404)", "Table B2 judge total; supersedes the 11:05 log figure $12.36", "VERIFICATION_LOG.md", "2026-11-08 ~00:40 entry: judge spend re-read from the on-disk ledger; RESULTS.md Table 11b")
+pm = SPJ["per_model_all_calls"]
+led(" / ".join(f"{v:.2f}" for v in pm.values()) + " (file: " + " / ".join(f"{v}" for v in pm.values()) + ")",
+    "Table B2 judge rows per model (gpt-5-mini, haiku-5.5, sonnet-5.5)", rel(SPEND_JSON), "per_model_all_calls")
+led(f"{SPJ['discarded_pricing_round']:.2f} (file: {SPJ['discarded_pricing_round']})", "Table B2 discarded pricing round", rel(SPEND_JSON), "discarded_pricing_round")
+led(f"{SPJ['provider_delta']:.2f} (file: {SPJ['provider_delta']})", "Table B2 judge total", rel(SPEND_JSON), "provider_delta")
+for k in ("provider_before", "provider_after", "score_files_all_calls", "score_files_scored_calls"):
+    led(SPJ[k], "NUMBERS only", rel(SPEND_JSON), k)
+led("$12.34 (file: 12.3404)", "Table B2 judge total; supersedes the 11:05 log figure $12.36", "VERIFICATION_LOG.md", "2026-11-08 ~00:40 entry: judge spend re-read from the on-disk ledger; RESULTS.md Table 11b")
 led("460/600 scored; 262 solo", "Table B2 Sonnet row; Table 4; Appendix E judge setup note", "VERIFICATION_LOG.md", "11:05 entry: 'Claude Sonnet 5.5 0.796 on 262 solo agents (460/600 scored before the in-code $10 cap stopped it)'")
-led("reasoning disabled (Haiku), minimal (gpt-5-mini), low (Sonnet); tool results cut to 500 chars; transcript tail cut to 12,000 tokens; mean 8,323 prompt tokens", "Appendix E, judge setup note", "VERIFICATION_LOG.md", "11:05 entry, 'API judges' bullet")
+led("reasoning disabled (Haiku), minimal (gpt-5-mini), low (Sonnet); tool results cut to 500 chars; transcript tail cut to 12,000 tokens", "Appendix E, judge setup note", "VERIFICATION_LOG.md", "11:05 entry, 'API judges' bullet")
 led("95%", "Table E3 intervals; captions of Tables 1, 2, 4, D1, D2: the bootstrap interval level", "hermeneutics/probes.py", "boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs'")
 led("4,737 executions", "Table B2 row whole study col runs", f"{HF_URL}/raw/main/README.md", "Spend: 'per-run ledger of every execution on the collection disk (4,737 executions)'")
 
@@ -597,12 +605,12 @@ led("4,737 executions", "Table B2 row whole study col runs", f"{HF_URL}/raw/main
 # ----------------------------------------------------------------------------------------------------------------
 T6 = """| output | controls dataset (own, single-agent) | board-seed environment (own, three agents) | AI Village (external, eval-only) |
 |---|---|---|---|
-| cheating | direct (cheat-ladder rung) | direct (team cheat-ladder rung) | judge only (no task, no grader) |
+| cheating | direct (cheat-ladder rung) | direct (team cheat-ladder rung) | gap (no task or grader; judge only) |
 | coordination | zero by construction (one agent) | direct (collaboration ladder, board counts) | derivable (chat graph) |
 | cooperation | zero by construction | not separable from collaboration (one shared goal) | derivable, weak (coordination serving an agent's own goal) |
 | collaboration | zero by construction | direct for the shared exploit (crossed, assembled), under one shared goal | derivable (coordination under an active village-wide goal) |
-| collusion | zero by construction | derivable (rung at least used, and collaboration at least crossed) | judge only (needs cheating) |
-| scheming | zero by construction | gap (no covertness signal) | judge only |"""
+| collusion | zero by construction | derivable (rung at least used, and collaboration at least crossed) | gap (needs cheating; judge only) |
+| scheming | zero by construction | gap (no covertness signal) | gap (no covertness signal; judge only) |"""
 led("label map cells", "Table F1", "DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md",
     "DATASET_DETAILS.md 'Notation' (hierarchy, zeros by construction), section 7 AI Village entry, section 8 own data; ai-village.md 'Labels for our six outputs'")
 n_sources = sum(1 for l in open(f"{REPO}/DATASETS.md") if l.startswith("- **["))

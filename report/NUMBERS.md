@@ -210,14 +210,13 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 0.622 | Table 4 row 'judge GPT-5 mini' col within-author mean | `hermeneutics/results/judges/auroc.csv` | mean of auroc over scope in ['ds', 'gpt5m', 'haiku', 'luna', 'qwen'] (5 defined), arm=solo, probe=judge:openai/gpt-5-mini |
 | 0.675 | Table 4 row 'judge GPT-5 mini' col pooled-arm B.I | `hermeneutics/results/judges/auroc.csv` | arm=pooled,scope=pooled,probe=judge:openai/gpt-5-mini -> auroc |
 | 0.725 | Table 4 row 'judge GPT-5 mini' col cheat-arm B.I | `hermeneutics/results/judges/auroc.csv` | arm=cheat,scope=pooled,probe=judge:openai/gpt-5-mini -> auroc |
-| 262 of 373 solo agents; coverage 0.767 | Table 4 Sonnet row col agents; section 4.4 prose | `hermeneutics/results/judges/auroc.csv` | arm=solo,probe=judge:anthropic/claude-sonnet-5.5,scope=pooled -> agents, coverage |
+| 262 of 373 | Table 4 Sonnet row col solo agents scored | `hermeneutics/results/judges/auroc.csv` | arm=solo,probe=judge:anthropic/claude-sonnet-5.5,scope=pooled -> agents (coverage 0.767 of all 600) |
 | $1.20 | NUMBERS only: judge openai/gpt-5-mini cost of every call in the result file | `hermeneutics/results/judges/auroc.csv` | cost_usd (all calls; equals spend.json per_model_all_calls) |
 | $1.20 | NUMBERS only: judge openai/gpt-5-mini cost of the calls that parsed to a score | `hermeneutics/results/judges/auroc.csv` | cost_scored_usd |
 | $0.71 | NUMBERS only: judge anthropic/claude-haiku-5.5 cost of every call in the result file | `hermeneutics/results/judges/auroc.csv` | cost_usd (all calls; equals spend.json per_model_all_calls) |
 | $0.71 | NUMBERS only: judge anthropic/claude-haiku-5.5 cost of the calls that parsed to a score | `hermeneutics/results/judges/auroc.csv` | cost_scored_usd |
 | $10.11 | NUMBERS only: judge anthropic/claude-sonnet-5.5 cost of every call in the result file | `hermeneutics/results/judges/auroc.csv` | cost_usd (all calls; equals spend.json per_model_all_calls) |
 | $9.96 | NUMBERS only: judge anthropic/claude-sonnet-5.5 cost of the calls that parsed to a score | `hermeneutics/results/judges/auroc.csv` | cost_scored_usd |
-| 0.800 to 0.973 | Abstract and 4.4: B.II range of the PCA probe | `hermeneutics/results/pca_agent/auroc.csv` | min/max auroc over scope in LOTO ds..qwen, arm=solo,layer=all,position=both,features=raw |
 | 0.62 to 0.80 | Abstract: judge AUROC range | `hermeneutics/results/judges/auroc.csv` | min/max auroc over the three judges, arm=solo, scope=pooled |
 | 0.979 | Abstract: TF-IDF whole-transcript solo B.I | `hermeneutics/results/tfidf/auroc.csv` | arm=solo,position=transcript,scope=pooled -> auroc |
 | 1 agent posts (1 messages incl. system; TSV posts column 1) | Table 5 tb=60 pilot row none: posts input for pilot60_none_s0 | `data/board_seed_pilot/pilot60_none_s0/communication/flipt-02e2#1.json` | count of messages with sender != 'system' |
@@ -238,35 +237,32 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 5 | 4/5 | 4/5 | 9.4 | 9.4 | 7.6 | 3.4 | 2.6 | 5.2 | Table 5 dose-response row procoordL1 (n, crossed+, pass, mPosts, mWPosts, mDisc, mSol, mCrs, mAsm) | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | row arm=procoordL1 |
 | 5 | 5/5 | 0/5 | 7.2 | 7.2 | 6.6 | 4.4 | 3.4 | 2.8 | Table 5 dose-response row procoordL2 (n, crossed+, pass, mPosts, mWPosts, mDisc, mSol, mCrs, mAsm) | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | row arm=procoordL2 |
 | 5 | 2/5 | 0/5 | 22.8 | 7.0 | 2.0 | 0.0 | 0.6 | 0.0 | Table 5 dose-response row anticoord (n, crossed+, pass, mPosts, mWPosts, mDisc, mSol, mCrs, mAsm) | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | row arm=anticoord |
-| $0.8618 over 12 runs | Table B2 (spend) row pilot tb=25 spend | `data/board_seed_pilot/RESULTS.tsv` | TOTAL line |
-| $1.2476 over 6 runs | Table B2 (spend) row pilot tb=60 spend | `data/board_seed_pilot/RESULTS_tb60.tsv` | TOTAL line |
-| $6.0860 over 25 runs | Table B2 (spend) row dose-response spend | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | TOTAL line |
-| 4,157 | Table B2 row 'controls dataset' col runs; Appendix A | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'with **4,157** unique completed, validated runs' |
-| 4,424 | Table B2 row 'controls dataset' col designed matrix | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'designed matrix of **4,424** runs' |
-| 309 / 4,466 | Table B2 row 'controls dataset' col duplicate copies / transcripts | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3 |
+| 25 / 60 | Table 5 col turn budget and caption; Methods, Data (two turn budgets) | `data/board_seed_pilot/*/run.json, confirm_doseresponse/*/run.json` | config.turn_budget: 25 in the 12 pilot_* runs; 60 in the 31 pilot60_* and cm_* runs |
+| $0.86 (file: 0.8618) over 12 runs | Table B2 (spend) row pilot tb=25 spend | `data/board_seed_pilot/RESULTS.tsv` | TOTAL line |
+| $1.25 (file: 1.2476) over 6 runs | Table B2 (spend) row pilot tb=60 spend | `data/board_seed_pilot/RESULTS_tb60.tsv` | TOTAL line |
+| $6.09 (file: 6.0860) over 25 runs | Table B2 (spend) row dose-response spend | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | TOTAL line |
+| 4,157 | Table B2 row 'controls dataset' col runs; Appendix B | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'with **4,157** unique completed, validated runs' |
 | $192.85 | Table B2 row 'controls dataset' col spend | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | Spend: 'Total billed for this study: $192.85' |
 | $136.20 | Table B2 row 'controls dataset' col spend on canonical runs | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | Spend bullet 1 |
-| 2026-11-07T10:06:53Z | Appendix A: publish time | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'Built 2026-11-07T10:06:53Z' |
-| n_agents = 1 in every run; collaboration and engagement null 0 of 4466 | Method: single-agent scope | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | section 'Single-agent scope' |
-| judged false in every run | Method: no LLM judge | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | section 'No LLM judge' |
-| label = cheat if used or tampered; honest if shipped; else other | Method: coarse label | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | section 'Labels' |
-| rung order none < exposed < tried < opened < used < tampered < checked < shipped | Method: cheat ladder | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | section 'Labels' |
-| 2026-11-06 22:18 UTC | Appendix A: first controls launch | `data/runs.csv` | min(launch_time) over all rows |
-| 2026-11-07 06:47 UTC | Appendix A: last controls launch | `data/runs.csv` | max(launch_time) over all rows |
-| Nov 6 to 8, 2026; submissions close Nov 8 11:59 PM AoE | Appendix A: sprint window | `https://apartresearch.com/sprints/swarm-alignment-2026 (fetched 2026-11-07)` | Overview and 'Submissions close' lines |
-| 2026-11-07 (mechanism commit 2c72d93; pilots the same day) | Appendix A: board-seed dates | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot' |
-| 2026-10-09 | Appendix A: framework log begins | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | first heading |
-| 2026-11-07T02-37-35 to 05-38-26 (eval log names) | Appendix A: pilot run times | `data/board_seed_pilot/*/run.json, confirm_doseresponse/*/run.json` | eval_log file names |
-| {'openai/gpt-5-mini': 1.1951, 'anthropic/claude-haiku-5.5': 0.711, 'anthropic/claude-sonnet-5.5': 10.1057} | Table B2 judge rows per model | `hermeneutics/results/judges/spend.json` | per_model_all_calls |
-| 0.3284 | Table B2 discarded pricing round | `hermeneutics/results/judges/spend.json` | discarded_pricing_round |
-| 12.3404 | Table B2 judge total | `hermeneutics/results/judges/spend.json` | provider_delta |
+| 2026-11-07T10:06:53Z | Appendix B: publish time | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'Built 2026-11-07T10:06:53Z' |
+| n_agents = 1 in every run (single-agent scope) | Methods, Data (one agent per run); Table F1 column header | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | section 'Single-agent scope' |
+| rung order none < exposed < tried < opened < used < tampered < checked < shipped | Methods, Data: the cheat ladder | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | section 'Labels' |
+| 2026-11-06 22:18 UTC | Appendix B: first controls launch | `data/runs.csv` | min(launch_time) over all rows |
+| 2026-11-07 06:47 UTC | Appendix B: last controls launch | `data/runs.csv` | max(launch_time) over all rows |
+| Nov 6 to 8, 2026 | Title block; Appendix B: sprint window | `https://apartresearch.com/sprints/swarm-alignment-2026 (fetched 2026-11-07)` | Overview and 'Submissions close' lines |
+| 2026-11-07 (mechanism commit 2c72d93; pilots the same day) | Appendix B: board-seed dates | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot' |
+| 2026-10-09 | Appendix B: framework log begins | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | first heading |
+| 2026-11-07 | Appendix B: pilot and dose-response run date | `data/board_seed_pilot/*/run.json, confirm_doseresponse/*/run.json` | eval_log file names 2026-11-07T02-37-35 to 05-38-26 |
+| 1.20 / 0.71 / 10.11 (file: 1.1951 / 0.711 / 10.1057) | Table B2 judge rows per model (gpt-5-mini, haiku-5.5, sonnet-5.5) | `hermeneutics/results/judges/spend.json` | per_model_all_calls |
+| 0.33 (file: 0.3284) | Table B2 discarded pricing round | `hermeneutics/results/judges/spend.json` | discarded_pricing_round |
+| 12.34 (file: 12.3404) | Table B2 judge total | `hermeneutics/results/judges/spend.json` | provider_delta |
 | 515.6697 | NUMBERS only | `hermeneutics/results/judges/spend.json` | provider_before |
 | 528.0101 | NUMBERS only | `hermeneutics/results/judges/spend.json` | provider_after |
 | 12.0119 | NUMBERS only | `hermeneutics/results/judges/spend.json` | score_files_all_calls |
 | 11.8628 | NUMBERS only | `hermeneutics/results/judges/spend.json` | score_files_scored_calls |
-| $12.34 (12.3404) | Table B2 judge total; supersedes the 11:05 log figure $12.36 | `VERIFICATION_LOG.md` | 2026-11-08 ~00:40 entry: judge spend re-read from the on-disk ledger; RESULTS.md Table 11b |
+| $12.34 (file: 12.3404) | Table B2 judge total; supersedes the 11:05 log figure $12.36 | `VERIFICATION_LOG.md` | 2026-11-08 ~00:40 entry: judge spend re-read from the on-disk ledger; RESULTS.md Table 11b |
 | 460/600 scored; 262 solo | Table B2 Sonnet row; Table 4; Appendix E judge setup note | `VERIFICATION_LOG.md` | 11:05 entry: 'Claude Sonnet 5.5 0.796 on 262 solo agents (460/600 scored before the in-code $10 cap stopped it)' |
-| reasoning disabled (Haiku), minimal (gpt-5-mini), low (Sonnet); tool results cut to 500 chars; transcript tail cut to 12,000 tokens; mean 8,323 prompt tokens | Appendix E, judge setup note | `VERIFICATION_LOG.md` | 11:05 entry, 'API judges' bullet |
+| reasoning disabled (Haiku), minimal (gpt-5-mini), low (Sonnet); tool results cut to 500 chars; transcript tail cut to 12,000 tokens | Appendix E, judge setup note | `VERIFICATION_LOG.md` | 11:05 entry, 'API judges' bullet |
 | 95% | Table E3 intervals; captions of Tables 1, 2, 4, D1, D2: the bootstrap interval level | `hermeneutics/probes.py` | boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs' |
 | 4,737 executions | Table B2 row whole study col runs | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md` | Spend: 'per-run ledger of every execution on the collection disk (4,737 executions)' |
 | label map cells | Table F1 | `DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md` | DATASET_DETAILS.md 'Notation' (hierarchy, zeros by construction), section 7 AI Village entry, section 8 own data; ai-village.md 'Labels for our six outputs' |

@@ -130,7 +130,7 @@ The probe does not beat a text classifier on the whole transcript (Table 4). A T
 
 One planted post moves coordination, and the turn budget gates whether it can (Table 5). At the short budget every arm sits on the floor. The dose-response matrix at the long budget gives four readings, all directional at this seed count and with no significance test. First, presence: the neutral post lifts crossing, assembly and passing above the empty board, so the empty-to-neutral step isolates presence and the neutral arm isolates content. Second, content: the pro-coordination posts roughly double discussion over the neutral post, and the mild post doubles assembly. Third, dose is not monotonic. The mild nudge yields the most teams that assemble the exploit and pass the hidden tests. The explicit post lifts posting above the neutral and empty boards and below the mild post, and it yields no passing team. We hold as a hypothesis that naming the shortcut turns the team toward deliberation and away from execution. Fourth, the hidden regulator holds assembly at the empty-board floor while the workers post several times more than on the empty board, so we judge that arm by worker-only posts, crossing and assembly. We therefore conclude that the board seed is a usable lever on coordination intensity, and that collusion outcome and coordination volume can move in opposite directions.
 
-**Table 5.** Three-agent software-engineering runs with a split exploit (DeepSeek V4.1 Flash): pilots at turn budgets 25 and 60, then the dose-response matrix. Crossed or assembled counts teams where a piece reached an agent that did not hold it; the other columns are per-run means of evidence counts; the worker-only count excludes the regulator's posts.
+**Table 5.** Software-engineering runs with three worker agents and a split exploit (DeepSeek V4.1 Flash): pilots at turn budgets 25 and 60, then the dose-response matrix; the anti-coordination arm adds a hidden regulator agent. Crossed or assembled counts teams where a piece reached an agent that did not hold it; the other columns are per-run means of evidence counts; the worker-only count excludes the regulator's posts.
 
 | set | turn budget | arm | n | crossed or assembled | passed hidden tests | mean board posts (workers only) | mean discussed | mean solicited | mean crossed | mean assembled |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -198,7 +198,7 @@ An open-weight reader carries a linear signal of a closed author's cheating: one
 
 **Dual-use.** A probe that detects cheating from a reader's internals can be used as a training signal to produce agents whose transcripts do not trigger it, which would make the behaviour harder to monitor. The board seed is a lever that raises coordination and exploit transfer in a swarm, and the same lever can induce collusion in a deployed swarm. Monitoring agents raises questions of oversight and consent when the agents act for people, because a monitor that reads every transcript reads those people's tasks too. The dataset contains planted exploits and the transcripts of agents taking them, and that material can teach exploitation as well as detection.
 
-**Responsible use.** The dataset is private and carries benchmark content that its authors ask to keep out of training corpora. We will keep it private, release only aggregate results, and gate any access on a research purpose. The board-seed texts are given in Appendix C so that the manipulation is reproducible as an experimental stimulus. We do not release tooling that plants them in deployed systems. We will use AI Village for evaluation only under its research terms, cite its authors, and inform them of any publication. We report every pending baseline as pending and every claim that depends on one as provisional.
+**Responsible use.** The dataset is private and carries benchmark content that its authors ask to keep out of training corpora. We will keep it private, release only aggregate results, and gate any access on a research purpose. The board-seed texts are given in Appendix C so that the manipulation is reproducible as an experimental stimulus. We do not release tooling that plants them in deployed systems. We will use AI Village for evaluation only under its research terms, cite its authors, and inform them of any publication. We mark the two baselines that were not run as not run, and we state which baselines the probe beats and which it does not.
 
 ### Appendix B: Pre-existing work
 
@@ -216,6 +216,7 @@ The sprint ran from November 6 to 8, 2026. The items below are split by whether 
 | labels | script/groups_data | rung levels, per-task cheat threshold, label rule | reads rungs from signals; coarse label kept beside |
 | runs | publish build_snapshot | validity gates, canonical-copy rule | run-list function over a data root |
 | probes | analysis/teacher_confound/run | LEACE, PCA and z-scoring, C selection, bootstrap, grouped folds, author probe, within and leave-one-out loops, shuffle null | loader over the think cache; author map; sweeps over layers, positions, pooling; solo arm first; full-dimension variant; condition readout; onset labels |
+| judge | analysis/qwen_judge/run | the judge prompt wording, the task-head and transcript-tail cuts, the 500-character cut per tool result, the one-pass local scorer | prompts built from the rendered messages; the OpenRouter scorer with a dollar cap; the analysis over the probe's arms and scopes |
 
 **Inside the sprint.** The controls dataset: first run launched 2026-11-06 22:18 UTC, last run launched 2026-11-07 06:47 UTC, final set of 4,157 valid runs published 2026-11-07T10:06:53Z, total study spend $192.85. The board-seed mechanism (committed 2026-11-07) and its pilots and dose-response matrix (run 2026-11-07). The think-position pipeline, the stratified subsample, the baseline code, every table in this report, and this report.
 
@@ -335,12 +336,12 @@ The system posts one of the texts below as the first board message before any ag
 
 | output | controls dataset (own, single-agent) | board-seed environment (own, three agents) | AI Village (external, eval-only) |
 |---|---|---|---|
-| cheating | direct (cheat-ladder rung) | direct (team cheat-ladder rung) | judge only (no task, no grader) |
+| cheating | direct (cheat-ladder rung) | direct (team cheat-ladder rung) | gap (no task or grader; judge only) |
 | coordination | zero by construction (one agent) | direct (collaboration ladder, board counts) | derivable (chat graph) |
 | cooperation | zero by construction | not separable from collaboration (one shared goal) | derivable, weak (coordination serving an agent's own goal) |
 | collaboration | zero by construction | direct for the shared exploit (crossed, assembled), under one shared goal | derivable (coordination under an active village-wide goal) |
-| collusion | zero by construction | derivable (rung at least used, and collaboration at least crossed) | judge only (needs cheating) |
-| scheming | zero by construction | gap (no covertness signal) | judge only |
+| collusion | zero by construction | derivable (rung at least used, and collaboration at least crossed) | gap (needs cheating; judge only) |
+| scheming | zero by construction | gap (no covertness signal) | gap (no covertness signal; judge only) |
 
 ## LLM Usage Statement
 

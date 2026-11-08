@@ -295,7 +295,7 @@ Every number in the tables and every number written in digits in the text of the
 | 95% | Table E3 intervals; captions of Tables 1, 2, 3, D1, D2, D4 and Figure 1: the bootstrap interval level | `hermeneutics/probes.py` | boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs' |
 | 4,737 executions | Table B2 row whole study col runs | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md` | Spend: 'per-run ledger of every execution on the collection disk (4,737 executions)' |
 | label map cells | Table F1 | `DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md` | DATASET_DETAILS.md 'Notation' (hierarchy, zeros by construction), section 7 AI Village entry, section 8 own data; ai-village.md 'Labels for our six outputs' |
-| about sixty (63 graded entries) | Section 4 Q6: size of the survey | `DATASETS.md` | count of lines starting '- **[' |
+| about sixty (64 graded entries) | Section 4 Q6: size of the survey | `DATASETS.md` | count of lines starting '- **[' |
 | hierarchy Sch => Col => (Ch and Cb); Cb => Cp => Cd | Section 4 Q6 prose | `DATASET_DETAILS.md` | 'Notation' section, label hierarchy |
 | no external dataset uses our authors | Section 4 Q6 prose | `DATASET_DETAILS.md` | 'Key takeaways', first bullet |
 | ranked next: SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data, Terminal Wrench | Section 4 Q6 prose | `DATASETS.md` | Ranking rows 2 to 6; DATASET_DETAILS.md 'Plan by priority' |

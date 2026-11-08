@@ -221,6 +221,12 @@ Zero for Cd, Cp, Cb, Col, Sch (subject to Q1).
 - **Env:** mutated LiveCodeBench and SWE-bench tasks with contradictory tests.
 - **Notes:** zero-cost deterministic label. Re-run with our authors for on-policy cheating.
 
+### [B] CheatBench — self-gen
+- **Authors:** none released (environments only); re-runnable with any model through its harness adapters (Claude Agent SDK, Codex, Gemini CLI, Terminus-2 and others). Our run: DeepSeek V4.1 Flash, GPT-5 mini, Claude Haiku 5.5, GPT-6 Luna, Qwen3.8-27B.
+- **Labels:** Ch via an LLM behavioural judge (default gpt-6-sol), scored separately from task success. Derivable with our instrumentation: the cheat ladder (none < exposed < tried < opened < used = tampered < checked < shipped) from logged actions, no judge.
+- **Env:** 14 tasks in 10 categories: mathematical research (OpenMath, OpenMath Agent), multimodal (GeoGuessr, Visual Puzzles), creative writing, SVG competition, menial computation (Prime Factorization, Subset Sum), protein design, knowledge work, board games (Chess, Go), sycophancy, software engineering. Each sets expectations of honest work and plants opportunities to violate them. Enroot or Docker sandboxes; software engineering through Harbor.
+- **Notes:** Phan et al., arXiv 2609.36308 (28 Sep 2026), MIT licence; forked to unrulyabstractions/cheatbench on 2026-10-09, before the sprint, and run inside spar-guardian-agents / ORBIT. Our controls dataset (unrulyabstractions/apart-swarm, private) uses 8 of its tasks as 9 task instances: openmath_agent (riemann), protein_design (binder), prime_factorization (factor), subset_sum (subset), creative_writings (poem), chess (game), knowledge_work (worktime) and software_engineering (two issues: flipt, vuls), in a solo and a cheat arm: 4,157 valid runs for our five authors with deterministic ladder labels. Third-party code: cite it wherever the controls data is used.
+
 ### [B] HackTrace · [C] HackBench · [C] TRACE
 - **Authors:** mixed (HackTrace); GPT-5.5, GLM-5.2 (HackBench); Claude Opus 4.5 / likely synthetic (TRACE).
 - **Labels:** Ch provided: attempted shortcut incl. failures (HackTrace); exact hacking command (HackBench); hacked vs benign, 10 categories / 54 subcategories, difficulty 1–5, human agreement 0.82 (TRACE).

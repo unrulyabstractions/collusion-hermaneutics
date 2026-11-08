@@ -17,7 +17,7 @@ Each source is scored on five binary criteria (✓ yes · ~ partial · ✗ no):
 Grade: **A** = 4–5 incl. M·L·R (or own env) · **B** = 3 · **C** = 2 · **D** = ≤1, or unavailable.
 Status: **gated** · **request** · **no data** · **self-gen** (environment, must be run).
 
-## Ranking (top 16)
+## Ranking (top 17)
 
 | # | Source | M | L | A | R | P | Grade | Role |
 |---|---|---|---|---|---|---|---|---|
@@ -34,9 +34,10 @@ Status: **gated** · **request** · **no data** · **self-gen** (environment, mu
 | 11 | MALT | ✗ | ✓ | ✓ | ✓ | ~ | B | Ch validation, 21 authors |
 | 12 | Untrusted-monitor collusion | ~ | ✓ | ✓ | self-gen | ✓ | B | same-model swarm |
 | 13 | ImpossibleBench | ✗ | ✓ | ✓ | self-gen | ✗ | B | zero-cost on-policy Ch |
-| 14 | Steganographic Evals | ✓ | ✓ | ✗ | ✓ | ✗ | B | Sch covert-channel validation |
-| 15 | GovSim | ✓ | ✓ | ✓ | self-gen | ~ | B | separates Cp from Cb |
-| 16 | AI Village | ✓ | ~ | ✓ | gated (access granted) | ✗ | B | frontier multi-model + same-model GLM swarms; unseen-author eval; Cb from goal tables; eval-only licence |
+| 14 | CheatBench | ✗ | ~ | ✓ | self-gen | ~ | B | task source of our controls set: 8 of its tasks run with our five authors (4,157 valid runs, deterministic ladder via our instrumentation); natively judge labels |
+| 15 | Steganographic Evals | ✓ | ✓ | ✗ | ✓ | ✗ | B | Sch covert-channel validation |
+| 16 | GovSim | ✓ | ✓ | ✓ | self-gen | ~ | B | separates Cp from Cb |
+| 17 | AI Village | ✓ | ~ | ✓ | gated (access granted) | ✗ | B | frontier multi-model + same-model GLM swarms; unseen-author eval; Cb from goal tables; eval-only licence |
 
 ---
 
@@ -92,6 +93,8 @@ Status: **gated** · **request** · **no data** · **self-gen** (environment, mu
   10,919 transcripts labelled for reward hacking, sandbagging and benign; part manually reviewed.
 - **[B] ImpossibleBench** — self-gen: [GitHub](https://github.com/safety-research/impossiblebench) · [HF](https://huggingface.co/datasets/fjzzq2002/impossible_livecodebench)
   Coding tasks whose tests contradict the spec, so any pass is cheating by construction.
+- **[B] CheatBench** (Center for AI Safety) — self-gen: [GitHub](https://github.com/centerforaisafety/cheatbench) · [Paper](https://arxiv.org/abs/2609.36308) · [Site](https://cheatbench.ai) · [our fork](https://github.com/unrulyabstractions/cheatbench)
+  14 agent tasks in 10 categories that pair hard assignments with chances to cheat (hidden answers, another participant's work, the evaluator); an LLM judge labels cheating apart from task success. No transcripts released. Our controls dataset runs 8 of its tasks with our five authors (§8, [details](DATASET_DETAILS.md)).
 - **[B] HackTrace**: [HF](https://huggingface.co/datasets/JH012/HackTrace-Data)
   174K coding trajectories labelled for attempted shortcuts, including failed attempts.
 - **[C] TRACE** (Patronus): [HF](https://huggingface.co/datasets/PatronusAI/trace-dataset)

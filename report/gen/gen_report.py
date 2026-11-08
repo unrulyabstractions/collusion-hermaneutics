@@ -670,7 +670,7 @@ for k in ("provider_before", "provider_after", "score_files_all_calls", "score_f
 led("$12.34 (file: 12.3404)", "Table B2 judge total; supersedes the 11:05 log figure $12.36", "VERIFICATION_LOG.md", "2026-11-08 ~00:40 entry: judge spend re-read from the on-disk ledger; RESULTS.md Table 11b")
 led("460/600 scored; 262 solo", "Table B2 Sonnet row; Table 4; Appendix E judge setup note", "VERIFICATION_LOG.md", "11:05 entry: 'Claude Sonnet 5.5 0.796 on 262 solo agents (460/600 scored before the in-code $10 cap stopped it)'")
 led("reasoning disabled (Haiku), minimal (gpt-5-mini), low (Sonnet); tool results cut to 500 chars; transcript tail cut to 12,000 tokens", "Appendix E, judge setup note", "VERIFICATION_LOG.md", "11:05 entry, 'API judges' bullet")
-led("95%", "Table E3 intervals; captions of Tables 1, 2, 4, D1, D2: the bootstrap interval level", "hermeneutics/probes.py", "boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs'")
+led("95%", "Table E3 intervals; captions of Tables 1, 2, 3, D1, D2, D4 and Figure 1: the bootstrap interval level", "hermeneutics/probes.py", "boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs'")
 led("4,737 executions", "Table B2 row whole study col runs", f"{HF_URL}/raw/main/README.md", "Spend: 'per-run ledger of every execution on the collection disk (4,737 executions)'")
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -819,6 +819,45 @@ for ref, yr, src, q in [("[1]", "2026", "https://www.lesswrong.com/posts/CZLhfNG
                         ("[7]", "2026", HF_URL, "README 'Built 2026-11-07T10:06:53Z'")]:
     led(yr, f"References {ref}: year", src, q)
 led("n.d.", "References [2]: no year on the page", "https://aryafayyazi.github.io/GreyBox/paper.html (read 2026-11-08)", "'Grey Box: Reading Closed Agents Through Their APIs Alone.' 'Arya Fayyazi · preprint in preparation.'")
+
+# counts that the prose writes as words
+_val = [r for r in labels if r["valid"] == "True"]
+_tasks = sorted({r["task"] for r in _val}); _swe = sorted({r["task"] for r in _val if r["task_name"] == "software_engineering"})
+_conds = sorted({r["condition"] for r in _val}); _auths = sorted({r["author"] for r in _val})
+assert (len(_tasks), len(_swe), len(_conds), len(_auths)) == (9, 2, 2, 5), (_tasks, _swe, _conds, _auths)
+led(f"{len(_tasks)} tasks", "Abstract; Methods, Data; Appendix E: 'nine tasks'", rel(LABELS), f"distinct task over valid rows: {_tasks}")
+led(f"{len(_swe)} software-engineering tasks", "Appendix E: 'software engineering (two tasks)'", rel(LABELS), f"distinct task where task_name == software_engineering: {_swe}")
+led(f"{len(_conds)} arms", "Methods, Data: 'one of two arms'", rel(LABELS), f"distinct condition over valid rows: {_conds}")
+led(f"{len(_auths)} authors (B.II trains on {len(_auths) - 1} and scores the fifth)", "Abstract; Introduction; Methods; Results; Conclusion: 'five authors', 'four authors', 'the fifth'", rel(LABELS), f"distinct author over valid rows: {_auths}")
+_cfg = [json.load(open(os.path.join(x, "run.json")))["config"] for x in tb25_runs + tb60_runs]
+_n3 = sum(1 for c in _cfg if c["n_agents"] == 3 and c["regulators"] == 0); _n4 = sum(1 for c in _cfg if c["n_agents"] == 4 and c["regulators"] == 1)
+assert _n3 + _n4 == len(_cfg) and all(c["access"] == "split" for c in _cfg), (_n3, _n4)
+_held = set()
+for x in tb25_runs + tb60_runs:
+    h = set()
+    for l in open(os.path.join(x, "signals.jsonl")):
+        j = json.loads(l)
+        if j.get("row") == "agent" and j.get("holds"):
+            h |= set(j["holds"])
+    _held.add(tuple(sorted(h)))
+assert _held == {("A", "B", "C")}, _held
+led(f"3 worker agents in all {len(_cfg)} runs ({_n3} with no regulator; {_n4} anti-coordination runs add 1 regulator); 3 pieces, one per agent",
+    "Methods, Data; Results, board signal; Table 4 caption: 'three agents', 'three worker agents', 'three pieces, one per agent'",
+    rel(PILOT) + "/*/run.json, confirm_doseresponse/*/run.json, */signals.jsonl", "config.n_agents and config.regulators; config.access == split in every run; agent rows' holds = {A, B, C} in every run")
+_views = set()
+for f in glob.glob(f"{REPO}/hermeneutics/results/tfidf*/auroc.csv"):
+    _views |= {r["position"] for r in rows(f)}
+assert _views == {"transcript", "agent", "think"}, _views
+led(f"{len(_views)} views", "Methods, Controls: the text classifier 'in three views'", "hermeneutics/results/tfidf*/auroc.csv", f"distinct position: {sorted(_views)}")
+_jud = sorted({r["probe"] for r in judges})
+assert len(_jud) == 3, _jud
+led(f"{len(_jud)} judges", "Abstract; Introduction; Methods; Results; Discussion; Conclusion: 'three (cheap) LLM judges'", rel(JUDGES), f"distinct probe: {_jud}")
+_vis = open(f"{REPO}/VISION.md").read().split("#Probe Outputs", 1)[1].split("\n#", 1)[0]
+_outs = [l for l in _vis.splitlines() if l.startswith("- ") and ":" in l]
+assert len(_outs) == 6, _outs
+led(f"{len(_outs)} outputs", "Introduction contribution 3; Related Work; Results, label map: 'six collusion-related concepts', 'six probe outputs'", "VISION.md", "bullets under '#Probe Outputs': " + ", ".join(l[2:].split(":")[0] for l in _outs))
+led("three failure modes", "Related Work: '[5] names collusion as one of three failure modes'", "https://arxiv.org/abs/2502.14143 (read 2026-11-08)",
+    "abstract: 'identifying three key failure modes (miscoordination, conflict, and collusion)'")
 
 # ----------------------------------------------------------------------------------------------------------------
 # assemble

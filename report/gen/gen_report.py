@@ -29,7 +29,8 @@ def renum(where):
 
 def led(value, where, source, selector, raw_where=False):
     """raw_where: the location is already written in the final table numbering, so renum() must not touch it."""
-    LEDGER.append(f"| {value} | {where if raw_where else renum(where)} | `{source}` | {selector} |")
+    cell = lambda x: str(x).replace(" | ", ", ").replace("|", "/")
+    LEDGER.append(f"| {cell(value)} | {cell(where if raw_where else renum(where))} | `{cell(source)}` | {cell(selector)} |")
 
 
 def rel(p):
@@ -272,6 +273,8 @@ led(f3(r["null_p"]), "NUMBERS only: Table 1 every-dimension row null p (the capt
     "arm=solo,probe=full,layer=all,position=close,features=raw,scope=pooled -> null_p")
 assert abs(float(r["null_p"]) - 1 / 101) < 1e-6
 T1.append(f"| B.I pooled, every dimension | {r['cheat']} / {r['no_cheat']} | {v} | {v2} | {v3} | | |")
+led(f"{r['cheat']} / {r['no_cheat']}", "Table 1 row 'B.I pooled, every dimension' col cheat / no cheat", rel(FULL),
+    "arm=solo,probe=full,layer=all,position=close,features=raw,scope=pooled -> cheat, no_cheat")
 NULL_LO, NULL_HI = f"{min(NULL95):.3f}", f"{max(NULL95):.3f}"
 led(f"{NULL_LO} to {NULL_HI}", "Table 1 caption: range of the within-author label-shuffle null's 95th percentile over the probe rows",
     rel(PCA) + "; " + rel(FULL), "min and max of null_95 over the seven probe rows of Table 1 (solo arm, raw features)")
@@ -284,8 +287,12 @@ m = re.search(r"cheating AUROC from one-hot pooled \(author only\) \| ([0-9.]+) 
 authonly = m.group(1)
 led(authonly, "Table 1 row 'baseline: author one-hot'", rel(RESJ), "nuisance['pooled (author only)'] (also RESULTS.md Table 3)")
 assert abs(float(authonly) - float(nuis_val("pooled (author only)"))) < 5e-4
-T1.append(f"| baseline: author one-hot | 193 / 180 | {authonly} | | | | |")
-T1.append(f"| baseline: run length | 193 / 180 | {runlen} | | | | |")
+_bp = pick(pca, **base, features="raw", scope="pooled")
+_bpc = f"{_bp['cheat']} / {_bp['no_cheat']}"
+led(_bpc, "Table 1 rows 'baseline: author one-hot' and 'baseline: run length' col cheat / no cheat (the solo agents of the pooled fit)", rel(PCA),
+    sel(**base, features="raw", scope="pooled") + " -> cheat, no_cheat")
+T1.append(f"| baseline: author one-hot | {_bpc} | {authonly} | | | | |")
+T1.append(f"| baseline: run length | {_bpc} | {runlen} | | | | |")
 T1 = "\n".join(T1)
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -306,6 +313,8 @@ for a in AUTH:
     tf = tfidf_solo(f"LOTO {a}")
     tfv = f"{f3(tf['auroc'])} [{f3(tf['ci_lo'])}, {f3(tf['ci_hi'])}]"
     led(tfv, f"Table 2 row {NAME[a]} col TF-IDF whole transcript", "hermeneutics/results/tfidf/auroc.csv", f"arm=solo,position=transcript,scope=LOTO {a} -> auroc, ci")
+    led(f"{r['cheat']} / {r['no_cheat']}", f"Table 2 row {NAME[a]} col cheat / no cheat", rel(PCA), sel(**base, features="raw", scope=f"LOTO {a}") + " -> cheat, no_cheat")
+    led(f"{rd / t:.3f}", f"Table 2 row {NAME[a]} col think coverage", rel(RENDER), f"sum(n_readable)/sum(turns) over rows where author={a} ({rd}/{t})")
     T2.append(f"| {NAME[a]} | {rd / t:.3f} | {r['cheat']} / {r['no_cheat']} | {cells[0]} | {cells[1]} | {cells[2]} | {vf} | {vt} | {tfv} |")
 T2 = "\n".join(T2)
 
@@ -536,7 +545,7 @@ for r in tb60:
         d[k].append(float(r[i]))
     n_agent, n_all = agent_posts(r[0])
     d["posts"].append(float(n_agent))
-    led(f"{n_agent} agent posts ({n_all} messages incl. system; TSV posts column {r[7]})", f"Table 5 tb=60 pilot row {arm}: posts input for {r[0]}",
+    led(f"{n_agent} agent posts ({n_all} messages incl. system; TSV posts column {r[7]})", f"NUMBERS only: basis for Table 5 tb=60 pilot row {arm} (posts input for {r[0]})",
         rel(os.path.join(PILOT, r[0], "communication", "flipt-02e2#1.json")), "count of messages with sender != 'system'")
 dose = tsv_rows(DOSE, keep_arm_header=True)
 hdrd = dose[0]
@@ -594,7 +603,7 @@ tb25_runs = sorted(glob.glob(os.path.join(PILOT, "pilot_*")))
 tb60_runs = sorted(glob.glob(os.path.join(PILOT, "pilot60_*"))) + sorted(glob.glob(os.path.join(PILOT, "confirm_doseresponse", "cm_*")))
 assert len(tb25_runs) == 12 and len(tb60_runs) == 6 + 25, (len(tb25_runs), len(tb60_runs))
 assert {budget(r) for r in tb25_runs} == {25} and {budget(r) for r in tb60_runs} == {60}
-led("25 / 60", "Table 5 col turn budget and caption; Methods, Data (two turn budgets)", rel(PILOT) + "/*/run.json, confirm_doseresponse/*/run.json",
+led("25 / 60", "Table 5 col turn budget and caption; Methods, Data (two turn budgets); Table B2 row labels 'turn budget 25', 'turn budget 60'", rel(PILOT) + "/*/run.json, confirm_doseresponse/*/run.json",
     f"config.turn_budget: 25 in the {len(tb25_runs)} pilot_* runs; 60 in the {len(tb60_runs)} pilot60_* and cm_* runs")
 # spend lines for the pilot
 for path, pat, where in [(TB25, r"TOTAL billed: \$([0-9.]+) over (\d+) runs", "pilot tb=25 spend"),
@@ -668,7 +677,7 @@ TS = f"""| item | runs | spend (USD) | source |
 | judge baseline, Claude Sonnet 5.5 (stopped by the in-code cap) | {B2J['anthropic/claude-sonnet-5.5']} | {SPJ['per_model_all_calls']['anthropic/claude-sonnet-5.5']:.2f} | judge spend ledger |
 | judge baseline, discarded pricing round (empty replies) | 20 calls per model | {SPJ['discarded_pricing_round']:.2f} | judge spend ledger |
 | judge baselines, total as the provider ledger moved | | {SPJ['provider_delta']:.2f} | judge spend ledger |
-| reader forward passes and probes | 600 runs probed | 0 (free GPU host) | verification log |"""
+| reader forward passes and probes | {N_ALL} runs probed | 0 (free GPU host) | verification log |"""
 SPEND_JSON = f"{REPO}/hermeneutics/results/judges/spend.json"
 pm = SPJ["per_model_all_calls"]
 led(" / ".join(f"{v:.2f}" for v in pm.values()) + " (file: " + " / ".join(f"{v}" for v in pm.values()) + ")",
@@ -701,7 +710,8 @@ led(f"about sixty ({n_sources} graded entries)", "Section 4 Q6: size of the surv
 led("hierarchy Sch => Col => (Ch and Cb); Cb => Cp => Cd", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Notation' section, label hierarchy")
 led("no external dataset uses our authors", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Key takeaways', first bullet")
 led("ranked next: SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data, Terminal Wrench", "Section 4 Q6 prose", rel(f"{REPO}/DATASETS.md"), "Ranking rows 2 to 6; DATASET_DETAILS.md 'Plan by priority'")
-led("AI Village grade B, gated with access granted, eval-only licence", "Section 4 Q6, Table F1", rel(f"{REPO}/DATASETS.md"), "Ranking row 16; section 7 entry")
+led("licence allows evaluation only", "Results, label map; Discussion; Table F1 header 'eval-only'", "datasets/ai-village.md; DATASETS.md",
+    "ai-village.md 'Constraints': research and analysis only, no training or fine-tuning without written permission; DATASETS.md ranking row 16 'eval-only licence'")
 
 # ----------------------------------------------------------------------------------------------------------------
 # Appendix B: full sweep
@@ -791,10 +801,10 @@ led(FIG_TURN_LAYER, "Figure 1 caption: the per-turn probe's layer", rel(FIGV), "
 # prose numbers added in the final verification round
 # ----------------------------------------------------------------------------------------------------------------
 N_PROBED = str(len(agents))
-led(N_PROBED, "Abstract: the stratified subsample of transcripts teacher-forced through the reader", rel(AGENTS), "row count (one agent per run)")
+led(N_PROBED, "Abstract: the stratified subsample of transcripts teacher-forced through the reader; Table B2 row 'reader forward passes and probes' ('600 runs probed')", rel(AGENTS), "row count (one agent per run)")
 _bi = pick(pca, **base, features="raw", scope="pooled")
 N_SOLO = _bi["agents"]
-led(N_SOLO, "Table 4 caption: solo agents", rel(PCA), sel(**base, features="raw", scope="pooled") + " -> agents")
+led(N_SOLO, "Table 3 caption and col 'solo agents scored'", rel(PCA), sel(**base, features="raw", scope="pooled") + " -> agents", raw_where=True)
 SON_SOLO = son["agents"]
 led(SON_SOLO, "Table 4 caption: solo agents the Sonnet judge scored before its spend cap", rel(JUDGES), "arm=solo,probe=judge:anthropic/claude-sonnet-5.5,scope=pooled -> agents")
 N_BOARD = str(len(tb25_runs) + len(tb60_runs))
@@ -821,10 +831,10 @@ _tq = float(pick(tfidf_all, arm="solo", probe="tfidf", position="transcript", sc
 _pq = float(pick(pca, **base, features="raw", scope="LOTO qwen")["auroc"])
 assert _tq > _pq
 led(f"{_tq:.3f} > {_pq:.3f}", "Results, text classifier: on unseen authors the classifier leads for Qwen3.8-27B", "hermeneutics/results/tfidf/auroc.csv; " + rel(PCA), "LOTO qwen: TF-IDF whole transcript vs PCA probe")
-for ref, yr, src, q in [("[1]", "2026", "https://www.lesswrong.com/posts/CZLhfNGaDqtYxvGJD/model-hermeneutics-monitoring-closed-weight-models-with-open", "postedAt 2026-09-30T20:43:51Z"),
-                        ("[3]", "2026", "https://arxiv.org/abs/2606.32008", "citation_date 2026/06/30"),
-                        ("[4]", "2026", "https://arxiv.org/abs/2604.01151", "citation_date 2026/04/01 (v5 revised 15 Oct 2026)"),
-                        ("[5]", "2025", "https://arxiv.org/abs/2502.14143", "citation_date 2025/02/19; comments 'Cooperative AI Foundation, Technical Report #1'"),
+for ref, yr, src, q in [("[1]", "2026 (authors as displayed: conti, ShivamR, Jacob Sharf, jain18ayush, johnyan)", "https://www.lesswrong.com/posts/CZLhfNGaDqtYxvGJD/model-hermeneutics-monitoring-closed-weight-models-with-open", "postedAt 2026-09-30T20:43:51Z"),
+                        ("[3]", "2026 (arXiv:2606.32008)", "https://arxiv.org/abs/2606.32008", "citation_date 2026/06/30"),
+                        ("[4]", "2026 (arXiv:2604.01151)", "https://arxiv.org/abs/2604.01151", "citation_date 2026/04/01 (v5 revised 15 Oct 2026)"),
+                        ("[5]", "2025 (arXiv:2502.14143; Technical Report 1)", "https://arxiv.org/abs/2502.14143", "citation_date 2025/02/19; comments 'Cooperative AI Foundation, Technical Report #1'"),
                         ("[6]", "2026", "https://huggingface.co/datasets/aidigestorg/ai-village (card read 2026-11-08 with the account token)", "card citation line: 'AI Digest, \"AI Village dataset\", 2026.'"),
                         ("[7]", "2026", HF_URL, "README 'Built 2026-11-07T10:06:53Z'")]:
     led(yr, f"References {ref}: year", src, q)
@@ -838,7 +848,7 @@ assert (len(_tasks), len(_swe), len(_conds), len(_auths)) == (9, 2, 2, 5), (_tas
 led(f"{len(_tasks)} tasks", "Abstract; Methods, Data; Appendix E: 'nine tasks'", rel(LABELS), f"distinct task over valid rows: {_tasks}")
 led(f"{len(_swe)} software-engineering tasks", "Appendix E: 'software engineering (two tasks)'", rel(LABELS), f"distinct task where task_name == software_engineering: {_swe}")
 led(f"{len(_conds)} arms", "Methods, Data: 'one of two arms'", rel(LABELS), f"distinct condition over valid rows: {_conds}")
-led(f"{len(_auths)} authors (B.II trains on {len(_auths) - 1} and scores the fifth)", "Abstract; Introduction; Methods; Results; Conclusion: 'five authors', 'four authors', 'the fifth'", rel(LABELS), f"distinct author over valid rows: {_auths}")
+led(f"{len(_auths)} authors (B.II trains on {len(_auths) - 1} and scores the fifth)", "Abstract; Introduction; Methods; Results; Conclusion: 'five authors', 'four authors', 'the fifth'; Table 2 row 'author identity (5 classes)'", rel(LABELS), f"distinct author over valid rows: {_auths}")
 _cfg = [json.load(open(os.path.join(x, "run.json")))["config"] for x in tb25_runs + tb60_runs]
 _n3 = sum(1 for c in _cfg if c["n_agents"] == 3 and c["regulators"] == 0); _n4 = sum(1 for c in _cfg if c["n_agents"] == 4 and c["regulators"] == 1)
 assert _n3 + _n4 == len(_cfg) and all(c["access"] == "split" for c in _cfg), (_n3, _n4)
@@ -946,6 +956,23 @@ for k, v in {"<<TM1>>": TM1, "<<TM2>>": TM2, "<<TM3>>": TM3, "<<T1>>": T1, "<<T2
     assert k in tpl, k
     tpl = tpl.replace(k, v)
 assert "<<" not in tpl, re.findall(r"<<[A-Z_0-9]+>>", tpl)
+led("0.5", "Table 2 col 'chance / majority rate': the three AUROC rows", "hermeneutics/probes.py", "auc() wraps sklearn roc_auc_score (lines 71-77); a score unrelated to the label has AUROC 0.5", raw_where=True)
+assert "torch.bfloat16" in open(f"{REPO}/hermeneutics/extract.py").read()
+led("bf16", "Table E1 reader row; Table E3 reader row", "hermeneutics/extract.py", "layer.to(torch.bfloat16) (line 124); docstring '52 GB bf16'", raw_where=True)
+assert "L2 logistic regression" in open(f"{REPO}/hermeneutics/probes.py").read()
+led("L2", "Table E3 probe row: 'L2 logistic regression'", "hermeneutics/probes.py", "docstring line 18 'L2 logistic regression'; LogisticRegression with its default l2 penalty", raw_where=True)
+led("min(256, half the training rows)", "Table E3 probe row", "hermeneutics/probes.py", "k = min(PCA_DIM, max(10, len(Xtr) // 2)) (line 128), PCA_DIM = 256 (line 48)", raw_where=True)
+assert "np.nanpercentile(pv, 95)" in open(f"{REPO}/hermeneutics/probes.py").read()
+led("95th percentile", "Table 1 caption; Appendix D Tables D1 and D2 col 'null 95th'", "hermeneutics/probes.py", "null_95 = np.nanpercentile(pv, 95) over the shuffled fits (line 451)", raw_where=True)
+_lv = sorted("L" + k[1] for k in seed_table if seed_table[k] != "USE_REGULATOR")
+assert _lv == ["L0", "L1", "L2"], _lv
+led(", ".join(_lv), "Appendix C, Table C1 condition labels", BS.replace(REPO + "/", ""), "SEED_TABLE keys with a text: " + ", ".join(str(k) for k in seed_table if seed_table[k] != "USE_REGULATOR"), raw_where=True)
+_names = "; ".join(f"{NAME[a]} ({a})" for a in AUTH) + "; judges " + ", ".join(j.split("/")[-1] for j in sorted({r["probe"] for r in judges}))
+led(_names, "author and judge names throughout; Appendix D column keys", "data/runs.csv; hermeneutics/results/judges/auroc.csv",
+    "model_id per author (Table E1) and judge probe names", raw_where=True)
+led("2026-11-08", "Appendix B: the sprint page's read date", SPRINT, "read on 2026-11-08", raw_where=True)
+led("layers 26, 38, 51", "Table B1 row 'extract'", "hermeneutics/PREEXISTING.md; hermeneutics/extract.py", "PREEXISTING.md extract row: 'layers 26/38/51'; the extraction log entries 07:40 and 07:45", raw_where=True)
+led("500-character", "Table B1 row 'judge'; Appendix E judge setup", "hermeneutics/PREEXISTING.md; VERIFICATION_LOG.md", "PREEXISTING.md judge row: 'the 500-character cut per tool result'; 11:05 entry: 'tool results cut to 500 chars'", raw_where=True)
 # number words of round 4, read from the assembled draft and its sources
 _ahead = [a for a in AUTH if float(pick(pca, **base, features="raw", scope=a)["auroc"]) > float(tfidf_solo(a)["auroc"])]
 assert _ahead == ["qwen"], _ahead
@@ -954,13 +981,13 @@ led("1 author (Qwen3.8-27B)", "Results, text classifier: 'the one author where t
     + ", ".join(a + " " + f3(pick(pca, **base, features="raw", scope=a)["auroc"]) + " vs " + f3(tfidf_solo(a)["auroc"]) for a in AUTH), raw_where=True)
 _arms = sorted({r["arm"] for r in pca})
 assert _arms == ["cheat", "pooled", "solo"], _arms
-led("2 other arms (pooled, cheat)", "Methods, Controls; Results, text classifier: 'the other two arms'", rel(PCA), f"distinct arm: {_arms}; the solo arm is primary", raw_where=True)
+led("2 other arms (pooled, cheat)", "Results, text classifier; Table 3 caption: 'the other two arms'", rel(PCA), f"distinct arm: {_arms}; the solo arm is primary", raw_where=True)
 _notrun = [l for l in T4.splitlines() if "not run" in l]
 assert len(_notrun) == 2, _notrun
 led("2 not-run rows (random-weights reader, reader interrogation)", "Table 3 caption: 'the two not-run rows'; Appendix A: 'the two baselines that were not run'; LLM statement",
     "report/gen/gen_report.py Table 3 rows", "rows of Table 3 whose cells read 'not run'", raw_where=True)
 led("1 probe, scope pooled (B.I)", "Abstract: 'one probe pooled over authors'", rel(PCA), sel(**base, features="raw", scope="pooled"), raw_where=True)
-led("1 reader (Qwen3.8-27B)", "Methods, Authors and reader: 'five authors through one reader'; Table E1 reader row", "VERIFICATION_LOG.md; report/gen/gen_report.py Table E1",
+led("1 reader (Qwen3.8-27B)", "Methods, Authors and reader: 'five authors through one reader'; Table E1 reader row", "VERIFICATION_LOG.md; report/gen/gen_report.py Table E1; hermeneutics/extract.py; hermeneutics/__init__.py",
     "07:20 entry: every transcript rendered through the Qwen3.8-27B chat template; the extraction loads that model alone", raw_where=True)
 _q5 = tpl.split("### Can a planted board signal move coordination?", 1)[1].split("\n\n", 2)[1]
 _ord = [w for w in ("First,", "Second,", "Third,", "Fourth,", "Fifth,") if w in _q5]
@@ -989,7 +1016,7 @@ if os.path.exists(_sub):
         open(_sub, "w").write(_new)
 
 hdr = ["# Number ledger for report/REPORT_DRAFT.md", "",
-       "Every table cell and every number written in digits in the text of the draft traces to a cited source: a result file, a run log, a code constant, a repository document or a public page, read 2026-11-07 to 2026-11-08. One line per table cell or prose value. "
+       "Every number in the tables and every number written in digits in the text of the draft traces to a cited source: a result file, a run log, a code constant, a repository document or a public page, read 2026-11-07 to 2026-11-08. One line per number; text cells (setup descriptions, 'n/a' and 'not run' markers) are not numbers. "
        "Paths are relative to the repository root unless absolute. The dataset README was fetched from the Hub with the account token.", "",
        "| value | where in the draft | source | field / selector |", "|---|---|---|---|"]
 open(f"{OUT}/NUMBERS.md", "w").write("\n".join(hdr + LEDGER) + "\n")

@@ -1,6 +1,6 @@
 # Number ledger for report/REPORT_DRAFT.md
 
-Every number in the tables and the text of the draft traces to a cited source: a result file, a run log, a code constant or a public page, read 2026-11-07 to 2026-11-08. One line per table cell or prose value. Paths are relative to the repository root unless absolute. The dataset README was fetched from the Hub with the account token.
+Every table cell and every number written in digits in the text of the draft traces to a cited source: a result file, a run log, a code constant, a repository document or a public page, read 2026-11-07 to 2026-11-08. One line per table cell or prose value. Paths are relative to the repository root unless absolute. The dataset README was fetched from the Hub with the account token.
 
 | value | where in the draft | source | field / selector |
 |---|---|---|---|
@@ -65,7 +65,7 @@ Every number in the tables and the text of the draft traces to a cited source: a
 | 600 | Table E3 probed runs | `hermeneutics/results/pca_agent/agents.csv` | row count |
 | 149 | Table E3 probe row: PCA components in the solo agent-level fit | `hermeneutics/probes.py; hermeneutics/results/pca_agent/agents.csv` | k = min(PCA_DIM, max(10, n_train // 2)) (probes.py lines 48 and 128); outer training sizes [298, 299, 298, 299, 298] from StratifiedGroupKFold(5, shuffle=True, random_state=0) over the solo rows, strata author|label, groups run (probes.py line 242) |
 | 0.41, 0.59, 0.80 | Table E3 layers row: depth fractions | `hermeneutics/results/full_agent/RESULTS.md` | 26/64, 38/64, 51/64 (64 blocks, HF hidden_states numbering) |
-| 248068 / 248069 | Table E3 positions | `VERIFICATION_LOG.md` | 07:20 entry: token ids checked against the tokenizer |
+| 248068 / 248069 | Table E3 positions; Methods, Positions: 'one think-open and think-close token pair', 'the two tokens' | `VERIFICATION_LOG.md` | 07:20 entry: token ids checked against the tokenizer; think pairs = assistant turns = completed calls in every run |
 | 26, 38, 51 of 64 | Table E3 layers | `hermeneutics/results/full_agent/RESULTS.md` | header: HF hidden_states numbering, 64 blocks |
 | 256 | Table E3 probe: the cap on PCA components | `hermeneutics/probes.py` | PCA_DIM = 256 (line 48); k = min(PCA_DIM, max(10, len(Xtr) // 2)) (line 128) |
 | 5 | Table E3 folds | `hermeneutics/probes.py` | K = 5 (line 45) |
@@ -73,7 +73,7 @@ Every number in the tables and the text of the draft traces to a cited source: a
 | 100 | Table E3 null | `hermeneutics/results/RESULTS.md` | Table 4 caption '100 draws'; VERIFICATION_LOG 09:13 '100 shuffles' |
 | 600 / 120 / 100k | Table E3 probed runs | `VERIFICATION_LOG.md` | 07:45 entry: --per-author 120 --max-tokens 100000 -> 600 runs |
 | 14,182,746 / 10,985 | Table E3 probed tokens / turns | `VERIFICATION_LOG.md` | 09:13 entry |
-| 1.94 h, L40S | Table E3 extraction | `VERIFICATION_LOG.md` | 09:13 entry (elapsed 1.94 h); 2026-11-08 ~21:55 entry (nvidia-smi on arena9-wild: NVIDIA L40S) |
+| 1.94 h, L40S | Table E3 extraction | `VERIFICATION_LOG.md` | 09:13 entry (elapsed 1.94 h); 2026-11-08 21:36 UTC entry (nvidia-smi on arena9-wild: NVIDIA L40S) |
 | 0.967 [0.950, 0.981] | Table 1 row 'B.I pooled' col 'raw' | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=pooled -> auroc, ci_lo, ci_hi |
 | 0.964 [0.946, 0.978] | Table 1 row 'B.I pooled' col 'author erased' | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=author erased,scope=pooled -> auroc, ci_lo, ci_hi |
 | 0.944 [0.921, 0.965] | Table 1 row 'B.I pooled' col 'author, task, condition erased' | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=author, task, condition erased,scope=pooled -> auroc, ci_lo, ci_hi |
@@ -267,6 +267,9 @@ Every number in the tables and the text of the draft traces to a cited source: a
 | 2026-11-07 (mechanism commit 2c72d93; pilots the same day) | Appendix B: board-seed dates | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot' |
 | 2026-10-09 | Appendix B: framework log begins | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | first heading |
 | 2026-11-07 | Appendix B: pilot and dose-response run date | `data/board_seed_pilot/*/run.json, confirm_doseresponse/*/run.json` | eval_log file names over all 43 run.json files: 2026-11-07T02-37-35 to 2026-11-07T10-02-43 |
+| 600 agents | Table B2 row 'judge baseline, openai/gpt-5-mini' col runs | `hermeneutics/results/judges/scores_openai_gpt-5-mini.csv; data/judge_openai_gpt-5-mini.jsonl` | 600 scored agents (rows of the score file); 600 calls (lines of the call file); 600 agents in the subsample |
+| 600 agents | Table B2 row 'judge baseline, anthropic/claude-haiku-5.5' col runs | `hermeneutics/results/judges/scores_anthropic_claude-haiku-5.5.csv; data/judge_anthropic_claude-haiku-5.5.jsonl` | 600 scored agents (rows of the score file); 600 calls (lines of the call file); 600 agents in the subsample |
+| 460 of 600 agents | Table B2 row 'judge baseline, anthropic/claude-sonnet-5.5' col runs | `hermeneutics/results/judges/scores_anthropic_claude-sonnet-5.5.csv; data/judge_anthropic_claude-sonnet-5.5.jsonl` | 460 scored agents (rows of the score file); 464 calls (lines of the call file); 600 agents in the subsample |
 | 1.20 / 0.71 / 10.11 (file: 1.1951 / 0.711 / 10.1057) | Table B2 judge rows per model (gpt-5-mini, haiku-5.5, sonnet-5.5) | `hermeneutics/results/judges/spend.json` | per_model_all_calls |
 | 0.33 (file: 0.3284) | Table B2 discarded pricing round | `hermeneutics/results/judges/spend.json` | discarded_pricing_round |
 | 12.34 (file: 12.3404) | Table B2 judge total | `hermeneutics/results/judges/spend.json` | provider_delta |
@@ -349,5 +352,12 @@ Every number in the tables and the text of the draft traces to a cited source: a
 | 1 call per agent per judge | Methods, Controls ('read each transcript once'); Appendix E judge setup ('one prompt per agent') | `data/judge_*.jsonl` | one line per run, no run twice: judge_anthropic_claude-haiku-5.5.jsonl 600 lines, judge_anthropic_claude-sonnet-5.5.jsonl 464 lines, judge_openai_gpt-5-mini.jsonl 600 lines; Sonnet's file stops at its in-code spend cap |
 | 20 calls per model (60 in all) | Table B2 row 'judge baseline, discarded pricing round' | `VERIFICATION_LOG.md; hermeneutics/results/RESULTS.md` | 11:05 entry: 'Priced from 20 calls per model before scaling'; RESULTS.md Table 11b: '60 calls with a 16-token output budget' |
 | 1 GPU host | Appendix A: 'one GPU host' | `VERIFICATION_LOG.md` | 07:40, 07:45 and 09:13 entries: the extraction ran on arena9-wild alone ('Nothing else on the host was started or touched') |
-| 0 (free GPU host) | Table B2 row 'reader forward passes and probes' | `VERIFICATION_LOG.md` | 2026-11-08 ~21:55 entry: extraction on arena9-wild, not a rental; vast credit 37.5619 in all 12 spend snapshots 07:30-09:30 UTC on 2026-11-07, no box billing |
+| 0 (free GPU host) | Table B2 row 'reader forward passes and probes' | `VERIFICATION_LOG.md` | 2026-11-08 21:36 UTC entry: arena9-wild, not a rental; vast credit 37.5619 in 11 of the 12 spend snapshots 07:30-09:30 UTC on 2026-11-07 (the 09:06 read failed; 37.5619 again at 10:00), no box billing in any |
 | 6 | Table B1 caption: adapted files | `report/gen/report_template.md Table B1 rows; hermeneutics/PREEXISTING.md` | rows in Table B1; PREEXISTING.md lists 6 at build time |
+| 1 author (Qwen3.8-27B) | Results, text classifier: 'the one author where the probe stays ahead within itself' | `hermeneutics/results/pca_agent/auroc.csv; hermeneutics/results/tfidf/auroc.csv` | type-A raw PCA AUROC above the TF-IDF whole-transcript AUROC only for qwen: ds 0.860 vs 0.936, gpt5m 0.862 vs 0.962, haiku 0.929 vs 0.978, luna 0.853 vs 0.938, qwen 0.955 vs 0.926 |
+| 2 other arms (pooled, cheat) | Methods, Controls; Results, text classifier: 'the other two arms' | `hermeneutics/results/pca_agent/auroc.csv` | distinct arm: ['cheat', 'pooled', 'solo']; the solo arm is primary |
+| 2 not-run rows (random-weights reader, reader interrogation) | Table 3 caption: 'the two not-run rows'; Appendix A: 'the two baselines that were not run'; LLM statement | `report/gen/gen_report.py Table 3 rows` | rows of Table 3 whose cells read 'not run' |
+| 1 probe, scope pooled (B.I) | Abstract: 'one probe pooled over authors' | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=pooled |
+| 1 reader (Qwen3.8-27B) | Methods, Authors and reader: 'five authors through one reader'; Table E1 reader row | `VERIFICATION_LOG.md; report/gen/gen_report.py Table E1` | 07:20 entry: every transcript rendered through the Qwen3.8-27B chat template; the extraction loads that model alone |
+| 4 readings | Results, board signal: 'four readings' | `report/REPORT_DRAFT.md` | the paragraph's ordinals First, Second, Third, Fourth |
+| 5 other outputs | Results, label map: 'the other five as zeros by construction' | `Table F1 rows; VISION.md` | 6 outputs in Table F1 less cheating |

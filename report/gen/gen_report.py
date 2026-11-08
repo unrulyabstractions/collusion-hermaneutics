@@ -205,7 +205,8 @@ TM3 = f"""| setting | value |
 | probed tokens / turns | 14,182,746 / 10,985 |
 | extraction | one L40S GPU, 1.94 h, on a free host |"""
 for v, w, s, q in [
-    ("248068 / 248069", "Table E3 positions", "VERIFICATION_LOG.md", "07:20 entry: token ids checked against the tokenizer"),
+    ("248068 / 248069", "Table E3 positions; Methods, Positions: 'one think-open and think-close token pair', 'the two tokens'", "VERIFICATION_LOG.md",
+     "07:20 entry: token ids checked against the tokenizer; think pairs = assistant turns = completed calls in every run"),
     ("26, 38, 51 of 64", "Table E3 layers", "hermeneutics/results/full_agent/RESULTS.md", "header: HF hidden_states numbering, 64 blocks"),
     ("256", "Table E3 probe: the cap on PCA components", "hermeneutics/probes.py", "PCA_DIM = 256 (line 48); k = min(PCA_DIM, max(10, len(Xtr) // 2)) (line 128)"),
     ("5", "Table E3 folds", "hermeneutics/probes.py", "K = 5 (line 45)"),
@@ -213,7 +214,7 @@ for v, w, s, q in [
     ("100", "Table E3 null", "hermeneutics/results/RESULTS.md", "Table 4 caption '100 draws'; VERIFICATION_LOG 09:13 '100 shuffles'"),
     ("600 / 120 / 100k", "Table E3 probed runs", "VERIFICATION_LOG.md", "07:45 entry: --per-author 120 --max-tokens 100000 -> 600 runs"),
     ("14,182,746 / 10,985", "Table E3 probed tokens / turns", "VERIFICATION_LOG.md", "09:13 entry"),
-    ("1.94 h, L40S", "Table E3 extraction", "VERIFICATION_LOG.md", "09:13 entry (elapsed 1.94 h); 2026-11-08 ~21:55 entry (nvidia-smi on arena9-wild: NVIDIA L40S)"),
+    ("1.94 h, L40S", "Table E3 extraction", "VERIFICATION_LOG.md", "09:13 entry (elapsed 1.94 h); 2026-11-08 21:36 UTC entry (nvidia-smi on arena9-wild: NVIDIA L40S)"),
 ]:
     led(v, w, s, q)
 
@@ -648,6 +649,13 @@ led("2026-11-07", "Appendix B: pilot and dose-response run date", rel(f"{PILOT}"
 
 # spend table
 SPJ = json.load(open(f"{REPO}/hermeneutics/results/judges/spend.json"))
+_scored = {m: len(rows(f"{REPO}/hermeneutics/results/judges/scores_{m.replace('/', '_')}.csv")) for m in ("openai/gpt-5-mini", "anthropic/claude-haiku-5.5", "anthropic/claude-sonnet-5.5")}
+_lines = {m: sum(1 for _ in open(f"{REPO}/data/judge_{m.replace('/', '_')}.jsonl")) for m in _scored}
+N_ALL = len(agents)
+B2J = {m: (f"{_scored[m]} agents" if _scored[m] == N_ALL else f"{_scored[m]} of {N_ALL} agents") for m in _scored}
+for m in _scored:
+    led(B2J[m], f"Table B2 row 'judge baseline, {m}' col runs", f"hermeneutics/results/judges/scores_{m.replace('/', '_')}.csv; data/judge_{m.replace('/', '_')}.jsonl",
+        f"{_scored[m]} scored agents (rows of the score file); {_lines[m]} calls (lines of the call file); {N_ALL} agents in the subsample", raw_where=True)
 TS = f"""| item | runs | spend (USD) | source |
 |---|---|---|---|
 | controls dataset, canonical valid runs | {hf_total} | {hf_canon} | dataset README |
@@ -655,9 +663,9 @@ TS = f"""| item | runs | spend (USD) | source |
 | board-seed pilot, turn budget 25 | 12 | {SPEND['tb25']:.2f} | pilot table |
 | board-seed pilot, turn budget 60 | 6 | {SPEND['tb60']:.2f} | pilot table |
 | board-seed dose-response | 25 | {SPEND['dose']:.2f} | dose-response table |
-| judge baseline, GPT-5 mini | 600 agents | {SPJ['per_model_all_calls']['openai/gpt-5-mini']:.2f} | judge spend ledger |
-| judge baseline, Claude Haiku 5.5 | 600 agents | {SPJ['per_model_all_calls']['anthropic/claude-haiku-5.5']:.2f} | judge spend ledger |
-| judge baseline, Claude Sonnet 5.5 (stopped by the in-code cap) | 460 of 600 agents | {SPJ['per_model_all_calls']['anthropic/claude-sonnet-5.5']:.2f} | judge spend ledger |
+| judge baseline, GPT-5 mini | {B2J['openai/gpt-5-mini']} | {SPJ['per_model_all_calls']['openai/gpt-5-mini']:.2f} | judge spend ledger |
+| judge baseline, Claude Haiku 5.5 | {B2J['anthropic/claude-haiku-5.5']} | {SPJ['per_model_all_calls']['anthropic/claude-haiku-5.5']:.2f} | judge spend ledger |
+| judge baseline, Claude Sonnet 5.5 (stopped by the in-code cap) | {B2J['anthropic/claude-sonnet-5.5']} | {SPJ['per_model_all_calls']['anthropic/claude-sonnet-5.5']:.2f} | judge spend ledger |
 | judge baseline, discarded pricing round (empty replies) | 20 calls per model | {SPJ['discarded_pricing_round']:.2f} | judge spend ledger |
 | judge baselines, total as the provider ledger moved | | {SPJ['provider_delta']:.2f} | judge spend ledger |
 | reader forward passes and probes | 600 runs probed | 0 (free GPU host) | verification log |"""
@@ -918,7 +926,7 @@ led("20 calls per model (60 in all)", "Table B2 row 'judge baseline, discarded p
     "11:05 entry: 'Priced from 20 calls per model before scaling'; RESULTS.md Table 11b: '60 calls with a 16-token output budget'", raw_where=True)
 led("1 GPU host", "Appendix A: 'one GPU host'", "VERIFICATION_LOG.md", "07:40, 07:45 and 09:13 entries: the extraction ran on arena9-wild alone ('Nothing else on the host was started or touched')", raw_where=True)
 led("0 (free GPU host)", "Table B2 row 'reader forward passes and probes'", "VERIFICATION_LOG.md",
-    "2026-11-08 ~21:55 entry: extraction on arena9-wild, not a rental; vast credit 37.5619 in all 12 spend snapshots 07:30-09:30 UTC on 2026-11-07, no box billing", raw_where=True)
+    "2026-11-08 21:36 UTC entry: arena9-wild, not a rental; vast credit 37.5619 in 11 of the 12 spend snapshots 07:30-09:30 UTC on 2026-11-07 (the 09:06 read failed; 37.5619 again at 10:00), no box billing in any", raw_where=True)
 
 # ----------------------------------------------------------------------------------------------------------------
 # assemble
@@ -938,6 +946,30 @@ for k, v in {"<<TM1>>": TM1, "<<TM2>>": TM2, "<<TM3>>": TM3, "<<T1>>": T1, "<<T2
     assert k in tpl, k
     tpl = tpl.replace(k, v)
 assert "<<" not in tpl, re.findall(r"<<[A-Z_0-9]+>>", tpl)
+# number words of round 4, read from the assembled draft and its sources
+_ahead = [a for a in AUTH if float(pick(pca, **base, features="raw", scope=a)["auroc"]) > float(tfidf_solo(a)["auroc"])]
+assert _ahead == ["qwen"], _ahead
+led("1 author (Qwen3.8-27B)", "Results, text classifier: 'the one author where the probe stays ahead within itself'", rel(PCA) + "; hermeneutics/results/tfidf/auroc.csv",
+    "type-A raw PCA AUROC above the TF-IDF whole-transcript AUROC only for qwen: "
+    + ", ".join(a + " " + f3(pick(pca, **base, features="raw", scope=a)["auroc"]) + " vs " + f3(tfidf_solo(a)["auroc"]) for a in AUTH), raw_where=True)
+_arms = sorted({r["arm"] for r in pca})
+assert _arms == ["cheat", "pooled", "solo"], _arms
+led("2 other arms (pooled, cheat)", "Methods, Controls; Results, text classifier: 'the other two arms'", rel(PCA), f"distinct arm: {_arms}; the solo arm is primary", raw_where=True)
+_notrun = [l for l in T4.splitlines() if "not run" in l]
+assert len(_notrun) == 2, _notrun
+led("2 not-run rows (random-weights reader, reader interrogation)", "Table 3 caption: 'the two not-run rows'; Appendix A: 'the two baselines that were not run'; LLM statement",
+    "report/gen/gen_report.py Table 3 rows", "rows of Table 3 whose cells read 'not run'", raw_where=True)
+led("1 probe, scope pooled (B.I)", "Abstract: 'one probe pooled over authors'", rel(PCA), sel(**base, features="raw", scope="pooled"), raw_where=True)
+led("1 reader (Qwen3.8-27B)", "Methods, Authors and reader: 'five authors through one reader'; Table E1 reader row", "VERIFICATION_LOG.md; report/gen/gen_report.py Table E1",
+    "07:20 entry: every transcript rendered through the Qwen3.8-27B chat template; the extraction loads that model alone", raw_where=True)
+_q5 = tpl.split("### Can a planted board signal move coordination?", 1)[1].split("\n\n", 2)[1]
+_ord = [w for w in ("First,", "Second,", "Third,", "Fourth,", "Fifth,") if w in _q5]
+assert _ord == ["First,", "Second,", "Third,", "Fourth,"], _ord
+led(f"{len(_ord)} readings", "Results, board signal: 'four readings'", "report/REPORT_DRAFT.md", "the paragraph's ordinals First, Second, Third, Fourth", raw_where=True)
+_outrows = [l for l in T6.splitlines()[2:] if l.startswith("| ")]
+assert len(_outrows) == 6, _outrows
+led(f"{len(_outrows) - 1} other outputs", "Results, label map: 'the other five as zeros by construction'", "Table F1 rows; VISION.md",
+    f"{len(_outrows)} outputs in Table F1 less cheating", raw_where=True)
 os.makedirs(OUT, exist_ok=True)
 open(f"{OUT}/REPORT_DRAFT.md", "w").write(tpl)
 
@@ -957,7 +989,7 @@ if os.path.exists(_sub):
         open(_sub, "w").write(_new)
 
 hdr = ["# Number ledger for report/REPORT_DRAFT.md", "",
-       "Every number in the tables and the text of the draft traces to a cited source: a result file, a run log, a code constant or a public page, read 2026-11-07 to 2026-11-08. One line per table cell or prose value. "
+       "Every table cell and every number written in digits in the text of the draft traces to a cited source: a result file, a run log, a code constant, a repository document or a public page, read 2026-11-07 to 2026-11-08. One line per table cell or prose value. "
        "Paths are relative to the repository root unless absolute. The dataset README was fetched from the Hub with the account token.", "",
        "| value | where in the draft | source | field / selector |", "|---|---|---|---|"]
 open(f"{OUT}/NUMBERS.md", "w").write("\n".join(hdr + LEDGER) + "\n")

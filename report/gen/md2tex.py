@@ -543,7 +543,9 @@ class Emitter:
 
     def heading(self, h: Heading) -> str:
         cmd = {2: "\\section*", 3: "\\subsection*"}.get(h.level, "\\subsubsection*")
-        barrier = "" if TABLE_PLACEMENT == "H" else "\\FloatBarrier\n"
+        # fence floats at section level only: a table may float to the next page top while the
+        # following subsection fills the current page; it can never leave its section
+        barrier = "" if (TABLE_PLACEMENT == "H" or h.level != 2) else "\\FloatBarrier\n"
         return barrier + cmd + "{" + self.inl(h.text) + self.mark(h.level, h.text) + "}"
 
     def para(self, p: Para, noindent: bool = False) -> str:

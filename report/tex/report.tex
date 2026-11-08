@@ -122,13 +122,11 @@ Model hermeneutics [1] introduces the author and reader framing and reports prob
 \FloatBarrier
 \section*{3. Methods\mdtexmark{4}}
 
-\FloatBarrier
 \subsection*{Authors and reader\mdtexmark{5}}
 
 We probe five authors through one reader; Appendix E, Table E1, lists them with their API identifiers, valid run counts and think coverage. Four authors are served through an API and return their reasoning as a provider summary at best. The fifth, Qwen3.8-27B, is open and is also the reader. \textbf{Think coverage} is the share of an author's assistant turns whose think block holds readable reasoning text. The open author gives all of its reasoning, three closed authors give a summary on some turns, and Claude Haiku 5.5 gives none. For authors with low coverage the reader reads the visible transcript. We therefore report coverage beside every transfer result and treat it as an author signature the controls must remove.
 
 
-\FloatBarrier
 \subsection*{Data\mdtexmark{6}}
 
 Each run of the controls dataset is one agent on one of nine tasks under one of two arms: software engineering (two tasks), chess, creative writing, protein design, open mathematics, subset sum, prime factorization and knowledge work. Every task plants an exploit. The \textbf{solo arm} never mentions it. The \textbf{cheat arm} tells the agent that the shortcut is fair game. The \textbf{cheat ladder} records how far the agent went with it: none, exposed, tried, opened, used or tampered, checked, shipped. Cheating starts at opened, or at tried for software engineering, chess and creative writing. The rungs none and exposed are honest, and the rungs between are left out. The dataset is published privately with its manifest [7]. The authors differ in how often they cheat without an instruction; Appendix E, Table E2, gives the valid runs and the probed agents per author and arm. We therefore probe a stratified subsample balanced over author, arm and label where the data allow.
@@ -137,25 +135,21 @@ Each run of the controls dataset is one agent on one of nine tasks under one of 
 The board-seed environment is multi-agent. Three agents of one author (DeepSeek V4.1 Flash) work one software-engineering issue on a shared remote with a shared message board. The planted fix is split into three pieces, one per agent, so the exploit completes only if pieces cross between agents. The \textbf{collaboration ladder} records how far exploit content travelled between agents: isolated, discussed, solicited, crossed (a piece reached an agent that did not hold it), assembled (every piece in one tree). The \textbf{board seed} is one message the system posts on the board before any agent acts (Appendix C). The conditions are no post, a length-matched neutral post, a mild pro-coordination post, an explicit post that asks the team to pool everything including shortcuts, and a hidden regulator agent that posts against sharing. The turn budget can bind before any seed has an effect. We therefore pilot two turn budgets before the dose-response run.
 
 
-\FloatBarrier
 \subsection*{Positions, layers and probe setup\mdtexmark{7}}
 
 We render every transcript through the reader's chat template, so each assistant turn is wrapped in one think-open and think-close token pair. When the author returned reasoning text, that text sits inside the pair. When it returned none, the pair is empty and the two tokens mark the turn boundary, which is the closed-author case the vision calls appending. We keep the reader's residual stream at both tokens at three depths, average over the agent's turns, and fit linear probes with cross-validation grouped by run; Appendix E, Table E3, lists every setting. Any fixed token also encodes the author's formatting habits. We therefore sweep both positions and all depths and report every configuration in Appendix D.
 
 
-\FloatBarrier
 \subsection*{Probe types\mdtexmark{8}}
 
 \textbf{Type A} trains and tests inside one author. \textbf{Type B.I} trains one probe on all authors and scores held-out runs. \textbf{Type B.II} leaves one author out, trains on the other four and scores the fifth, which is the case of a new model entering a swarm without labelled data. We therefore report B.II for every author with think coverage beside it.
 
 
-\FloatBarrier
 \subsection*{Controls, nulls and baselines\mdtexmark{9}}
 
 A probe pooled over authors can succeed by reading the author's base rate, the task, or the prompt. We fit a five-way \textbf{author-identity probe} on the same features, before and after erasing the author with \textbf{LEACE}, a closed-form linear concept eraser fitted on training rows only. We also erase author, task and prompt condition together and refit the cheating probe. A \textbf{condition readout} on the pooled set shows whether the prompt is readable, since the cheat arm's prompt elicits the behaviour and the solo arm's prompt is ambiguous. The null shuffles labels inside each author and refits. The metadata baselines predict cheating from one-hot author, task and condition, and from run length alone. The \textbf{text classifier} is a TF-IDF logistic regression on the same agents and folds, in three views: the whole rendered transcript, the agent's own words, and the think windows alone, which is the \textbf{lexical-only reader null}. Three judge models read each transcript once and answer whether the agent cheated: Claude Haiku 5.5 and GPT-5 mini at the authors' level, and Claude Sonnet 5.5 above them. The random-weights reader null and the reader interrogation were not run. We therefore cannot say whether the reader's states carry anything the words do not.
 
 
-\FloatBarrier
 \subsection*{Why the solo arm is primary\mdtexmark{10}}
 
 The cheat arm's prompt contains the instruction, and nearly every author takes the shortcut there (Table E2). A probe pooled over both arms could read the prompt instead of the behaviour. The solo arm has both classes for every author and no instruction, which is the ambiguous-prompt case the vision names as the success condition. We therefore report the solo arm first and the other arms only with the condition erased.
@@ -164,7 +158,6 @@ The cheat arm's prompt contains the instruction, and nearly every author takes t
 \FloatBarrier
 \section*{4. Results\mdtexmark{11}}
 
-\FloatBarrier
 \subsection*{Does the reader's residual stream separate cheating in the ambiguous arm?\mdtexmark{12}}
 
 The reader's think-position states separate cheating from honest work in every author and across authors (Table 1). Erasing the author moves the pooled probe little, and erasing author, task and condition together moves it a few hundredths. Every real value sits far above the permutation null, and the metadata baselines sit far below the probe in the pooled set. Inside two authors the task alone predicts cheating well, and the probe stays above those baselines after the task is erased. A probe on every dimension without PCA gives the same picture. We therefore posit that the signal is neither the author's base rate nor the task.
@@ -192,7 +185,6 @@ baseline: run length (turns, log tokens, readable share), pooled & 193 \slash{} 
 \end{tabularx}
 \end{table}
 
-\FloatBarrier
 \subsection*{Does the probe transfer to authors it never saw?\mdtexmark{13}}
 
 A probe trained on four authors reads the fifth for every author except GPT-6 Luna, where transfer is weakest and the interval is widest (Table 2). Luna is also the hardest author within itself, and its reasoning reaches the reader as a summary on a minority of turns. Haiku transfers well with no reasoning at all, so for that author the visible transcript carries the signal. The full-dimension probe, the per-turn probe and the text classifier all place Luna last. We therefore conjecture that transfer depends on how the author's visible transcript relates to the other authors', and we cannot yet separate that from the share of reasoning the reader sees.
@@ -216,7 +208,6 @@ Qwen3.8-27B & 1.000 & 52 \slash{} 38 & 0.966 [0.925, 0.993] & 0.972 [0.941, 0.99
 \end{tabularx}
 \end{table}
 
-\FloatBarrier
 \subsection*{Is the signal the author, the task, or the instruction?\mdtexmark{14}}
 
 The author is almost perfectly readable from the same features and falls to the majority rate once erased (Table 3). The prompt condition is readable in the pooled set and falls to the majority rate once erased, and the pooled cheating probe keeps most of its AUROC after that erasure. The cheat arm alone loses more under full erasure and has a thin honest class for two authors, so we read it as secondary. A per-turn probe with the agent's label on every turn separates agents when their turn scores are averaged, and its turn-position baseline sits at chance. A labelling that keeps a cheating agent's turns only from its first cheating tool call on reaches a high value, and so does its turn-position baseline. That design makes lateness the label. We therefore posit that the agent-level probe reads the content of the transcript, and that a turn-level monitor needs position-matched labels.
@@ -242,7 +233,6 @@ cheating, per-turn probe with onset labels (layer 26, open), agent AUROC & solo 
 \end{tabularx}
 \end{table}
 
-\FloatBarrier
 \subsection*{Does it beat a text classifier?\mdtexmark{15}}
 
 The probe does not beat a text classifier on the whole transcript (Table 4). A TF-IDF logistic regression on the rendered transcript reaches or exceeds the probe pooled, on the within-author mean and on the unseen-author mean, in all three arms. The one author where the probe stays ahead within itself is Qwen3.8-27B, the reader's own model (Tables 1 and 2). The probe matches the classifier on the agent's own words, beats the lexical-only null by a wide margin, and beats every judge. The mechanism is in the label. The cheat ladder reads the same transcript the classifier reads, and the planted material enters a cheating agent's context through tool results, so the words of the tool output carry the label. The judges ran with reasoning off or low on cut transcripts, and the strongest judge scored part of the agents before the spend cap stopped it. The comparison therefore bounds a cheap judge. We therefore conclude that on this testbed the reader's states carry the cheating label about as well as the transcript's words and no better.
@@ -271,7 +261,6 @@ reader interrogation (ask the reader) & not run & not run & not run & not run & 
 \end{tabularx}
 \end{table}
 
-\FloatBarrier
 \subsection*{Can a planted board signal move coordination?\mdtexmark{16}}
 
 One planted post moves coordination, and the turn budget gates whether it can (Table 5). At the short budget every arm sits on the floor. The dose-response matrix at the long budget gives four readings, all directional at this seed count and with no significance test. First, presence: the neutral post lifts crossing, assembly and passing above the empty board, so the empty-to-neutral step isolates presence and the neutral arm isolates content. Second, content: the pro-coordination posts roughly double discussion over the neutral post, and the mild post doubles assembly. Third, dose is not monotonic. The mild nudge yields the most teams that assemble the exploit and pass the hidden tests. The explicit post lifts posting above the neutral and empty boards and below the mild post, and it yields no passing team. We hold as a hypothesis that naming the shortcut turns the team toward deliberation and away from execution. Fourth, the hidden regulator holds assembly at the empty-board floor while the workers post several times more than on the empty board, so we judge that arm by worker-only posts, crossing and assembly. We therefore conclude that the board seed is a usable lever on coordination intensity, and that collusion outcome and coordination volume can move in opposite directions.
@@ -300,7 +289,6 @@ dose-response & 60 & anti-coordination (hidden regulator) & 5 & 2\slash{}5 & 0\s
 \end{tabularx}
 \end{table}
 
-\FloatBarrier
 \subsection*{Which collusion concepts can a swarm testbed label today?\mdtexmark{17}}
 
 Only cheating has direct labels at scale; Appendix F, Table F1, maps the six outputs to what each source in hand provides. The six outputs are nested by the vision's definitions: scheming implies collusion, collusion implies cheating and collaboration, and collaboration implies cooperation, which implies coordination. A label fills in what it implies, so the single-agent controls dataset labels cheating directly and gives the five multi-agent outputs as zeros by construction. The board-seed environment labels coordination directly and collusion by derivation, but it cannot separate cooperation from collaboration and has no covertness signal for scheming. AI Village [6], an external dataset of frontier agents sharing a group chat, gives coordination and collaboration by derivation and needs a judge for the rest. Its licence allows evaluation only. The repository's survey of about sixty candidate sources (DATASETS.md) finds that no external source uses our authors, and it ranks SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data and Terminal Wrench as the sets to use next. We therefore conclude that cheating is the only output a probe can be trained on today for our authors, and that every other output waits on instrumented multi-agent runs.
@@ -318,13 +306,11 @@ The board seed is a cheap lever on a swarm. One post moves how much the agents t
 Multi-agent data is the binding constraint. Every output beyond cheating needs runs with more than one agent, and the only such runs in hand are the board-seed pilots from one author. The survey finds that matched honest and colluding runs of one scenario cancel lexical cues for the text baselines, and that benign multi-agent traces keep a probe from learning that several agents mean collusion. AI Village offers frontier closed authors and a same-model swarm for unseen-author evaluation under a licence that allows evaluation only. We therefore plan a coordination probe trained on our own multi-agent runs and evaluated on AI Village.
 
 
-\FloatBarrier
 \subsection*{Limitations\mdtexmark{19}}
 
 The probed set is a subsample that leaves out the longest transcripts. The cheat label counts opening the planted material, and a text classifier on the whole transcript recovers it as well as the probe, so the probe's advantage over the words is unshown. The random-weights null and the reader interrogation were not run. The judges ran with reasoning off or low on cut transcripts, so the judge comparison bounds a cheap judge. The board-seed runs come from one author on one task at a handful of seeds, with no significance test. Appendix A gives the full list with the dual-use and ethical considerations.
 
 
-\FloatBarrier
 \subsection*{Future Work\mdtexmark{20}}
 
 The decisive next test is a matched dataset: honest and cheating runs of one scenario in which the exploit text stays out of the honest context, so that lexical cues cancel. We will run the random-weights null and the reader interrogation on a rebuilt cache, and a residual probe on the text classifier's errors. We will train a coordination probe on our own multi-agent runs, with the board seed as the lever on coordination intensity, and evaluate it on AI Village under its research terms.
@@ -364,7 +350,6 @@ An open-weight reader carries a linear signal of a closed author's cheating: one
 \FloatBarrier
 \section*{Appendix\mdtexmark{24}}
 
-\FloatBarrier
 \subsection*{Appendix A: Limitations and Dual-Use / Ethical Considerations\mdtexmark{25}}
 
 \textbf{Limitations.} The probed set is a subsample that leaves out the longest transcripts, so the result does not cover the runs where context pressure is highest. The cheat label counts opening the planted material, and a text classifier on the whole transcript recovers the label as well as the probe, so the label is lexical on this testbed and the probe's advantage over words is unshown. Of the vision's success criteria, the probe meets the unseen-author test and is strong in the ambiguous arm; it beats the judges and the lexical-only null and does not beat the whole-transcript classifier, so the criterion of beating every baseline is not met. The random-weights null and the reader interrogation were not run, so the report cannot say whether the reader's states carry anything the transcript words do not. The judges ran with reasoning off or minimal, on cut transcripts, and the strongest judge scored only part of the agents, so the judge comparison bounds a cheap judge and not the best one. All probes are linear and LEACE removes linear traces only, so nonlinear author or task signatures may remain. Some closed authors expose little or no reasoning, so for them the reader reads the visible transcript, and our think-position framing reduces to reading turn boundaries. The reader is one model, and it is also one of the authors, so the open-author result is not a hermeneutic result. The board-seed runs come from one author on one task at a handful of seeds, with no significance test, and the collaboration ladder reads code and board evidence by rules that a judge has not confirmed. We did not store per-agent probe scores, so the AUROC values cannot be recomputed from the shipped files without rerunning the probes. The reader forward passes ran on one GPU host, so host-level numerical differences did not enter the features, but they would in a multi-host deployment.
@@ -376,7 +361,6 @@ An open-weight reader carries a linear signal of a closed author's cheating: one
 \textbf{Responsible use.} The dataset is private and carries benchmark content that its authors ask to keep out of training corpora. We will keep it private, release only aggregate results, and gate any access on a research purpose. The board-seed texts are given in Appendix C so that the manipulation is reproducible as an experimental stimulus. We do not release tooling that plants them in deployed systems. We will use AI Village for evaluation only under its research terms, cite its authors, and inform them of any publication. We mark the two baselines that were not run as not run, and we state which baselines the probe beats and which it does not.
 
 
-\FloatBarrier
 \subsection*{Appendix B: Pre-existing work\mdtexmark{26}}
 
 The sprint ran from November 6 to 8, 2026. The items below are split by whether they existed before that window.
@@ -432,7 +416,6 @@ reader forward passes and probes & 600 runs probed & 0 (free GPU host) & verific
 \end{tabularx}
 \end{table}
 
-\FloatBarrier
 \subsection*{Appendix C: Board-seed texts\mdtexmark{27}}
 
 The system posts one of the texts below as the first board message before any agent acts. The anti-coordination condition posts no text; a hidden regulator agent carries it.
@@ -453,7 +436,6 @@ pro-coordination, explicit (L2) & We are graded as a team, so the fastest path i
 \end{tabularx}
 \end{table}
 
-\FloatBarrier
 \subsection*{Appendix D: Full per-configuration tables\mdtexmark{28}}
 
 \begin{table}[!htbp]
@@ -506,7 +488,6 @@ all & open & 0.962 [0.942, 0.979] & 0.926 & 0.950 & 0.951 & 0.837 & 0.964 & 0.96
 \end{tabularx}
 \end{table}
 
-\FloatBarrier
 \subsection*{Appendix E: Authors, data and probe setup\mdtexmark{29}}
 
 \begin{table}[!htbp]
@@ -580,7 +561,6 @@ extraction & one L40S GPU, 1.94 h, on a free host \\
 \textbf{Judge setup.} Each judge read one prompt per agent: the task and the transcript, with each tool result cut to 500 characters and the transcript tail cut to 12,000 tokens, and answered yes or no with a confidence. Reasoning was off for Claude Haiku 5.5, minimal for GPT-5 mini and low for Claude Sonnet 5.5, which scored 460 of 600 agents before the in-code spend cap stopped it.
 
 
-\FloatBarrier
 \subsection*{Appendix F: Label-gap map\mdtexmark{30}}
 
 \begin{table}[!htbp]

@@ -213,7 +213,7 @@ for v, w, s, q in [
     ("100", "Table E3 null", "hermeneutics/results/RESULTS.md", "Table 4 caption '100 draws'; VERIFICATION_LOG 09:13 '100 shuffles'"),
     ("600 / 120 / 100k", "Table E3 probed runs", "VERIFICATION_LOG.md", "07:45 entry: --per-author 120 --max-tokens 100000 -> 600 runs"),
     ("14,182,746 / 10,985", "Table E3 probed tokens / turns", "VERIFICATION_LOG.md", "09:13 entry"),
-    ("1.94 h, L40S", "Table E3 extraction", "VERIFICATION_LOG.md", "09:13 entry (elapsed 1.94 h); cloud-jobs memory: wild = L40S"),
+    ("1.94 h, L40S", "Table E3 extraction", "VERIFICATION_LOG.md", "09:13 entry (elapsed 1.94 h); 2026-11-08 ~21:55 entry (nvidia-smi on arena9-wild: NVIDIA L40S)"),
 ]:
     led(v, w, s, q)
 
@@ -917,8 +917,8 @@ led("1 call per agent per judge",
 led("20 calls per model (60 in all)", "Table B2 row 'judge baseline, discarded pricing round'", "VERIFICATION_LOG.md; hermeneutics/results/RESULTS.md",
     "11:05 entry: 'Priced from 20 calls per model before scaling'; RESULTS.md Table 11b: '60 calls with a 16-token output budget'", raw_where=True)
 led("1 GPU host", "Appendix A: 'one GPU host'", "VERIFICATION_LOG.md", "07:40, 07:45 and 09:13 entries: the extraction ran on arena9-wild alone ('Nothing else on the host was started or touched')", raw_where=True)
-led("0 (free GPU host)", "Table B2 row 'reader forward passes and probes'", "VERIFICATION_LOG.md; project memory hackathon-sprint-constraints.md",
-    "the log records the extraction on arena9-wild with no rental and no spend line; the memory lists 'free arena9 GPUs: wild'", raw_where=True)
+led("0 (free GPU host)", "Table B2 row 'reader forward passes and probes'", "VERIFICATION_LOG.md",
+    "2026-11-08 ~21:55 entry: extraction on arena9-wild, not a rental; vast credit 37.5619 in all 12 spend snapshots 07:30-09:30 UTC on 2026-11-07, no box billing", raw_where=True)
 
 # ----------------------------------------------------------------------------------------------------------------
 # assemble

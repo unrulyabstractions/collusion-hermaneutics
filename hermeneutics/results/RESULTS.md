@@ -218,11 +218,11 @@ The VISION asks the probe to beat every baseline. We therefore compare it with t
 
 | figure | USD | what it counts |
 |---|---|---|
-| provider ledger movement (authoritative) | 12.36 | OpenRouter key usage before and after this step |
+| provider ledger movement (authoritative) | 12.34 | OpenRouter key usage before and after this step |
 | calls recorded in the three score files | 12.01 | every call whose reply was saved, parsable or not |
 | calls whose reply parsed to a score (`judges/auroc.csv` cost_scored_usd) | 11.86 | the calls behind the AUROC rows |
 | discarded first pricing round | 0.33 | 60 calls with a 16-token output budget that returned empty replies; files deleted |
-| residual | 0.02 | ledger rounding to cents |
+| residual | 0.00 | ledger rounding to cents |
 **Table 12.** Both arms pooled, then the cheat arm alone: the probe against the baselines.
 
 | method | agents | B.I pooled | within-author mean | B.II mean |

@@ -295,7 +295,7 @@ def main(path):
                             f"| calls recorded in the three score files | {sj['score_files_all_calls']:.2f} | every call whose reply was saved, parsable or not |",
                             f"| calls whose reply parsed to a score (`judges/auroc.csv` cost_scored_usd) | {sj['score_files_scored_calls']:.2f} | the calls behind the AUROC rows |",
                             f"| discarded first pricing round | {sj['discarded_pricing_round']:.2f} | 60 calls with a 16-token output budget that returned empty replies; files deleted |",
-                            f"| residual | {sj['provider_after'] - sj['provider_before'] - sj['score_files_all_calls'] - sj['discarded_pricing_round']:.2f} | ledger rounding to cents |"]
+                            f"| residual | {sj['provider_after'] - sj['provider_before'] - sj['score_files_all_calls'] - sj['discarded_pricing_round']:.2f} | the ledger movement less the two recorded components |"]
     out += ["", "## Limits\n",
             "The subsample holds a fraction of the runs per author and leaves out the longest transcripts. The cheat label "
             "counts opening the planted material, so a probe may read that the solution text entered the context rather than "

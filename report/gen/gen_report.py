@@ -3,6 +3,7 @@
 Every number in a table is read from a file and written to the ledger with its selector. Prose numbers are ledgered
 by hand at the bottom of this script.
 """
+import collections
 import csv
 import glob
 import json
@@ -26,8 +27,9 @@ def renum(where):
     return re.sub(r"\bTable ([2-5])\b", lambda m: RENUM[m.group(1)], where)
 
 
-def led(value, where, source, selector):
-    LEDGER.append(f"| {value} | {renum(where)} | `{source}` | {selector} |")
+def led(value, where, source, selector, raw_where=False):
+    """raw_where: the location is already written in the final table numbering, so renum() must not touch it."""
+    LEDGER.append(f"| {value} | {where if raw_where else renum(where)} | `{source}` | {selector} |")
 
 
 def rel(p):
@@ -842,8 +844,9 @@ for x in tb25_runs + tb60_runs:
     _held.add(tuple(sorted(h)))
 assert _held == {("A", "B", "C")}, _held
 led(f"3 worker agents in all {len(_cfg)} runs ({_n3} with no regulator; {_n4} anti-coordination runs add 1 regulator); 3 pieces, one per agent",
-    "Methods, Data; Results, board signal; Table 4 caption: 'three agents', 'three worker agents', 'three pieces, one per agent'",
-    rel(PILOT) + "/*/run.json, confirm_doseresponse/*/run.json, */signals.jsonl", "config.n_agents and config.regulators; config.access == split in every run; agent rows' holds = {A, B, C} in every run")
+    "Abstract; Methods, Data; Table 4 caption (Results, board signal); Conclusion; Table F1 header: 'three agents', 'three worker agents', 'three-agent', 'three pieces, one per agent'",
+    rel(PILOT) + "/*/run.json, confirm_doseresponse/*/run.json, */signals.jsonl", "config.n_agents and config.regulators; config.access == split in every run; agent rows' holds = {A, B, C} in every run",
+    raw_where=True)
 _views = set()
 for f in glob.glob(f"{REPO}/hermeneutics/results/tfidf*/auroc.csv"):
     _views |= {r["position"] for r in rows(f)}
@@ -851,13 +854,71 @@ assert _views == {"transcript", "agent", "think"}, _views
 led(f"{len(_views)} views", "Methods, Controls: the text classifier 'in three views'", "hermeneutics/results/tfidf*/auroc.csv", f"distinct position: {sorted(_views)}")
 _jud = sorted({r["probe"] for r in judges})
 assert len(_jud) == 3, _jud
-led(f"{len(_jud)} judges", "Abstract; Introduction; Methods; Results; Discussion; Conclusion: 'three (cheap) LLM judges'", rel(JUDGES), f"distinct probe: {_jud}")
+led(f"{len(_jud)} judges", "Abstract; Introduction; Methods; Discussion; Conclusion: 'three (cheap) LLM judges'", rel(JUDGES), f"distinct probe: {_jud}")
 _vis = open(f"{REPO}/VISION.md").read().split("#Probe Outputs", 1)[1].split("\n#", 1)[0]
 _outs = [l for l in _vis.splitlines() if l.startswith("- ") and ":" in l]
 assert len(_outs) == 6, _outs
 led(f"{len(_outs)} outputs", "Introduction contribution 3; Related Work; Results, label map: 'six collusion-related concepts', 'six probe outputs'", "VISION.md", "bullets under '#Probe Outputs': " + ", ".join(l[2:].split(":")[0] for l in _outs))
 led("three failure modes", "Related Work: '[5] names collusion as one of three failure modes'", "https://arxiv.org/abs/2502.14143 (read 2026-11-08)",
     "abstract: 'identifying three key failure modes (miscoordination, conflict, and collusion)'")
+
+# number words of round 3
+_rj = [json.load(open(os.path.join(x, "run.json"))) for x in tb25_runs + tb60_runs]
+_models = {r["model"] for r in _rj}; _tasks_b = {r["task"] for r in _rj}
+_issues = set()
+for x in tb25_runs + tb60_runs:
+    for l in open(os.path.join(x, "episodes.jsonl")):
+        _issues.add(json.loads(l)["id"])
+assert len(_models) == 1 and len(_tasks_b) == 1 and len(_issues) == 1, (_models, _tasks_b, _issues)
+led(f"1 author ({_models.pop()}), 1 task ({_tasks_b.pop()}), 1 issue ({_issues.pop()}) over all {len(_rj)} board-seed runs",
+    "Methods, Data; Results, label map; Discussion; Limitations; Appendix A: 'one author', 'one task', 'one software-engineering issue'",
+    rel(PILOT) + "/*/run.json and */episodes.jsonl", "run.json model and task; episodes.jsonl id", raw_where=True)
+_seed_texts = {v for v in seed_table.values() if v != "USE_REGULATOR"}
+_posts = collections.defaultdict(list)
+for x in tb25_runs + tb60_runs:
+    cfg = json.load(open(os.path.join(x, "run.json")))["config"]
+    fs = glob.glob(os.path.join(x, "communication", "*.json"))
+    n = sum(1 for m in json.load(open(fs[0]))["messages"] if m.get("sender") == "system" and m.get("content") in _seed_texts) if fs else 0
+    _posts["seeded" if cfg.get("board_seed") else "unseeded"].append(n)
+assert set(_posts["seeded"]) == {1} and set(_posts["unseeded"]) == {0}, dict(_posts)
+led(f"1 seed post in each of {len(_posts['seeded'])} seeded runs; 0 in the {len(_posts['unseeded'])} empty-board and regulator runs",
+    "Abstract; contribution 2; Methods, Data; Results, board signal; Discussion; Conclusion: 'one message', 'one post', 'one planted board message'",
+    rel(PILOT) + "/*/communication/*.json", "system messages whose content is a SEED_TABLE text (board_seed.py)", raw_where=True)
+_d = {a: dose[a] for a in dose}
+_rd1 = float(_d["procoordL1"][6]) / float(_d["neutralL0"][6]); _rd2 = float(_d["procoordL2"][6]) / float(_d["neutralL0"][6])
+_ra1 = float(_d["procoordL1"][9]) / float(_d["neutralL0"][9])
+assert all(1.5 <= x <= 2.5 for x in (_rd1, _rd2, _ra1)), (_rd1, _rd2, _ra1)
+led(f"discussion x{_rd1:.2f} (mild) and x{_rd2:.2f} (explicit) over neutral; assembly x{_ra1:.2f} (mild) over neutral",
+    "NUMBERS only: basis for 'roughly double discussion' and 'the mild post doubles assembly' (Results, board signal)", rel(DOSE),
+    "mDisc procoordL1 and procoordL2 over neutralL0; mAsm procoordL1 over neutralL0; each ratio between 1.5 and 2.5", raw_where=True)
+_drops = {}
+for scope in ["pooled"] + AUTH:
+    raw_ = float(pick(pca, **base, features="raw", scope=scope)["auroc"])
+    for ft in FEATS[1:]:
+        _drops[(scope, ft)] = raw_ - float(pick(pca, **base, features=ft, scope=scope)["auroc"])
+_fr = float(pick(full, arm="solo", probe="full", turn_labels="agent", layer="all", position="close", pooling="agent", features="raw", scope="pooled")["auroc"])
+for ft in FEATS[1:]:
+    _drops[("every dimension", ft)] = _fr - float(pick(full, arm="solo", probe="full", turn_labels="agent", layer="all", position="close", pooling="agent", features=ft, scope="pooled")["auroc"])
+_pa = _drops[("pooled", "author, task, condition erased")]
+assert max(_drops.values()) < 0.05 and 0.01 <= _pa < 0.05, (_drops, _pa)
+led(f"pooled drop {_drops[('pooled', 'author erased')]:.3f} (author erased) and {_pa:.3f} (author, task, condition erased); largest drop in Table 1 {max(_drops.values()):.3f}",
+    "NUMBERS only: basis for 'moves it a few hundredths' (Results, ambiguous arm)", rel(PCA) + "; " + rel(FULL), "raw minus erased AUROC over the Table 1 probe rows; all below 0.05", raw_where=True)
+_calls = {}
+for f in sorted(glob.glob(f"{REPO}/data/judge_*.jsonl")):
+    if f.endswith("judge_prompts.jsonl"):
+        continue
+    rr = [json.loads(l)["run"] for l in open(f)]
+    assert len(rr) == len(set(rr)), f
+    _calls[os.path.basename(f)] = len(rr)
+assert len(_calls) == 3, _calls
+led("1 call per agent per judge",
+    "Methods, Controls ('read each transcript once'); Appendix E judge setup ('one prompt per agent')", "data/judge_*.jsonl",
+    "one line per run, no run twice: " + ", ".join(f"{k} {v} lines" for k, v in _calls.items()) + "; Sonnet's file stops at its in-code spend cap", raw_where=True)
+led("20 calls per model (60 in all)", "Table B2 row 'judge baseline, discarded pricing round'", "VERIFICATION_LOG.md; hermeneutics/results/RESULTS.md",
+    "11:05 entry: 'Priced from 20 calls per model before scaling'; RESULTS.md Table 11b: '60 calls with a 16-token output budget'", raw_where=True)
+led("1 GPU host", "Appendix A: 'one GPU host'", "VERIFICATION_LOG.md", "07:40, 07:45 and 09:13 entries: the extraction ran on arena9-wild alone ('Nothing else on the host was started or touched')", raw_where=True)
+led("0 (free GPU host)", "Table B2 row 'reader forward passes and probes'", "VERIFICATION_LOG.md; project memory hackathon-sprint-constraints.md",
+    "the log records the extraction on arena9-wild with no rental and no spend line; the memory lists 'free arena9 GPUs: wild'", raw_where=True)
 
 # ----------------------------------------------------------------------------------------------------------------
 # assemble

@@ -835,6 +835,7 @@ for ref, yr, src, q in [("[1]", "2026 (authors as displayed: conti, ShivamR, Jac
                         ("[3]", "2026 (arXiv:2606.32008)", "https://arxiv.org/abs/2606.32008", "citation_date 2026/06/30"),
                         ("[4]", "2026 (arXiv:2604.01151)", "https://arxiv.org/abs/2604.01151", "citation_date 2026/04/01 (v5 revised 15 Oct 2026)"),
                         ("[8]", "2026 (arXiv:2609.36308)", "https://arxiv.org/abs/2609.36308 (read 2026-11-08)", "citation_date 2026/09/28; title 'CheatBench: Measuring Reward Gaming in AI Agents'; 13 citation_author entries, first Phan, Long"),
+                        ("[9]", "2026 (arXiv:2609.33102)", "https://arxiv.org/abs/2609.33102 (read 2026-11-08)", "citation_date 2026/09/27; title 'ORBIT: A Framework for Multi-Agent Safety and Security Evaluations'; 4 citation_author entries: Hagag, Anderson, Chakraborty, Schroeder de Witt"),
                         ("[5]", "2025 (arXiv:2502.14143; Technical Report 1)", "https://arxiv.org/abs/2502.14143", "citation_date 2025/02/19; comments 'Cooperative AI Foundation, Technical Report #1'"),
                         ("[6]", "2026", "https://huggingface.co/datasets/aidigestorg/ai-village (card read 2026-11-08 with the account token)", "card citation line: 'AI Digest, \"AI Village dataset\", 2026.'"),
                         ("[7]", "2026", HF_URL, "README 'Built 2026-11-07T10:06:53Z'")]:
@@ -851,6 +852,8 @@ led(f"{len(_swe)} software-engineering task instances", "Appendix E: 'software e
 _tnames = sorted({r["task_name"] for r in _val})
 assert len(_tnames) == 8, _tnames
 led(f"{len(_tnames)} CheatBench tasks", "Appendix E: 'They cover eight CheatBench tasks'", rel(LABELS), f"distinct task_name over valid rows: {_tnames}")
+led("2026-10-09 (fork of wlanderson0/orbit, Apache-2.0)", "Appendix B: 'ORBIT [9] (Apache-2.0), forked on 2026-10-09'",
+    "GitHub API repos/unrulyabstractions/orbit (read 2026-11-08)", "created_at 2026-10-09T19:43:21Z; fork true; parent wlanderson0/orbit; license Apache-2.0; spar-guardian-agents .gitmodules submodules/orbit", raw_where=True)
 led("2026-10-09 (fork of centerforaisafety/cheatbench, MIT)", "Appendix B: 'CheatBench [8] (Center for AI Safety, MIT licence), forked on 2026-10-09'",
     "GitHub API repos/unrulyabstractions/cheatbench (read 2026-11-08)", "created_at 2026-10-09T14:25:09Z; fork true; parent centerforaisafety/cheatbench; license MIT", raw_where=True)
 led(f"{len(_conds)} arms", "Methods, Data: 'one of two arms'", rel(LABELS), f"distinct condition over valid rows: {_conds}")

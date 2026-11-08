@@ -15,7 +15,7 @@ We ask whether a small open-weight **reader** model, Qwen3.8-27B, can monitor la
 | `publish_apart_swarm/` | the scripts that built, published and verified the controls dataset on Hugging Face |
 | `DATASETS.md`, `DATASET_DETAILS.md`, `datasets/` | the survey of transcript datasets and what each can label |
 | `VERIFICATION_LOG.md`, `logs/` | the verification log: every result, upload and change with how it was checked |
-| `VISION.md` | the project vision as written by the author |
+| `PROJECT_DESCRIPTION.md` | the project vision as written by the author |
 
 `data/` is not tracked. It holds the 4,157-run controls dataset (private Hugging Face dataset `unrulyabstractions/apart-swarm`, available to reviewers on request), the board-seed pilot transcripts, the labels and the rendered-transcript summaries. The AI Village dataset is cited, not redistributed.
 

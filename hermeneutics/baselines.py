@@ -5,7 +5,7 @@ Three views of each agent's text, all taken from the rendered sequence the reade
   agent       the agent's own words: reasoning, message text and tool-call arguments of its assistant turns
   think       the think-window text only: the reasoning inside <think>...</think> (empty for authors without readable reasoning)
 Each view gets a TF-IDF (word 1-2 grams, fitted on the training rows of each fold) and an L2 logistic regression with C
-by grouped inner CV. The "transcript" view is the VISION text-classifier baseline; "think" is the lexical-only reader null
+by grouped inner CV. The "transcript" view is the text-classifier baseline of PROJECT_DESCRIPTION.md; "think" is the lexical-only reader null
 (a reader with no language model, at the same positions). Scopes: B.I pooled, A within author, B.II leave one author out;
 AUROC with a 95% bootstrap over runs; within-author label shuffle null (pooled and within scopes).
 

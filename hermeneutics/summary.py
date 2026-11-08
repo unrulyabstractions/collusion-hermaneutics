@@ -251,7 +251,7 @@ def main(path):
     base = baselines_rows(path, pa, fa)
     if base:
         out += ["", "## Do the baselines reach the probe?\n",
-                "The VISION asks the probe to beat every baseline. We therefore compare it with text classifiers on the same "
+                "The project description asks the probe to beat every baseline. We therefore compare it with text classifiers on the same "
                 "transcripts, with judges that read the same transcripts and answer the same question, and with the two "
                 "nulls: a lexical-only reader (TF-IDF on the think windows alone) and a random-weights reader (the same "
                 "architecture with untrained blocks and embeddings, probed the same way). All rows use the same agents, folds "
@@ -261,7 +261,7 @@ def main(path):
                 "label reads the same transcript, so the words of the tool results carry the label, and a reader of the whole "
                 "text recovers it. The probe beats every judge, beats the lexical-only reader at the same positions, and matches "
                 "the classifier on the agent's own words. We therefore contend that the activations carry the cheating label "
-                "about as well as the transcript's words do, and no better; the VISION criterion of beating every baseline is "
+                "about as well as the transcript's words do, and no better; the project description's criterion of beating every baseline is "
                 "not met against the whole-transcript classifier. Whether the reader's states carry anything the words do not "
                 "is the question the random-weights null and a residual test (probe on the text classifier's errors) would "
                 "settle.\n"]

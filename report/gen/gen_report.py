@@ -873,10 +873,10 @@ led(f"{len(_views)} views", "Methods, Controls: the text classifier 'in three vi
 _jud = sorted({r["probe"] for r in judges})
 assert len(_jud) == 3, _jud
 led(f"{len(_jud)} judges", "Abstract; Introduction; Methods; Discussion; Conclusion: 'three (cheap) LLM judges'", rel(JUDGES), f"distinct probe: {_jud}")
-_vis = open(f"{REPO}/VISION.md").read().split("#Probe Outputs", 1)[1].split("\n#", 1)[0]
+_vis = open(f"{REPO}/PROJECT_DESCRIPTION.md").read().split("#Probe Outputs", 1)[1].split("\n#", 1)[0]
 _outs = [l for l in _vis.splitlines() if l.startswith("- ") and ":" in l]
 assert len(_outs) == 6, _outs
-led(f"{len(_outs)} outputs", "Introduction contribution 3; Related Work; Results, label map: 'six collusion-related concepts', 'six probe outputs'", "VISION.md", "bullets under '#Probe Outputs': " + ", ".join(l[2:].split(":")[0] for l in _outs))
+led(f"{len(_outs)} outputs", "Introduction contribution 3; Related Work; Results, label map: 'six collusion-related concepts', 'six probe outputs'", "PROJECT_DESCRIPTION.md", "bullets under '#Probe Outputs': " + ", ".join(l[2:].split(":")[0] for l in _outs))
 led("three failure modes", "Related Work: '[5] names collusion as one of three failure modes'", "https://arxiv.org/abs/2502.14143 (read 2026-11-08)",
     "abstract: 'identifying three key failure modes (miscoordination, conflict, and collusion)'")
 
@@ -995,7 +995,7 @@ assert _ord == ["First,", "Second,", "Third,", "Fourth,"], _ord
 led(f"{len(_ord)} readings", "Results, board signal: 'four readings'", "report/REPORT_DRAFT.md", "the paragraph's ordinals First, Second, Third, Fourth", raw_where=True)
 _outrows = [l for l in T6.splitlines()[2:] if l.startswith("| ")]
 assert len(_outrows) == 6, _outrows
-led(f"{len(_outrows) - 1} other outputs", "Results, label map: 'the other five as zeros by construction'", "Table F1 rows; VISION.md",
+led(f"{len(_outrows) - 1} other outputs", "Results, label map: 'the other five as zeros by construction'", "Table F1 rows; PROJECT_DESCRIPTION.md",
     f"{len(_outrows)} outputs in Table F1 less cheating", raw_where=True)
 os.makedirs(OUT, exist_ok=True)
 open(f"{OUT}/REPORT_DRAFT.md", "w").write(tpl)

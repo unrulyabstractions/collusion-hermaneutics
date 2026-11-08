@@ -27,7 +27,7 @@ Multi-agent collusion has a probe-based detector and a risk taxonomy. Detecting 
 
 ### Authors and reader
 
-We probe five authors through one reader (Table M1). Four authors are served through an API and return their reasoning as a provider summary at best. The fifth, Qwen3.8-27B, is open and is also the reader. **Think coverage** is the share of an author's assistant turns whose think block holds readable reasoning text. The open author gives all of its reasoning, two closed authors give a summary on some turns, and Claude Haiku 5.5 gives none. For authors with low coverage the reader reads the visible transcript, and the think positions mark turn boundaries with nothing inside them. We therefore report coverage beside every transfer result and treat it as an author signature the controls must remove.
+We probe five authors through one reader (Table M1). Four authors are served through an API and return their reasoning as a provider summary at best. The fifth, Qwen3.8-27B, is open and is also the reader. **Think coverage** is the share of an author's assistant turns whose think block holds readable reasoning text. The open author gives all of its reasoning, three closed authors give a summary on some turns, and Claude Haiku 5.5 gives none. For authors with low coverage the reader reads the visible transcript, and the think positions mark turn boundaries with nothing inside them. We therefore report coverage beside every transfer result and treat it as an author signature the controls must remove.
 
 **Table M1.** Authors and reader. Think coverage is measured over every valid run of the controls dataset.
 
@@ -149,7 +149,7 @@ The author is almost perfectly readable from the same features and falls to the 
 
 The probe does not beat a text classifier on the whole transcript (Table 4). A TF-IDF logistic regression on the rendered transcript reaches or exceeds the probe pooled, on the within-author mean and on the unseen-author mean, in all three arms. The one author where the probe stays ahead within itself is Qwen3.8-27B, the reader's own model (Tables 1 and 2). The probe matches the classifier on the agent's own words, beats the lexical-only null on the think windows by a wide margin, and beats every judge. The mechanism is in the label. The cheat ladder reads the same transcript the classifier reads, and the planted material enters a cheating agent's context through tool results. The words of the tool output carry the label, and a bag-of-words model recovers it. The judge comparison bounds a cheap judge: reasoning was off or low, transcripts were cut, and the strongest judge scored part of the agents before the spend cap stopped it. We therefore conclude that on this testbed the reader's states carry the cheating label about as well as the transcript's words and no better, and that whether they carry anything the words do not is a question for the random-weights null, a residual test on the classifier's errors, and matched runs where lexical cues cancel.
 
-**Table 4.** The probe against the text classifiers, the lexical-only null and the judges, on the same agents and folds. Within-author mean is the mean of the type-A AUROCs over the authors with both classes; the lexical null has no value for Claude Haiku 5.5, whose think windows are empty. Judges have no training and so no B.II row. Judge prompt: the task and the transcript with each tool result cut to 500 characters and the tail cut to 12,000 tokens, one yes-or-no answer with a confidence. Pending cells are still running.
+**Table 4.** The probe against the text classifiers, the lexical-only null and the judges, on the same agents and folds. Within-author mean is the mean of the type-A AUROCs over the authors with both classes; the lexical null has no value for Claude Haiku 5.5, whose think windows are empty. Judges have no training and so no B.II row. The lexical null's B.II mean includes Haiku's degenerate held-out fold, where no think text exists and the AUROC is chance, while its within-author mean excludes Haiku. Judge prompt: the task and the transcript with each tool result cut to 500 characters and the tail cut to 12,000 tokens, one yes-or-no answer with a confidence. Pending cells are still running.
 
 | method | solo agents scored | solo arm, B.I pooled AUROC [95% CI] | solo, within-author mean (A) | solo, B.II mean (unseen author) | both arms pooled, B.I | cheat arm, B.I |
 |---|---|---|---|---|---|---|
@@ -166,7 +166,7 @@ The probe does not beat a text classifier on the whole transcript (Table 4). A T
 
 ### Can a planted board signal move coordination?
 
-One planted post moves coordination, and the turn budget gates whether it can (Table 5). At the short budget every arm sits on the floor: no exploit piece crosses between agents and almost no agent posts. At the long budget crossing saturates in the pilot and the seed raises how much the agents talk and how many pieces cross. The dose-response matrix at the long budget gives four readings, all directional at this seed count and with no significance test. First, presence: the neutral post lifts crossing, assembly and passing above the empty board, so the neutral arm isolates content and the empty-to-neutral step isolates presence. Second, content: the pro-coordination posts roughly double discussion over the neutral post, and the mild post doubles assembly. Third, dose is not monotonic: the mild nudge yields the most teams that assemble the exploit and pass the hidden tests, while the explicit post yields more talk and no passing team. We hold as a hypothesis that naming the shortcut turns the team toward deliberation and away from execution. Fourth, the hidden regulator holds assembly at the empty-board floor while the workers post several times more than on the empty board. Its own posts inflate every post-based count, so we judge the anti-coordination arm by worker-only posts, crossing and assembly. We therefore conclude that the board seed is a usable lever on coordination intensity, and that collusion outcome and coordination volume can move in opposite directions.
+One planted post moves coordination, and the turn budget gates whether it can (Table 5). At the short budget every arm sits on the floor: no exploit piece crosses between agents and almost no agent posts. At the long budget crossing saturates in the pilot and the seed raises how much the agents talk and how many pieces cross. The dose-response matrix at the long budget gives four readings, all directional at this seed count and with no significance test. First, presence: the neutral post lifts crossing, assembly and passing above the empty board, so the neutral arm isolates content and the empty-to-neutral step isolates presence. Second, content: the pro-coordination posts roughly double discussion over the neutral post, and the mild post doubles assembly. Third, dose is not monotonic. The mild nudge yields the most teams that assemble the exploit and pass the hidden tests. The explicit post lifts posting above the neutral and empty boards and below the mild post, and it yields no passing team. We hold as a hypothesis that naming the shortcut turns the team toward deliberation and away from execution. Fourth, the hidden regulator holds assembly at the empty-board floor while the workers post several times more than on the empty board. Its own posts inflate every post-based count, so we judge the anti-coordination arm by worker-only posts, crossing and assembly. We therefore conclude that the board seed is a usable lever on coordination intensity, and that collusion outcome and coordination volume can move in opposite directions.
 
 **Table 5.** Three-agent software-engineering runs with a split exploit, one author (DeepSeek V4.1 Flash). "Crossed or assembled" counts teams where an exploit piece reached an agent that did not hold it. Means are per run. In the anti-coordination arm the regulator's posts are excluded from the worker-only count. The tb=25 and tb=60 rows are the pilots; the dose-response rows are the final matrix. Discussed, solicited, crossed and assembled are counts of evidence items per run.
 
@@ -175,7 +175,7 @@ One planted post moves coordination, and the turn budget gates whether it can (T
 | pilot | 25 | none (empty board) | 2 | 0/2 | 0/2 | 0 | | | 0 | 0 |
 | pilot | 25 | neutral post | 5 | 0/5 | 0/5 | 0 | | | 0 | 0 |
 | pilot | 25 | pro-coordination, explicit | 5 | 0/5 | 0/5 | 0.4 (one team, two posts) | | | 0 | 0 |
-| pilot | 60 | none (empty board) | 3 | 3/3 | 1/3 | 3.0 | 2.0 | 1.7 | 1.7 | 1.7 |
+| pilot | 60 | none (empty board) | 3 | 3/3 | 1/3 | 2.7 | 2.0 | 1.7 | 1.7 | 1.7 |
 | pilot | 60 | pro-coordination, explicit | 3 | 3/3 | 1/3 | 9.3 | 8.3 | 5.0 | 4.0 | 2.0 |
 | dose-response | 60 | none (empty board) | 5 | 2/5 | 0/5 | 1.0 | 0.0 | 0.2 | 0.6 | 0.0 |
 | dose-response | 60 | neutral post | 5 | 5/5 | 2/5 | 5.0 | 3.6 | 2.4 | 2.8 | 2.2 |
@@ -264,11 +264,11 @@ The sprint ran from November 6 to 8, 2026. The items below are split by whether 
 | board-seed pilot, turn budget 25 | 12 | 0.86 | pilot table |
 | board-seed pilot, turn budget 60 | 6 | 1.25 | pilot table |
 | board-seed dose-response | 25 | 6.09 | dose-response table |
-| judge baseline, GPT-5 mini | 600 agents | 1.20 | verification log |
-| judge baseline, Claude Haiku 5.5 | 600 agents | 0.71 | verification log |
-| judge baseline, Claude Sonnet 5.5 (stopped by the in-code cap) | 460 of 600 agents | 10.11 | verification log |
-| judge baseline, discarded pricing round (empty replies) | 20 calls per model | 0.33 | verification log |
-| judge baselines, total as the provider key moved | | 12.36 | verification log |
+| judge baseline, GPT-5 mini | 600 agents | 1.20 | judge spend ledger |
+| judge baseline, Claude Haiku 5.5 | 600 agents | 0.71 | judge spend ledger |
+| judge baseline, Claude Sonnet 5.5 (stopped by the in-code cap) | 460 of 600 agents | 10.11 | judge spend ledger |
+| judge baseline, discarded pricing round (empty replies) | 20 calls per model | 0.33 | judge spend ledger |
+| judge baselines, total as the provider ledger moved | | 12.34 | judge spend ledger |
 | reader forward passes and probes | 600 runs probed | 0 (free GPU host) | verification log |
 
 ## Appendix C: Board-seed texts

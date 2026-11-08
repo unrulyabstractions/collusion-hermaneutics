@@ -19,8 +19,15 @@ OUT = f"{REPO}/report"
 LEDGER = []
 
 
+RENUM = {"2": "Table D4", "3": "Table 2", "4": "Table 3", "5": "Table 4"}
+
+
+def renum(where):
+    return re.sub(r"\bTable ([2-5])\b", lambda m: RENUM[m.group(1)], where)
+
+
 def led(value, where, source, selector):
-    LEDGER.append(f"| {value} | {where} | `{source}` | {selector} |")
+    LEDGER.append(f"| {value} | {renum(where)} | `{source}` | {selector} |")
 
 
 def rel(p):
@@ -281,14 +288,14 @@ T1 = "\n".join(T1)
 # ----------------------------------------------------------------------------------------------------------------
 # Table 2: B.II leave-one-author-out
 # ----------------------------------------------------------------------------------------------------------------
-T2 = ["| held-out author | think coverage | cheat / no cheat | PCA probe, raw | PCA, author erased | PCA, author, task, condition erased | full-dimension probe, raw | per-turn probe, agent AUROC | TF-IDF, whole transcript |",
+T2 = ["| held-out author | think coverage | cheat / no cheat | PCA probe, raw | PCA, author erased | PCA, author, task, condition erased | every-dimension probe, raw | per-turn probe, agent AUROC | TF-IDF, whole transcript |",
       "|---|---|---|---|---|---|---|---|---|"]
 for a in AUTH:
     cells = []
     for ft in FEATS:
         v, r = auc_cell(pca, PCA, f"Table 2 row {NAME[a]} col PCA '{ft}'", **base, features=ft, scope=f"LOTO {a}")
         cells.append(v)
-    vf, _ = auc_cell(full, FULL, f"Table 2 row {NAME[a]} col full-dimension raw", arm="solo", probe="full", turn_labels="agent",
+    vf, _ = auc_cell(full, FULL, f"Table 2 row {NAME[a]} col every-dimension raw", arm="solo", probe="full", turn_labels="agent",
                      layer="all", position="close", pooling="agent", features="raw", scope=f"LOTO {a}")
     vt, _ = auc_cell(turn, TURN, f"Table 2 row {NAME[a]} col per-turn agent AUROC", arm="solo", probe="pca", turn_labels="agent",
                      layer="38", position="close", pooling="turn", features="raw", scope=f"LOTO {a}")
@@ -442,7 +449,7 @@ TD3 = ["| method | both arms pooled, B.I | cheat arm, B.I |", "|---|---|---|"]
 def add(pair):
     T4.append(pair[0]); TD3.append(pair[1])
 add(probe_row("probe, PCA", pca, PCA, "pca", "all", "both", "probe PCA"))
-add(probe_row("probe, every dimension", full, FULL, "full", "all", "close", "probe full-dim"))
+add(probe_row("probe, every dimension", full, FULL, "full", "all", "close", "probe every-dim"))
 add(t4_row("TF-IDF, whole transcript", tfidf_all, f"{REPO}/hermeneutics/results/tfidf*/auroc.csv", dict(probe="tfidf", position="transcript"), "TF-IDF transcript"))
 add(t4_row("TF-IDF, agent's words", tfidf_all, f"{REPO}/hermeneutics/results/tfidf*/auroc.csv", dict(probe="tfidf", position="agent"), "TF-IDF own words"))
 add(t4_row("lexical null (think windows)", tfidf_all, f"{REPO}/hermeneutics/results/tfidf*/auroc.csv", dict(probe="tfidf", position="think"), "lexical null"))
@@ -706,7 +713,7 @@ def sweep(tab, path, probe, name):
 
 
 TB1 = sweep(pca, PCA, "pca", "Table D1: PCA probe")
-TB2 = sweep(full, FULL, "full", "Table D2: full-dimension probe")
+TB2 = sweep(full, FULL, "full", "Table D2: every-dimension probe")
 
 # ----------------------------------------------------------------------------------------------------------------
 # Appendix C: board-seed texts, read from the source module with ast
@@ -741,6 +748,34 @@ led(ABS_LOTO, "Abstract: B.II range", rel(PCA), "min/max over LOTO scopes, same 
 r2 = pick(pca, **base, features="author, task, condition erased", scope="pooled")
 ABS_ERASED = f3(r2["auroc"])
 led(ABS_ERASED, "Abstract: B.I after erasure", rel(PCA), sel(**base, features="author, task, condition erased", scope="pooled") + " -> auroc")
+
+# ----------------------------------------------------------------------------------------------------------------
+# Figure 1 (unseen-author transfer): the plotted values must equal the source rows that Table D4 prints
+# ----------------------------------------------------------------------------------------------------------------
+FIGV = f"{REPO}/report/figures/fig1_transfer_values.json"
+_fig = json.load(open(FIGV))
+_src = {"hermeneutics/results/pca_agent/auroc.csv": pca, "hermeneutics/results/full_agent/auroc.csv": full,
+        "hermeneutics/results/pca_turn/auroc.csv": turn, "hermeneutics/results/tfidf/auroc.csv": tfidf_all}
+_name2a = {NAME[a]: a for a in AUTH}
+assert len(_fig) == 20, len(_fig)
+for e in _fig:
+    kw = dict(kv.split("=", 1) for kv in e["selector"].split(","))
+    tab = _src[e["source_file"]]
+    if e["source_file"].endswith("tfidf/auroc.csv"):
+        kw["probe"] = "tfidf"
+    r = pick(tab, **kw)
+    assert abs(float(r["auroc"]) - e["auroc"]) < 1e-12 and abs(float(r["ci_lo"]) - e["lo"]) < 1e-12 and abs(float(r["ci_hi"]) - e["hi"]) < 1e-12, e
+    n_, t_, rd_ = cov[_name2a[e["author"]]]
+    assert abs(rd_ / t_ - e["think_coverage"]) < 1e-12, e
+led("20 plotted values (AUROC and interval) and 5 think-coverage labels", "Figure 1 markers, whiskers and author labels", rel(FIGV),
+    "each entry equals its source row (auroc, ci_lo, ci_hi) and the Table E1 coverage; the same cells print in Table D4")
+FIG_CI = "95%"
+assert "np.percentile(vals, [2.5, 97.5])" in open(f"{REPO}/hermeneutics/probes.py").read()
+led(FIG_CI, "Figure 1 caption: interval level", "hermeneutics/probes.py", "boot_ci: np.percentile(vals, [2.5, 97.5])")
+_tl = {e["selector"].split("layer=")[1].split(",")[0] for e in _fig if e["method"] == "Per-turn probe"}
+assert len(_tl) == 1, _tl
+FIG_TURN_LAYER = _tl.pop()
+led(FIG_TURN_LAYER, "Figure 1 caption: the per-turn probe's layer", rel(FIGV), "selector of the 'Per-turn probe' entries (layer=38)")
 
 # ----------------------------------------------------------------------------------------------------------------
 # prose numbers added in the final verification round
@@ -799,7 +834,7 @@ if len(_pre) != N_B1:
 for k, v in {"<<TM1>>": TM1, "<<TM2>>": TM2, "<<TM3>>": TM3, "<<T1>>": T1, "<<T2>>": T2, "<<T3>>": T3, "<<T4>>": T4, "<<T5>>": T5,
              "<<T6>>": T6, "<<TS>>": TS, "<<TB1>>": TB1, "<<TB2>>": TB2, "<<ABS_BI>>": ABS_BI, "<<ABS_LOTO>>": ABS_LOTO,
              "<<ABS_ERASED>>": ABS_ERASED, "<<TC>>": TC, "<<ABS_JUDGE>>": ABS_JUDGE, "<<ABS_TFIDF>>": ABS_TFIDF, "<<TD3>>": TD3, "<<SON_D3>>": SON_D3, "<<NULL_LO>>": NULL_LO, "<<NULL_HI>>": NULL_HI, "<<HF_TOTAL>>": hf_total, "<<FIRST>>": first, "<<LAST>>": last, "<<HF_BUILT>>": hf_built,
-             "<<HF_SPEND>>": hf_spend, "<<N_PROBED>>": N_PROBED, "<<N_SOLO>>": N_SOLO, "<<SON_SOLO>>": SON_SOLO, "<<N_BOARD>>": N_BOARD, "<<N_B1>>": WORD[N_B1]}.items():
+             "<<HF_SPEND>>": hf_spend, "<<N_PROBED>>": N_PROBED, "<<N_SOLO>>": N_SOLO, "<<SON_SOLO>>": SON_SOLO, "<<N_BOARD>>": N_BOARD, "<<N_B1>>": WORD[N_B1], "<<FIG_CI>>": FIG_CI, "<<FIG_TURN_LAYER>>": FIG_TURN_LAYER}.items():
     assert k in tpl, k
     tpl = tpl.replace(k, v)
 assert "<<" not in tpl, re.findall(r"<<[A-Z_0-9]+>>", tpl)

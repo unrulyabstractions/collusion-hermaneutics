@@ -34,7 +34,7 @@ The sprint rules ask that code written before the sprint be marked. The sprint o
 bash report/build_pdf.sh                      # Markdown to LaTeX to PDF (xelatex), prints the page count
 ```
 
-Every number in the report has a line in `report/NUMBERS.md` naming its source and selector: a result file and its cell, a run log, a code constant, or, for a few facts (DeepSeek V4.1 Flash's licence and size, the sprint's dates, reference years), the public page and the field read. The tables were checked cell by cell against those sources by independent verification passes; the entries are in `VERIFICATION_LOG.md`.
+Every table cell and every number written in digits in the report has a line in `report/NUMBERS.md` naming its source and selector: a result file and its cell, a run log, a code constant, a repository document, or, for a few facts (such as DeepSeek V4.1 Flash's licence and size, the sprint's dates and tracks, and reference years), the public page and the field read. The tables were checked cell by cell against those sources by independent verification passes; the entries are in `VERIFICATION_LOG.md`.
 
 ## LLM use
 

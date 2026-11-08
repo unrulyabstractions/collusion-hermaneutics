@@ -43,7 +43,8 @@ SHORT_CELL_EM = 12.0           # a column whose body cells are all shorter than 
                                # to at most two lines
 CELL_TARGET_EM = 45.0          # a column never asks for more than this per line
 FIRST_COL_BONUS = 1.3
-TABLE_PLACEMENT = os.environ.get("MD2TEX_PLACEMENT", "H")   # H: here; ht: here or next top
+TABLE_PLACEMENT = os.environ.get("MD2TEX_PLACEMENT", "!htbp")   # !htbp (default): float within the
+                               # section, fenced by \FloatBarrier at every heading; H: strictly here
 HEADING_TOP_SKIP_PT = 25.0     # estimated gap from a heading's baseline to the
                                # top of its before-skip (for the page fraction)
 
@@ -542,7 +543,8 @@ class Emitter:
 
     def heading(self, h: Heading) -> str:
         cmd = {2: "\\section*", 3: "\\subsection*"}.get(h.level, "\\subsubsection*")
-        return cmd + "{" + self.inl(h.text) + self.mark(h.level, h.text) + "}"
+        barrier = "" if TABLE_PLACEMENT == "H" else "\\FloatBarrier\n"
+        return barrier + cmd + "{" + self.inl(h.text) + self.mark(h.level, h.text) + "}"
 
     def para(self, p: Para, noindent: bool = False) -> str:
         body = self.inl(p.text)
@@ -647,6 +649,7 @@ PREAMBLE = r"""\documentclass[11pt,letterpaper]{article}
 \usepackage{tabularx}
 \usepackage{longtable}
 \usepackage{float}
+\usepackage{placeins}
 \usepackage{enumitem}
 \usepackage{ragged2e}
 \usepackage{graphicx}
@@ -659,6 +662,8 @@ PREAMBLE = r"""\documentclass[11pt,letterpaper]{article}
 \setlength{\emergencystretch}{2em}
 \clubpenalty=10000 \widowpenalty=10000
 \renewcommand{\arraystretch}{1.12}
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.7}
+\renewcommand{\textfraction}{0.07}\renewcommand{\floatpagefraction}{0.75}
 \makeatletter
 % heading position marks: \mdtexpos{n}{page}{y in sp}, written at shipout
 \newcommand{\mdtexmark}[1]{\pdfsavepos\protected@write\@auxout{}{\string\mdtexpos{#1}{\thepage}{\noexpand\the\pdflastypos}}}

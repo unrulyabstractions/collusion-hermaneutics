@@ -4,71 +4,71 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 
 | value | where in the draft | source | field / selector |
 |---|---|---|---|
-| openrouter/deepseek/deepseek-v4.1-flash-1017 | Table M1 row DeepSeek V4.1 Flash col API model id | `data/runs.csv` | distinct model_id where author=ds |
-| 846 | Table M1 row DeepSeek V4.1 Flash col valid runs | `data/labels.csv` | count rows where author=ds and valid=True |
-| 0.884 | Table M1 row DeepSeek V4.1 Flash col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=ds (15066/17036) |
-| openrouter/openai/gpt-5-mini | Table M1 row GPT-5 mini col API model id | `data/runs.csv` | distinct model_id where author=gpt5m |
-| 850 | Table M1 row GPT-5 mini col valid runs | `data/labels.csv` | count rows where author=gpt5m and valid=True |
-| 0.481 | Table M1 row GPT-5 mini col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=gpt5m (7680/15981) |
-| openrouter/anthropic/claude-haiku-5.5 | Table M1 row Claude Haiku 5.5 col API model id | `data/runs.csv` | distinct model_id where author=haiku |
-| 854 | Table M1 row Claude Haiku 5.5 col valid runs | `data/labels.csv` | count rows where author=haiku and valid=True |
-| 0.000 | Table M1 row Claude Haiku 5.5 col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=haiku (0/13141) |
-| openrouter/openai/gpt-6-luna | Table M1 row GPT-6 Luna col API model id | `data/runs.csv` | distinct model_id where author=luna |
-| 851 | Table M1 row GPT-6 Luna col valid runs | `data/labels.csv` | count rows where author=luna and valid=True |
-| 0.335 | Table M1 row GPT-6 Luna col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=luna (4896/14627) |
-| openrouter/qwen/qwen3.8-27b | Table M1 row Qwen3.8-27B col API model id | `data/runs.csv` | distinct model_id where author=qwen |
-| 756 | Table M1 row Qwen3.8-27B col valid runs | `data/labels.csv` | count rows where author=qwen and valid=True |
-| 1.000 | Table M1 row Qwen3.8-27B col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=qwen (13199/13199) |
-| 335 / 87 / 0 | Table M2 row DeepSeek V4.1 Flash/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=ds, condition=solo, valid=True |
-| 42 / 43 | Table M2 row DeepSeek V4.1 Flash/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=ds, condition=solo |
-| 1681 | Table M2 row DeepSeek V4.1 Flash/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=ds, condition=solo |
-| 1439 | Table M2 row DeepSeek V4.1 Flash/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=ds, condition=solo |
-| 409 / 15 / 0 | Table M2 row DeepSeek V4.1 Flash/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=ds, condition=cheat, valid=True |
-| 30 / 5 | Table M2 row DeepSeek V4.1 Flash/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=ds, condition=cheat |
-| 619 | Table M2 row DeepSeek V4.1 Flash/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=ds, condition=cheat |
-| 547 | Table M2 row DeepSeek V4.1 Flash/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=ds, condition=cheat |
-| 58 / 340 / 26 | Table M2 row GPT-5 mini/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=gpt5m, condition=solo, valid=True |
-| 30 / 30 | Table M2 row GPT-5 mini/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=gpt5m, condition=solo |
-| 1244 | Table M2 row GPT-5 mini/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=gpt5m, condition=solo |
-| 623 | Table M2 row GPT-5 mini/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=gpt5m, condition=solo |
-| 277 / 143 / 6 | Table M2 row GPT-5 mini/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=gpt5m, condition=cheat, valid=True |
-| 30 / 30 | Table M2 row GPT-5 mini/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=gpt5m, condition=cheat |
-| 1094 | Table M2 row GPT-5 mini/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=gpt5m, condition=cheat |
-| 522 | Table M2 row GPT-5 mini/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=gpt5m, condition=cheat |
-| 131 / 297 / 0 | Table M2 row Claude Haiku 5.5/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=haiku, condition=solo, valid=True |
-| 30 / 30 | Table M2 row Claude Haiku 5.5/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=haiku, condition=solo |
-| 957 | Table M2 row Claude Haiku 5.5/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=haiku, condition=solo |
-| 0 | Table M2 row Claude Haiku 5.5/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=haiku, condition=solo |
-| 196 / 229 / 1 | Table M2 row Claude Haiku 5.5/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=haiku, condition=cheat, valid=True |
-| 30 / 30 | Table M2 row Claude Haiku 5.5/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=haiku, condition=cheat |
-| 882 | Table M2 row Claude Haiku 5.5/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=haiku, condition=cheat |
-| 0 | Table M2 row Claude Haiku 5.5/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=haiku, condition=cheat |
-| 181 / 229 / 15 | Table M2 row GPT-6 Luna/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=luna, condition=solo, valid=True |
-| 39 / 39 | Table M2 row GPT-6 Luna/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=luna, condition=solo |
-| 1476 | Table M2 row GPT-6 Luna/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=luna, condition=solo |
-| 445 | Table M2 row GPT-6 Luna/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=luna, condition=solo |
-| 410 / 12 / 4 | Table M2 row GPT-6 Luna/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=luna, condition=cheat, valid=True |
-| 30 / 12 | Table M2 row GPT-6 Luna/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=luna, condition=cheat |
-| 569 | Table M2 row GPT-6 Luna/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=luna, condition=cheat |
-| 191 | Table M2 row GPT-6 Luna/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=luna, condition=cheat |
-| 327 / 45 / 3 | Table M2 row Qwen3.8-27B/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=qwen, condition=solo, valid=True |
-| 52 / 38 | Table M2 row Qwen3.8-27B/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=qwen, condition=solo |
-| 2008 | Table M2 row Qwen3.8-27B/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=qwen, condition=solo |
-| 2008 | Table M2 row Qwen3.8-27B/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=qwen, condition=solo |
-| 380 / 1 / 0 | Table M2 row Qwen3.8-27B/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=qwen, condition=cheat, valid=True |
-| 30 / 0 | Table M2 row Qwen3.8-27B/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=qwen, condition=cheat |
-| 455 | Table M2 row Qwen3.8-27B/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=qwen, condition=cheat |
-| 455 | Table M2 row Qwen3.8-27B/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=qwen, condition=cheat |
-| 600 | Table M3 probed runs | `hermeneutics/results/pca_agent/agents.csv` | row count |
-| 248068 / 248069 | Table M3 positions | `VERIFICATION_LOG.md` | 07:20 entry: token ids checked against the tokenizer |
-| 26, 38, 51 of 64 | Table M3 layers | `hermeneutics/results/full_agent/RESULTS.md` | header: HF hidden_states numbering, 64 blocks |
-| 256 | Table M3 probe | `hermeneutics/probes.py` | PCA_DIM = 256 (line 48) |
-| 5 | Table M3 folds | `hermeneutics/probes.py` | K = 5 (line 45) |
-| 1000 | Table M3 intervals | `hermeneutics/probes.py` | N_BOOT = 1000 (line 47) |
-| 100 | Table M3 null | `hermeneutics/results/RESULTS.md` | Table 4 caption '100 draws'; VERIFICATION_LOG 09:13 '100 shuffles' |
-| 600 / 120 / 100k | Table M3 probed runs | `VERIFICATION_LOG.md` | 07:45 entry: --per-author 120 --max-tokens 100000 -> 600 runs |
-| 14,182,746 / 10,985 | Table M3 probed tokens / turns | `VERIFICATION_LOG.md` | 09:13 entry |
-| 1.94 h, L40S | Table M3 extraction | `VERIFICATION_LOG.md` | 09:13 entry (elapsed 1.94 h); cloud-jobs memory: wild = L40S |
+| openrouter/deepseek/deepseek-v4.1-flash-1017 | Table E1 row DeepSeek V4.1 Flash col API model id | `data/runs.csv` | distinct model_id where author=ds |
+| 846 | Table E1 row DeepSeek V4.1 Flash col valid runs | `data/labels.csv` | count rows where author=ds and valid=True |
+| 0.884 | Table E1 row DeepSeek V4.1 Flash col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=ds (15066/17036) |
+| openrouter/openai/gpt-5-mini | Table E1 row GPT-5 mini col API model id | `data/runs.csv` | distinct model_id where author=gpt5m |
+| 850 | Table E1 row GPT-5 mini col valid runs | `data/labels.csv` | count rows where author=gpt5m and valid=True |
+| 0.481 | Table E1 row GPT-5 mini col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=gpt5m (7680/15981) |
+| openrouter/anthropic/claude-haiku-5.5 | Table E1 row Claude Haiku 5.5 col API model id | `data/runs.csv` | distinct model_id where author=haiku |
+| 854 | Table E1 row Claude Haiku 5.5 col valid runs | `data/labels.csv` | count rows where author=haiku and valid=True |
+| 0.000 | Table E1 row Claude Haiku 5.5 col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=haiku (0/13141) |
+| openrouter/openai/gpt-6-luna | Table E1 row GPT-6 Luna col API model id | `data/runs.csv` | distinct model_id where author=luna |
+| 851 | Table E1 row GPT-6 Luna col valid runs | `data/labels.csv` | count rows where author=luna and valid=True |
+| 0.335 | Table E1 row GPT-6 Luna col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=luna (4896/14627) |
+| openrouter/qwen/qwen3.8-27b | Table E1 row Qwen3.8-27B col API model id | `data/runs.csv` | distinct model_id where author=qwen |
+| 756 | Table E1 row Qwen3.8-27B col valid runs | `data/labels.csv` | count rows where author=qwen and valid=True |
+| 1.000 | Table E1 row Qwen3.8-27B col think coverage | `data/render_summary.csv` | sum(n_readable)/sum(turns) over rows where author=qwen (13199/13199) |
+| 335 / 87 / 0 | Table E2 row DeepSeek V4.1 Flash/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=ds, condition=solo, valid=True |
+| 42 / 43 | Table E2 row DeepSeek V4.1 Flash/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=ds, condition=solo |
+| 1681 | Table E2 row DeepSeek V4.1 Flash/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=ds, condition=solo |
+| 1439 | Table E2 row DeepSeek V4.1 Flash/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=ds, condition=solo |
+| 409 / 15 / 0 | Table E2 row DeepSeek V4.1 Flash/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=ds, condition=cheat, valid=True |
+| 30 / 5 | Table E2 row DeepSeek V4.1 Flash/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=ds, condition=cheat |
+| 619 | Table E2 row DeepSeek V4.1 Flash/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=ds, condition=cheat |
+| 547 | Table E2 row DeepSeek V4.1 Flash/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=ds, condition=cheat |
+| 58 / 340 / 26 | Table E2 row GPT-5 mini/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=gpt5m, condition=solo, valid=True |
+| 30 / 30 | Table E2 row GPT-5 mini/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=gpt5m, condition=solo |
+| 1244 | Table E2 row GPT-5 mini/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=gpt5m, condition=solo |
+| 623 | Table E2 row GPT-5 mini/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=gpt5m, condition=solo |
+| 277 / 143 / 6 | Table E2 row GPT-5 mini/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=gpt5m, condition=cheat, valid=True |
+| 30 / 30 | Table E2 row GPT-5 mini/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=gpt5m, condition=cheat |
+| 1094 | Table E2 row GPT-5 mini/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=gpt5m, condition=cheat |
+| 522 | Table E2 row GPT-5 mini/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=gpt5m, condition=cheat |
+| 131 / 297 / 0 | Table E2 row Claude Haiku 5.5/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=haiku, condition=solo, valid=True |
+| 30 / 30 | Table E2 row Claude Haiku 5.5/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=haiku, condition=solo |
+| 957 | Table E2 row Claude Haiku 5.5/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=haiku, condition=solo |
+| 0 | Table E2 row Claude Haiku 5.5/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=haiku, condition=solo |
+| 196 / 229 / 1 | Table E2 row Claude Haiku 5.5/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=haiku, condition=cheat, valid=True |
+| 30 / 30 | Table E2 row Claude Haiku 5.5/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=haiku, condition=cheat |
+| 882 | Table E2 row Claude Haiku 5.5/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=haiku, condition=cheat |
+| 0 | Table E2 row Claude Haiku 5.5/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=haiku, condition=cheat |
+| 181 / 229 / 15 | Table E2 row GPT-6 Luna/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=luna, condition=solo, valid=True |
+| 39 / 39 | Table E2 row GPT-6 Luna/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=luna, condition=solo |
+| 1476 | Table E2 row GPT-6 Luna/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=luna, condition=solo |
+| 445 | Table E2 row GPT-6 Luna/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=luna, condition=solo |
+| 410 / 12 / 4 | Table E2 row GPT-6 Luna/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=luna, condition=cheat, valid=True |
+| 30 / 12 | Table E2 row GPT-6 Luna/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=luna, condition=cheat |
+| 569 | Table E2 row GPT-6 Luna/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=luna, condition=cheat |
+| 191 | Table E2 row GPT-6 Luna/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=luna, condition=cheat |
+| 327 / 45 / 3 | Table E2 row Qwen3.8-27B/solo col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=qwen, condition=solo, valid=True |
+| 52 / 38 | Table E2 row Qwen3.8-27B/solo col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=qwen, condition=solo |
+| 2008 | Table E2 row Qwen3.8-27B/solo col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=qwen, condition=solo |
+| 2008 | Table E2 row Qwen3.8-27B/solo col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=qwen, condition=solo |
+| 380 / 1 / 0 | Table E2 row Qwen3.8-27B/cheat col valid runs | `data/labels.csv` | count label in (cheat, no cheat, other) where author=qwen, condition=cheat, valid=True |
+| 30 / 0 | Table E2 row Qwen3.8-27B/cheat col probed agents | `hermeneutics/results/pca_agent/agents.csv` | count y==1 / y==0 where author=qwen, condition=cheat |
+| 455 | Table E2 row Qwen3.8-27B/cheat col probed turns | `hermeneutics/results/pca_agent/agents.csv` | sum n_turns where author=qwen, condition=cheat |
+| 455 | Table E2 row Qwen3.8-27B/cheat col readable | `hermeneutics/results/pca_agent/agents.csv` | sum n_readable where author=qwen, condition=cheat |
+| 600 | Table E3 probed runs | `hermeneutics/results/pca_agent/agents.csv` | row count |
+| 248068 / 248069 | Table E3 positions | `VERIFICATION_LOG.md` | 07:20 entry: token ids checked against the tokenizer |
+| 26, 38, 51 of 64 | Table E3 layers | `hermeneutics/results/full_agent/RESULTS.md` | header: HF hidden_states numbering, 64 blocks |
+| 256 | Table E3 probe | `hermeneutics/probes.py` | PCA_DIM = 256 (line 48) |
+| 5 | Table E3 folds | `hermeneutics/probes.py` | K = 5 (line 45) |
+| 1000 | Table E3 intervals | `hermeneutics/probes.py` | N_BOOT = 1000 (line 47) |
+| 100 | Table E3 null | `hermeneutics/results/RESULTS.md` | Table 4 caption '100 draws'; VERIFICATION_LOG 09:13 '100 shuffles' |
+| 600 / 120 / 100k | Table E3 probed runs | `VERIFICATION_LOG.md` | 07:45 entry: --per-author 120 --max-tokens 100000 -> 600 runs |
+| 14,182,746 / 10,985 | Table E3 probed tokens / turns | `VERIFICATION_LOG.md` | 09:13 entry |
+| 1.94 h, L40S | Table E3 extraction | `VERIFICATION_LOG.md` | 09:13 entry (elapsed 1.94 h); cloud-jobs memory: wild = L40S |
 | 0.967 [0.950, 0.981] | Table 1 row 'B.I pooled, held-out runs' col 'raw' | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=pooled -> auroc, ci_lo, ci_hi |
 | 0.964 [0.946, 0.978] | Table 1 row 'B.I pooled, held-out runs' col 'author erased' | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=author erased,scope=pooled -> auroc, ci_lo, ci_hi |
 | 0.944 [0.921, 0.965] | Table 1 row 'B.I pooled, held-out runs' col 'author, task, condition erased' | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=author, task, condition erased,scope=pooled -> auroc, ci_lo, ci_hi |
@@ -238,14 +238,14 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 5 | 4/5 | 4/5 | 9.4 | 9.4 | 7.6 | 3.4 | 2.6 | 5.2 | Table 5 dose-response row procoordL1 (n, crossed+, pass, mPosts, mWPosts, mDisc, mSol, mCrs, mAsm) | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | row arm=procoordL1 |
 | 5 | 5/5 | 0/5 | 7.2 | 7.2 | 6.6 | 4.4 | 3.4 | 2.8 | Table 5 dose-response row procoordL2 (n, crossed+, pass, mPosts, mWPosts, mDisc, mSol, mCrs, mAsm) | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | row arm=procoordL2 |
 | 5 | 2/5 | 0/5 | 22.8 | 7.0 | 2.0 | 0.0 | 0.6 | 0.0 | Table 5 dose-response row anticoord (n, crossed+, pass, mPosts, mWPosts, mDisc, mSol, mCrs, mAsm) | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | row arm=anticoord |
-| $0.8618 over 12 runs | Table S (spend) row pilot tb=25 spend | `data/board_seed_pilot/RESULTS.tsv` | TOTAL line |
-| $1.2476 over 6 runs | Table S (spend) row pilot tb=60 spend | `data/board_seed_pilot/RESULTS_tb60.tsv` | TOTAL line |
-| $6.0860 over 25 runs | Table S (spend) row dose-response spend | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | TOTAL line |
-| 4,157 | Table S row 'controls dataset' col runs; Appendix A | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'with **4,157** unique completed, validated runs' |
-| 4,424 | Table S row 'controls dataset' col designed matrix | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'designed matrix of **4,424** runs' |
-| 309 / 4,466 | Table S row 'controls dataset' col duplicate copies / transcripts | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3 |
-| $192.85 | Table S row 'controls dataset' col spend | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | Spend: 'Total billed for this study: $192.85' |
-| $136.20 | Table S row 'controls dataset' col spend on canonical runs | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | Spend bullet 1 |
+| $0.8618 over 12 runs | Table B2 (spend) row pilot tb=25 spend | `data/board_seed_pilot/RESULTS.tsv` | TOTAL line |
+| $1.2476 over 6 runs | Table B2 (spend) row pilot tb=60 spend | `data/board_seed_pilot/RESULTS_tb60.tsv` | TOTAL line |
+| $6.0860 over 25 runs | Table B2 (spend) row dose-response spend | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | TOTAL line |
+| 4,157 | Table B2 row 'controls dataset' col runs; Appendix A | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'with **4,157** unique completed, validated runs' |
+| 4,424 | Table B2 row 'controls dataset' col designed matrix | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'designed matrix of **4,424** runs' |
+| 309 / 4,466 | Table B2 row 'controls dataset' col duplicate copies / transcripts | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3 |
+| $192.85 | Table B2 row 'controls dataset' col spend | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | Spend: 'Total billed for this study: $192.85' |
+| $136.20 | Table B2 row 'controls dataset' col spend on canonical runs | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | Spend bullet 1 |
 | 2026-11-07T10:06:53Z | Appendix A: publish time | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | line 3: 'Built 2026-11-07T10:06:53Z' |
 | n_agents = 1 in every run; collaboration and engagement null 0 of 4466 | Method: single-agent scope | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | section 'Single-agent scope' |
 | judged false in every run | Method: no LLM judge | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md (fetched 2026-11-07 with the account token)` | section 'No LLM judge' |
@@ -257,24 +257,24 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 2026-11-07 (mechanism commit 2c72d93; pilots the same day) | Appendix A: board-seed dates | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot' |
 | 2026-10-09 | Appendix A: framework log begins | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | first heading |
 | 2026-11-07T02-37-35 to 05-38-26 (eval log names) | Appendix A: pilot run times | `data/board_seed_pilot/*/run.json, confirm_doseresponse/*/run.json` | eval_log file names |
-| {'openai/gpt-5-mini': 1.1951, 'anthropic/claude-haiku-5.5': 0.711, 'anthropic/claude-sonnet-5.5': 10.1057} | Table S judge rows per model | `hermeneutics/results/judges/spend.json` | per_model_all_calls |
-| 0.3284 | Table S discarded pricing round | `hermeneutics/results/judges/spend.json` | discarded_pricing_round |
-| 12.3404 | Table S judge total | `hermeneutics/results/judges/spend.json` | provider_delta |
+| {'openai/gpt-5-mini': 1.1951, 'anthropic/claude-haiku-5.5': 0.711, 'anthropic/claude-sonnet-5.5': 10.1057} | Table B2 judge rows per model | `hermeneutics/results/judges/spend.json` | per_model_all_calls |
+| 0.3284 | Table B2 discarded pricing round | `hermeneutics/results/judges/spend.json` | discarded_pricing_round |
+| 12.3404 | Table B2 judge total | `hermeneutics/results/judges/spend.json` | provider_delta |
 | 515.6697 | NUMBERS only | `hermeneutics/results/judges/spend.json` | provider_before |
 | 528.0101 | NUMBERS only | `hermeneutics/results/judges/spend.json` | provider_after |
 | 12.0119 | NUMBERS only | `hermeneutics/results/judges/spend.json` | score_files_all_calls |
 | 11.8628 | NUMBERS only | `hermeneutics/results/judges/spend.json` | score_files_scored_calls |
-| $12.34 (12.3404) | Table S judge total; supersedes the 11:05 log figure $12.36 | `VERIFICATION_LOG.md` | 2026-11-08 ~00:40 entry: judge spend re-read from the on-disk ledger; RESULTS.md Table 11b |
-| 460/600 scored; 262 solo | Table S Sonnet row; Table 4 | `VERIFICATION_LOG.md` | 11:05 entry: 'Claude Sonnet 5.5 0.796 on 262 solo agents (460/600 scored before the in-code $10 cap stopped it)' |
-| reasoning disabled (Haiku), minimal (gpt-5-mini), low (Sonnet); tool results cut to 500 chars; transcript tail cut to 12,000 tokens; mean 8,323 prompt tokens | Table 4 caption | `VERIFICATION_LOG.md` | 11:05 entry, 'API judges' bullet |
-| 95% | Table M3 intervals; captions of Tables 1, 2, 4, D1, D2: the bootstrap interval level | `hermeneutics/probes.py` | boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs' |
-| 4,737 executions | Table S row whole study col runs | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md` | Spend: 'per-run ledger of every execution on the collection disk (4,737 executions)' |
-| label map cells | Table 6 | `DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md` | DATASET_DETAILS.md 'Notation' (hierarchy, zeros by construction), section 7 AI Village entry, section 8 own data; ai-village.md 'Labels for our six outputs' |
+| $12.34 (12.3404) | Table B2 judge total; supersedes the 11:05 log figure $12.36 | `VERIFICATION_LOG.md` | 2026-11-08 ~00:40 entry: judge spend re-read from the on-disk ledger; RESULTS.md Table 11b |
+| 460/600 scored; 262 solo | Table B2 Sonnet row; Table 4; Appendix E judge setup note | `VERIFICATION_LOG.md` | 11:05 entry: 'Claude Sonnet 5.5 0.796 on 262 solo agents (460/600 scored before the in-code $10 cap stopped it)' |
+| reasoning disabled (Haiku), minimal (gpt-5-mini), low (Sonnet); tool results cut to 500 chars; transcript tail cut to 12,000 tokens; mean 8,323 prompt tokens | Appendix E, judge setup note | `VERIFICATION_LOG.md` | 11:05 entry, 'API judges' bullet |
+| 95% | Table E3 intervals; captions of Tables 1, 2, 4, D1, D2: the bootstrap interval level | `hermeneutics/probes.py` | boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs' |
+| 4,737 executions | Table B2 row whole study col runs | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md` | Spend: 'per-run ledger of every execution on the collection disk (4,737 executions)' |
+| label map cells | Table F1 | `DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md` | DATASET_DETAILS.md 'Notation' (hierarchy, zeros by construction), section 7 AI Village entry, section 8 own data; ai-village.md 'Labels for our six outputs' |
 | about sixty (63 graded entries) | Section 4 Q6: size of the survey | `DATASETS.md` | count of lines starting '- **[' |
 | hierarchy Sch => Col => (Ch and Cb); Cb => Cp => Cd | Section 4 Q6 prose | `DATASET_DETAILS.md` | 'Notation' section, label hierarchy |
 | no external dataset uses our authors | Section 4 Q6 prose | `DATASET_DETAILS.md` | 'Key takeaways', first bullet |
 | ranked next: SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data, Terminal Wrench | Section 4 Q6 prose | `DATASETS.md` | Ranking rows 2 to 6; DATASET_DETAILS.md 'Plan by priority' |
-| AI Village grade B, gated with access granted, eval-only licence | Section 4 Q6, Table 6 | `DATASETS.md` | Ranking row 16; section 7 entry |
+| AI Village grade B, gated with access granted, eval-only licence | Section 4 Q6, Table F1 | `DATASETS.md` | Ranking row 16; section 7 entry |
 | 0.938 [0.913, 0.959] | 0.948 | 0.960 | 0.927 | 0.660 | 0.966 | 0.946 | 0.934 | 0.744 | 0.713 | 0.902 | 0.567 | Appendix D Table D1: PCA probe row layer=26 position=both | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,layer=26,position=both,features=raw; scope=pooled (auroc, ci, null_95), ds..qwen, LOTO ds..qwen -> auroc |
 | 0.940 [0.915, 0.962] | 0.968 | 0.957 | 0.918 | 0.711 | 0.939 | 0.973 | 0.944 | 0.671 | 0.728 | 0.889 | 0.556 | Appendix D Table D1: PCA probe row layer=26 position=close | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,layer=26,position=close,features=raw; scope=pooled (auroc, ci, null_95), ds..qwen, LOTO ds..qwen -> auroc |
 | 0.946 [0.924, 0.966] | 0.940 | 0.969 | 0.898 | 0.661 | 0.953 | 0.903 | 0.864 | 0.847 | 0.695 | 0.903 | 0.569 | Appendix D Table D1: PCA probe row layer=26 position=open | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,layer=26,position=open,features=raw; scope=pooled (auroc, ci, null_95), ds..qwen, LOTO ds..qwen -> auroc |

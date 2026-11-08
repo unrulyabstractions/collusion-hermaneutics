@@ -94,7 +94,7 @@ def auc_cell(tab, path, where, ci=True, **kw):
 
 
 # ----------------------------------------------------------------------------------------------------------------
-# Table M1: authors and reader
+# Table E1: authors and reader
 # ----------------------------------------------------------------------------------------------------------------
 model_id = {}
 for r in runs:
@@ -117,16 +117,16 @@ for a in AUTH:
     (mid,) = model_id[a]
     n, t, rd = cov[a]
     share = f"{rd / t:.3f}"
-    led(mid, f"Table M1 row {NAME[a]} col API model id", rel(RUNS), f"distinct model_id where author={a}")
-    led(valid[a], f"Table M1 row {NAME[a]} col valid runs", rel(LABELS), f"count rows where author={a} and valid=True")
-    led(share, f"Table M1 row {NAME[a]} col think coverage", rel(RENDER),
+    led(mid, f"Table E1 row {NAME[a]} col API model id", rel(RUNS), f"distinct model_id where author={a}")
+    led(valid[a], f"Table E1 row {NAME[a]} col valid runs", rel(LABELS), f"count rows where author={a} and valid=True")
+    led(share, f"Table E1 row {NAME[a]} col think coverage", rel(RENDER),
         f"sum(n_readable)/sum(turns) over rows where author={a} ({rd}/{t})")
     TM1.append(f"| {NAME[a]} | `{mid}` | {WEIGHTS[a]} | {valid[a]} | {share} |")
 TM1.append("| Reader: Qwen3.8-27B | `openrouter/qwen/qwen3.8-27b` (same model, run locally in bf16) | open | | |")
 TM1 = "\n".join(TM1)
 
 # ----------------------------------------------------------------------------------------------------------------
-# Table M2: data per author x arm (full valid set and the probed subsample)
+# Table E2: data per author x arm (full valid set and the probed subsample)
 # ----------------------------------------------------------------------------------------------------------------
 TM2 = ["| author | arm | valid runs: cheat / no cheat / other | probed agents: cheat / no cheat | probed turns | probed turns with readable reasoning |",
        "|---|---|---|---|---|---|"]
@@ -141,7 +141,7 @@ for a in AUTH:
         snc = sum(1 for r in s if r["y"] == "0")
         st = sum(int(r["n_turns"]) for r in s)
         sr = sum(int(r["n_readable"]) for r in s)
-        where = f"Table M2 row {NAME[a]}/{cond}"
+        where = f"Table E2 row {NAME[a]}/{cond}"
         led(f"{c} / {nc} / {ot}", where + " col valid runs", rel(LABELS),
             f"count label in (cheat, no cheat, other) where author={a}, condition={cond}, valid=True")
         led(f"{sc} / {snc}", where + " col probed agents", rel(AGENTS), f"count y==1 / y==0 where author={a}, condition={cond}")
@@ -150,11 +150,11 @@ for a in AUTH:
         TM2.append(f"| {NAME[a]} | {cond} | {c} / {nc} / {ot} | {sc} / {snc} | {st} | {sr} |")
 TM2 = "\n".join(TM2)
 n_agents = len(agents)
-led(n_agents, "Table M3 probed runs", rel(AGENTS), "row count")
+led(n_agents, "Table E3 probed runs", rel(AGENTS), "row count")
 assert n_agents == 600
 
 # ----------------------------------------------------------------------------------------------------------------
-# Table M3: probe setup constants (from code and logs)
+# Table E3: probe setup constants (from code and logs)
 # ----------------------------------------------------------------------------------------------------------------
 TM3 = """| setting | value |
 |---|---|
@@ -172,15 +172,15 @@ TM3 = """| setting | value |
 | probed tokens / turns | 14,182,746 / 10,985 |
 | extraction | one L40S GPU, 1.94 h, on a free host |"""
 for v, w, s, q in [
-    ("248068 / 248069", "Table M3 positions", "VERIFICATION_LOG.md", "07:20 entry: token ids checked against the tokenizer"),
-    ("26, 38, 51 of 64", "Table M3 layers", "hermeneutics/results/full_agent/RESULTS.md", "header: HF hidden_states numbering, 64 blocks"),
-    ("256", "Table M3 probe", "hermeneutics/probes.py", "PCA_DIM = 256 (line 48)"),
-    ("5", "Table M3 folds", "hermeneutics/probes.py", "K = 5 (line 45)"),
-    ("1000", "Table M3 intervals", "hermeneutics/probes.py", "N_BOOT = 1000 (line 47)"),
-    ("100", "Table M3 null", "hermeneutics/results/RESULTS.md", "Table 4 caption '100 draws'; VERIFICATION_LOG 09:13 '100 shuffles'"),
-    ("600 / 120 / 100k", "Table M3 probed runs", "VERIFICATION_LOG.md", "07:45 entry: --per-author 120 --max-tokens 100000 -> 600 runs"),
-    ("14,182,746 / 10,985", "Table M3 probed tokens / turns", "VERIFICATION_LOG.md", "09:13 entry"),
-    ("1.94 h, L40S", "Table M3 extraction", "VERIFICATION_LOG.md", "09:13 entry (elapsed 1.94 h); cloud-jobs memory: wild = L40S"),
+    ("248068 / 248069", "Table E3 positions", "VERIFICATION_LOG.md", "07:20 entry: token ids checked against the tokenizer"),
+    ("26, 38, 51 of 64", "Table E3 layers", "hermeneutics/results/full_agent/RESULTS.md", "header: HF hidden_states numbering, 64 blocks"),
+    ("256", "Table E3 probe", "hermeneutics/probes.py", "PCA_DIM = 256 (line 48)"),
+    ("5", "Table E3 folds", "hermeneutics/probes.py", "K = 5 (line 45)"),
+    ("1000", "Table E3 intervals", "hermeneutics/probes.py", "N_BOOT = 1000 (line 47)"),
+    ("100", "Table E3 null", "hermeneutics/results/RESULTS.md", "Table 4 caption '100 draws'; VERIFICATION_LOG 09:13 '100 shuffles'"),
+    ("600 / 120 / 100k", "Table E3 probed runs", "VERIFICATION_LOG.md", "07:45 entry: --per-author 120 --max-tokens 100000 -> 600 runs"),
+    ("14,182,746 / 10,985", "Table E3 probed tokens / turns", "VERIFICATION_LOG.md", "09:13 entry"),
+    ("1.94 h, L40S", "Table E3 extraction", "VERIFICATION_LOG.md", "09:13 entry (elapsed 1.94 h); cloud-jobs memory: wild = L40S"),
 ]:
     led(v, w, s, q)
 
@@ -523,7 +523,7 @@ for path, pat, where in [(TB25, r"TOTAL billed: \$([0-9.]+) over (\d+) runs", "p
                          (TB60, r"TOTAL tb=60 billed: \$([0-9.]+) over (\d+) runs", "pilot tb=60 spend"),
                          (DOSE, r"TOTAL billed: \$([0-9.]+) over (\d+) runs", "dose-response spend")]:
     m = re.search(pat, open(path).read())
-    led(f"${m.group(1)} over {m.group(2)} runs", f"Table S (spend) row {where}", rel(path), "TOTAL line")
+    led(f"${m.group(1)} over {m.group(2)} runs", f"Table B2 (spend) row {where}", rel(path), "TOTAL line")
 SPEND = {}
 for path, pat, key in [(TB25, r"TOTAL billed: \$([0-9.]+)", "tb25"), (TB60, r"TOTAL tb=60 billed: \$([0-9.]+)", "tb60"),
                        (DOSE, r"TOTAL billed: \$([0-9.]+)", "dose")]:
@@ -540,11 +540,11 @@ hf_spend = re.search(r"Total billed for this study: \$([0-9.]+)", hf).group(1)
 hf_canon = re.search(r"\*\*\$([0-9.]+)\*\* for the 4,157 valid deduplicated runs", hf).group(1)
 hf_built = re.search(r"Built (2026-11-07T10:06:53Z)", hf).group(1)
 HF_URL = "https://huggingface.co/datasets/unrulyabstractions/apart-swarm"
-for v, w, q in [(hf_total, "Table S row 'controls dataset' col runs; Appendix A", "line 3: 'with **4,157** unique completed, validated runs'"),
-                (hf_matrix, "Table S row 'controls dataset' col designed matrix", "line 3: 'designed matrix of **4,424** runs'"),
-                (f"{hf_extra.group(1)} / {hf_extra.group(2)}", "Table S row 'controls dataset' col duplicate copies / transcripts", "line 3"),
-                (f"${hf_spend}", "Table S row 'controls dataset' col spend", "Spend: 'Total billed for this study: $192.85'"),
-                (f"${hf_canon}", "Table S row 'controls dataset' col spend on canonical runs", "Spend bullet 1"),
+for v, w, q in [(hf_total, "Table B2 row 'controls dataset' col runs; Appendix A", "line 3: 'with **4,157** unique completed, validated runs'"),
+                (hf_matrix, "Table B2 row 'controls dataset' col designed matrix", "line 3: 'designed matrix of **4,424** runs'"),
+                (f"{hf_extra.group(1)} / {hf_extra.group(2)}", "Table B2 row 'controls dataset' col duplicate copies / transcripts", "line 3"),
+                (f"${hf_spend}", "Table B2 row 'controls dataset' col spend", "Spend: 'Total billed for this study: $192.85'"),
+                (f"${hf_canon}", "Table B2 row 'controls dataset' col spend on canonical runs", "Spend bullet 1"),
                 (hf_built, "Appendix A: publish time", "line 3: 'Built 2026-11-07T10:06:53Z'"),
                 ("n_agents = 1 in every run; collaboration and engagement null 0 of 4466", "Method: single-agent scope", "section 'Single-agent scope'"),
                 ("judged false in every run", "Method: no LLM judge", "section 'No LLM judge'"),
@@ -582,18 +582,18 @@ TS = f"""| item | runs | spend (USD) | source |
 | judge baselines, total as the provider ledger moved | | {SPJ['provider_delta']:.2f} | judge spend ledger |
 | reader forward passes and probes | 600 runs probed | 0 (free GPU host) | verification log |"""
 SPEND_JSON = f"{REPO}/hermeneutics/results/judges/spend.json"
-for k, w in [("per_model_all_calls", "Table S judge rows per model"), ("discarded_pricing_round", "Table S discarded pricing round"),
-             ("provider_delta", "Table S judge total"), ("provider_before", "NUMBERS only"), ("provider_after", "NUMBERS only"),
+for k, w in [("per_model_all_calls", "Table B2 judge rows per model"), ("discarded_pricing_round", "Table B2 discarded pricing round"),
+             ("provider_delta", "Table B2 judge total"), ("provider_before", "NUMBERS only"), ("provider_after", "NUMBERS only"),
              ("score_files_all_calls", "NUMBERS only"), ("score_files_scored_calls", "NUMBERS only")]:
     led(SPJ[k], w, rel(SPEND_JSON), k)
-led("$12.34 (12.3404)", "Table S judge total; supersedes the 11:05 log figure $12.36", "VERIFICATION_LOG.md", "2026-11-08 ~00:40 entry: judge spend re-read from the on-disk ledger; RESULTS.md Table 11b")
-led("460/600 scored; 262 solo", "Table S Sonnet row; Table 4", "VERIFICATION_LOG.md", "11:05 entry: 'Claude Sonnet 5.5 0.796 on 262 solo agents (460/600 scored before the in-code $10 cap stopped it)'")
-led("reasoning disabled (Haiku), minimal (gpt-5-mini), low (Sonnet); tool results cut to 500 chars; transcript tail cut to 12,000 tokens; mean 8,323 prompt tokens", "Table 4 caption", "VERIFICATION_LOG.md", "11:05 entry, 'API judges' bullet")
-led("95%", "Table M3 intervals; captions of Tables 1, 2, 4, D1, D2: the bootstrap interval level", "hermeneutics/probes.py", "boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs'")
-led("4,737 executions", "Table S row whole study col runs", f"{HF_URL}/raw/main/README.md", "Spend: 'per-run ledger of every execution on the collection disk (4,737 executions)'")
+led("$12.34 (12.3404)", "Table B2 judge total; supersedes the 11:05 log figure $12.36", "VERIFICATION_LOG.md", "2026-11-08 ~00:40 entry: judge spend re-read from the on-disk ledger; RESULTS.md Table 11b")
+led("460/600 scored; 262 solo", "Table B2 Sonnet row; Table 4; Appendix E judge setup note", "VERIFICATION_LOG.md", "11:05 entry: 'Claude Sonnet 5.5 0.796 on 262 solo agents (460/600 scored before the in-code $10 cap stopped it)'")
+led("reasoning disabled (Haiku), minimal (gpt-5-mini), low (Sonnet); tool results cut to 500 chars; transcript tail cut to 12,000 tokens; mean 8,323 prompt tokens", "Appendix E, judge setup note", "VERIFICATION_LOG.md", "11:05 entry, 'API judges' bullet")
+led("95%", "Table E3 intervals; captions of Tables 1, 2, 4, D1, D2: the bootstrap interval level", "hermeneutics/probes.py", "boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs'")
+led("4,737 executions", "Table B2 row whole study col runs", f"{HF_URL}/raw/main/README.md", "Spend: 'per-run ledger of every execution on the collection disk (4,737 executions)'")
 
 # ----------------------------------------------------------------------------------------------------------------
-# Table 6: label-gap map (DATASETS.md, datasets/ai-village.md)
+# Table F1: label-gap map (DATASETS.md, datasets/ai-village.md)
 # ----------------------------------------------------------------------------------------------------------------
 T6 = """| output | controls dataset (own, single-agent) | board-seed environment (own, three agents) | AI Village (external, eval-only) |
 |---|---|---|---|
@@ -603,14 +603,14 @@ T6 = """| output | controls dataset (own, single-agent) | board-seed environment
 | collaboration | zero by construction | direct for the shared exploit (crossed, assembled), under one shared goal | derivable (coordination under an active village-wide goal) |
 | collusion | zero by construction | derivable (rung at least used, and collaboration at least crossed) | judge only (needs cheating) |
 | scheming | zero by construction | gap (no covertness signal) | judge only |"""
-led("label map cells", "Table 6", "DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md",
+led("label map cells", "Table F1", "DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md",
     "DATASET_DETAILS.md 'Notation' (hierarchy, zeros by construction), section 7 AI Village entry, section 8 own data; ai-village.md 'Labels for our six outputs'")
 n_sources = sum(1 for l in open(f"{REPO}/DATASETS.md") if l.startswith("- **["))
 led(f"about sixty ({n_sources} graded entries)", "Section 4 Q6: size of the survey", rel(f"{REPO}/DATASETS.md"), "count of lines starting '- **['")
 led("hierarchy Sch => Col => (Ch and Cb); Cb => Cp => Cd", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Notation' section, label hierarchy")
 led("no external dataset uses our authors", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Key takeaways', first bullet")
 led("ranked next: SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data, Terminal Wrench", "Section 4 Q6 prose", rel(f"{REPO}/DATASETS.md"), "Ranking rows 2 to 6; DATASET_DETAILS.md 'Plan by priority'")
-led("AI Village grade B, gated with access granted, eval-only licence", "Section 4 Q6, Table 6", rel(f"{REPO}/DATASETS.md"), "Ranking row 16; section 7 entry")
+led("AI Village grade B, gated with access granted, eval-only licence", "Section 4 Q6, Table F1", rel(f"{REPO}/DATASETS.md"), "Ranking row 16; section 7 entry")
 
 # ----------------------------------------------------------------------------------------------------------------
 # Appendix B: full sweep

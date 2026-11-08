@@ -834,6 +834,7 @@ led(f"{_tq:.3f} > {_pq:.3f}", "Results, text classifier: on unseen authors the c
 for ref, yr, src, q in [("[1]", "2026 (authors as displayed: conti, ShivamR, Jacob Sharf, jain18ayush, johnyan)", "https://www.lesswrong.com/posts/CZLhfNGaDqtYxvGJD/model-hermeneutics-monitoring-closed-weight-models-with-open", "postedAt 2026-09-30T20:43:51Z"),
                         ("[3]", "2026 (arXiv:2606.32008)", "https://arxiv.org/abs/2606.32008", "citation_date 2026/06/30"),
                         ("[4]", "2026 (arXiv:2604.01151)", "https://arxiv.org/abs/2604.01151", "citation_date 2026/04/01 (v5 revised 15 Oct 2026)"),
+                        ("[8]", "2026 (arXiv:2609.36308)", "https://arxiv.org/abs/2609.36308 (read 2026-11-08)", "citation_date 2026/09/28; title 'CheatBench: Measuring Reward Gaming in AI Agents'; 13 citation_author entries, first Phan, Long"),
                         ("[5]", "2025 (arXiv:2502.14143; Technical Report 1)", "https://arxiv.org/abs/2502.14143", "citation_date 2025/02/19; comments 'Cooperative AI Foundation, Technical Report #1'"),
                         ("[6]", "2026", "https://huggingface.co/datasets/aidigestorg/ai-village (card read 2026-11-08 with the account token)", "card citation line: 'AI Digest, \"AI Village dataset\", 2026.'"),
                         ("[7]", "2026", HF_URL, "README 'Built 2026-11-07T10:06:53Z'")]:
@@ -846,7 +847,12 @@ _tasks = sorted({r["task"] for r in _val}); _swe = sorted({r["task"] for r in _v
 _conds = sorted({r["condition"] for r in _val}); _auths = sorted({r["author"] for r in _val})
 assert (len(_tasks), len(_swe), len(_conds), len(_auths)) == (9, 2, 2, 5), (_tasks, _swe, _conds, _auths)
 led(f"{len(_tasks)} tasks", "Abstract; Methods, Data; Appendix E: 'nine tasks'", rel(LABELS), f"distinct task over valid rows: {_tasks}")
-led(f"{len(_swe)} software-engineering tasks", "Appendix E: 'software engineering (two tasks)'", rel(LABELS), f"distinct task where task_name == software_engineering: {_swe}")
+led(f"{len(_swe)} software-engineering task instances", "Appendix E: 'software engineering (two issues of one task)'", rel(LABELS), f"distinct task where task_name == software_engineering: {_swe}")
+_tnames = sorted({r["task_name"] for r in _val})
+assert len(_tnames) == 8, _tnames
+led(f"{len(_tnames)} CheatBench tasks", "Appendix E: 'They cover eight CheatBench tasks'", rel(LABELS), f"distinct task_name over valid rows: {_tnames}")
+led("2026-10-09 (fork of centerforaisafety/cheatbench, MIT)", "Appendix B: 'CheatBench [8] (Center for AI Safety, MIT licence), forked on 2026-10-09'",
+    "GitHub API repos/unrulyabstractions/cheatbench (read 2026-11-08)", "created_at 2026-10-09T14:25:09Z; fork true; parent centerforaisafety/cheatbench; license MIT", raw_where=True)
 led(f"{len(_conds)} arms", "Methods, Data: 'one of two arms'", rel(LABELS), f"distinct condition over valid rows: {_conds}")
 led(f"{len(_auths)} authors (B.II trains on {len(_auths) - 1} and scores the fifth)", "Abstract; Introduction; Methods; Results; Conclusion: 'five authors', 'four authors', 'the fifth'; Table 2 row 'author identity (5 classes)'", rel(LABELS), f"distinct author over valid rows: {_auths}")
 _cfg = [json.load(open(os.path.join(x, "run.json")))["config"] for x in tb25_runs + tb60_runs]

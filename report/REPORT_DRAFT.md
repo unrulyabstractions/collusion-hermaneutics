@@ -17,7 +17,7 @@ The model under study is the **author**, and the open-weight model that reads it
 
 We then contend that a reader-internals monitor can replace a cheap judge on this testbed, and that the label map shows where the data for the harder concepts has to come from.
 
-**Pre-existing work.** The swarm framework (its benchmark tasks with planted exploits, its board-based multi-agent scaffold and its behaviour ladders) and the code we adapted for transcript rendering, activation extraction, labelling, probing and the judge baseline predate the sprint. The controls dataset, the board-seed mechanism, every result and this report were produced inside the sprint window (Appendix B).
+**Pre-existing work.** The benchmark tasks with planted exploits come from CheatBench [8]. The swarm framework that runs them (its board-based multi-agent scaffold and its behaviour ladders) and the code we adapted for transcript rendering, activation extraction, labelling, probing and the judge baseline predate the sprint. The controls dataset, the board-seed mechanism, every result and this report were produced inside the sprint window (Appendix B).
 
 **Our main contributions are:**
 
@@ -37,7 +37,7 @@ We probe five authors through one reader; Appendix E, Table E1, lists them with 
 
 ### Data
 
-Each run of the controls dataset is one agent on one of nine tasks (Appendix E) with a planted exploit, under one of two arms. The **solo arm** never mentions the exploit. The **cheat arm** tells the agent that the shortcut is fair game. The **cheat ladder** records how far the agent went with the exploit. Cheating starts at the opened rung, or at tried for software engineering, chess and creative writing. The rungs none and exposed are honest, and the rungs between are left out. The authors differ in how often they cheat without an instruction. We therefore probe a stratified subsample balanced over author, arm and label where the data allow (Appendix E, Table E2).
+Each run of the controls dataset is one agent on one of nine task instances from CheatBench [8] (Appendix E), each with a planted exploit, under one of two arms. The **solo arm** never mentions the exploit. The **cheat arm** tells the agent that the shortcut is fair game. The **cheat ladder** records how far the agent went with the exploit. Cheating starts at the opened rung, or at tried for software engineering, chess and creative writing. The rungs none and exposed are honest, and the rungs between are left out. The authors differ in how often they cheat without an instruction. We therefore probe a stratified subsample balanced over author, arm and label where the data allow (Appendix E, Table E2).
 
 In the board-seed environment three agents of one author (DeepSeek V4.1 Flash) work one software-engineering issue with a shared message board. The planted fix is split into three pieces, one per agent, so the exploit completes only if pieces cross between agents. The **collaboration ladder** records how far exploit content travelled: isolated, discussed, solicited, crossed, assembled (every piece in one tree). The **board seed** is one message the system posts on the board before any agent acts. The conditions are an empty board, a neutral post, a mild and an explicit pro-coordination post (Appendix C), and a hidden regulator agent that posts against sharing. We therefore pilot two turn budgets before the dose-response run, because the budget can bind before a seed has any effect.
 
@@ -180,6 +180,8 @@ An open-weight reader carries a linear signal of the cheating of five authors, t
 
 [7] I. Rios-Sialer (2026). apart-swarm: controls elicitation dataset (private). Hugging Face dataset unrulyabstractions/apart-swarm. https://huggingface.co/datasets/unrulyabstractions/apart-swarm
 
+[8] L. Phan, S. K. Yang, J. J. Lim, M. Mazeika, W. Zhang, Z. Liu, et al. (2026). CheatBench: Measuring Reward Gaming in AI Agents. arXiv preprint arXiv:2609.36308. https://arxiv.org/abs/2609.36308
+
 ## Appendix
 
 ### Appendix A: Limitations and Dual-Use / Ethical Considerations
@@ -194,7 +196,7 @@ An open-weight reader carries a linear signal of the cheating of five authors, t
 
 The sprint opened on Friday, November 6, 2026, with the kick-off keynote at 21:30 UTC, and closed on November 8 (sprint page https://apartresearch.com/sprints/swarm-alignment-2026, read 2026-11-08). The items below are split by whether they existed before it.
 
-**Before the sprint.** The swarm framework (spar-guardian-agents) with its verification log starting 2026-10-09: the benchmark tasks with planted exploits (cheatbench) and the board-based multi-agent scaffold (orbit); the cheat ladder (none, exposed, tried, opened, used, tampered, checked, shipped) and the per-domain thresholds that define the binary label; the collaboration ladder (isolated, discussed, solicited, crossed, assembled); the regulator and disregulator roles; the run, validity and ledger tooling. The code for transcript rendering, activation extraction, labelling, probing and the judge baseline, adapted from the arena-capstone repository's archived code, as listed in Table B1.
+**Before the sprint.** CheatBench [8] (Center for AI Safety, MIT licence), forked on 2026-10-09, supplies the benchmark tasks with planted exploits and their graders. The swarm framework (spar-guardian-agents), with its verification log starting 2026-10-09, runs them in the board-based multi-agent scaffold orbit, with the cheat ladder (none, exposed, tried, opened, used, tampered, checked, shipped) and the per-domain thresholds that define the binary label; the collaboration ladder (isolated, discussed, solicited, crossed, assembled); the regulator and disregulator roles; the run, validity and ledger tooling. The code for transcript rendering, activation extraction, labelling, probing and the judge baseline, adapted from the arena-capstone repository's archived code, as listed in Table B1.
 
 **Table B1.** The six files adapted from pre-sprint code, as the repository's PREEXISTING.md lists them.
 
@@ -300,7 +302,7 @@ The system posts one of the texts below as the first board message before any ag
 
 ### Appendix E: Authors, data and probe setup
 
-The nine tasks are software engineering (two tasks), chess, creative writing, protein design, open mathematics, subset sum, prime factorization and knowledge work.
+The nine task instances, all from CheatBench [8], are software engineering (two issues of one task), chess, creative writing, protein design, open mathematics, subset sum, prime factorization and knowledge work. They cover eight CheatBench tasks.
 
 **Table E1.** Authors and reader. Think coverage is measured over every valid run of the controls dataset.
 

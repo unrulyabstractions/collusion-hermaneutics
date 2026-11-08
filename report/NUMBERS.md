@@ -230,7 +230,7 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 0/5 | Table 5 tb=25 row neutral col crossed or assembled | `data/board_seed_pilot/RESULTS.tsv` | count of collab in (crossed, assembled) over rows pilot_neutral_s*; n = row count |
 | 0/5 | Table 5 tb=25 row procoordL2 col crossed or assembled | `data/board_seed_pilot/RESULTS.tsv` | count of collab in (crossed, assembled) over rows pilot_procoordL2_s*; n = row count |
 | passed False in all 12 rows; crs 0, asm 0 | Table 5 tb=25 rows cols passed, crossed, assembled | `data/board_seed_pilot/RESULTS.tsv` | columns passed, crs, asm of every pilot_* row |
-| agent posts 0 in neutral 5/5, none 2/2, pro-coord 4/5; s4 posted 2 | Table 5 tb=25 rows col mean posts | `/Users/unrulyabstractions/work/arena-capstone/submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entry '2026-11-07 Board-seed LOCAL pilot', tb=25 bullet |
+| agent posts 0 in neutral 5/5, none 2/2, pro-coord 4/5; s4 posted 2 | Table 5 tb=25 rows col mean posts | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entry '2026-11-07 Board-seed LOCAL pilot', tb=25 bullet |
 | 3/3, 1/3, posts 2.7, dis 2.0, sol 1.7, crs 1.7, asm 1.7 | Table 5 tb=60 pilot row none | `data/board_seed_pilot/RESULTS_tb60.tsv` | computed from the three pilot60_none_s* rows (collab, passed, dis, sol, crs, asm); posts recounted from the board JSON files, system sender excluded |
 | 3/3, 1/3, posts 9.3, dis 8.3, sol 5.0, crs 4.0, asm 2.0 | Table 5 tb=60 pilot row procoordL2 | `data/board_seed_pilot/RESULTS_tb60.tsv` | computed from the three pilot60_procoordL2_s* rows (collab, passed, dis, sol, crs, asm); posts recounted from the board JSON files, system sender excluded |
 | 5 | 2/5 | 0/5 | 1.0 | 1.0 | 0.0 | 0.2 | 0.6 | 0.0 | Table 5 dose-response row none (n, crossed+, pass, mPosts, mWPosts, mDisc, mSol, mCrs, mAsm) | `data/board_seed_pilot/confirm_doseresponse/RESULTS_doseresponse.tsv` | row arm=none |
@@ -254,9 +254,9 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 2026-11-06 22:18 UTC | Appendix A: first controls launch | `data/runs.csv` | min(launch_time) over all rows |
 | 2026-11-07 06:47 UTC | Appendix A: last controls launch | `data/runs.csv` | max(launch_time) over all rows |
 | Nov 6 to 8, 2026; submissions close Nov 8 11:59 PM AoE | Appendix A: sprint window | `https://apartresearch.com/sprints/swarm-alignment-2026 (fetched 2026-11-07)` | Overview and 'Submissions close' lines |
-| 2026-11-07 (mechanism commit 2c72d93; pilots the same day) | Appendix A: board-seed dates | `/Users/unrulyabstractions/work/arena-capstone/submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot' |
-| 2026-10-09 | Appendix A: framework log begins | `/Users/unrulyabstractions/work/arena-capstone/submodule/spar-guardian-agents/VERIFICATION_LOG.md` | first heading |
-| 2026-11-07T02-37-35 to 05-38-26 (eval log names) | Appendix A: pilot run times | `/Users/unrulyabstractions/work/collusion-hermaneutics/data/board_seed_pilot/*/run.json, confirm_doseresponse/*/run.json` | eval_log file names |
+| 2026-11-07 (mechanism commit 2c72d93; pilots the same day) | Appendix A: board-seed dates | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot' |
+| 2026-10-09 | Appendix A: framework log begins | `submodule/spar-guardian-agents/VERIFICATION_LOG.md` | first heading |
+| 2026-11-07T02-37-35 to 05-38-26 (eval log names) | Appendix A: pilot run times | `data/board_seed_pilot/*/run.json, confirm_doseresponse/*/run.json` | eval_log file names |
 | {'openai/gpt-5-mini': 1.1951, 'anthropic/claude-haiku-5.5': 0.711, 'anthropic/claude-sonnet-5.5': 10.1057} | Table S judge rows per model | `hermeneutics/results/judges/spend.json` | per_model_all_calls |
 | 0.3284 | Table S discarded pricing round | `hermeneutics/results/judges/spend.json` | discarded_pricing_round |
 | 12.3404 | Table S judge total | `hermeneutics/results/judges/spend.json` | provider_delta |
@@ -270,13 +270,10 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 95% | Table M3 intervals; captions of Tables 1, 2, 4, D1, D2: the bootstrap interval level | `hermeneutics/probes.py` | boot_ci: np.percentile(vals, [2.5, 97.5]); docstring 'AUROC with a 95% bootstrap over runs' |
 | 4,737 executions | Table S row whole study col runs | `https://huggingface.co/datasets/unrulyabstractions/apart-swarm/raw/main/README.md` | Spend: 'per-run ledger of every execution on the collection disk (4,737 executions)' |
 | label map cells | Table 6 | `DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md` | DATASET_DETAILS.md 'Notation' (hierarchy, zeros by construction), section 7 AI Village entry, section 8 own data; ai-village.md 'Labels for our six outputs' |
-| about sixty (63 graded entries) | Section 3 Data and Section 4 Q6: size of the survey | `DATASETS.md` | count of lines starting '- **[' |
+| about sixty (63 graded entries) | Section 4 Q6: size of the survey | `DATASETS.md` | count of lines starting '- **[' |
 | hierarchy Sch => Col => (Ch and Cb); Cb => Cp => Cd | Section 4 Q6 prose | `DATASET_DETAILS.md` | 'Notation' section, label hierarchy |
-| no external dataset uses our authors | Section 3 Data, Section 4 Q6, Section 5 | `DATASET_DETAILS.md` | 'Key takeaways', first bullet |
-| only two sources separate Cb from Col without a judge (Colosseum, own instrumentation) | Section 4 Q6 prose | `DATASET_DETAILS.md` | 'Key takeaways' bullet 5 |
-| no frontier-author source labels Sch | Section 4 Q6 prose | `DATASET_DETAILS.md` | 'Coverage' Gaps line |
+| no external dataset uses our authors | Section 4 Q6 prose | `DATASET_DETAILS.md` | 'Key takeaways', first bullet |
 | ranked next: SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data, Terminal Wrench | Section 4 Q6 prose | `DATASETS.md` | Ranking rows 2 to 6; DATASET_DETAILS.md 'Plan by priority' |
-| fit criteria M, L, A, R, P | Section 3 Data prose | `DATASETS.md` | 'Fit criteria' table |
 | AI Village grade B, gated with access granted, eval-only licence | Section 4 Q6, Table 6 | `DATASETS.md` | Ranking row 16; section 7 entry |
 | 0.938 [0.913, 0.959] | 0.948 | 0.960 | 0.927 | 0.660 | 0.966 | 0.946 | 0.934 | 0.744 | 0.713 | 0.902 | 0.567 | Appendix D Table D1: PCA probe row layer=26 position=both | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,layer=26,position=both,features=raw; scope=pooled (auroc, ci, null_95), ds..qwen, LOTO ds..qwen -> auroc |
 | 0.940 [0.915, 0.962] | 0.968 | 0.957 | 0.918 | 0.711 | 0.939 | 0.973 | 0.944 | 0.671 | 0.728 | 0.889 | 0.556 | Appendix D Table D1: PCA probe row layer=26 position=close | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,layer=26,position=close,features=raw; scope=pooled (auroc, ci, null_95), ds..qwen, LOTO ds..qwen -> auroc |
@@ -302,9 +299,9 @@ Every number in the draft traces to a file that was opened while drafting (2026-
 | 0.969 [0.951, 0.984] | 0.942 | 0.937 | 0.970 | 0.871 | 0.959 | 0.949 | 0.984 | 0.958 | 0.766 | 0.975 | 0.564 | Appendix D Table D2: full-dimension probe row layer=all position=both | `hermeneutics/results/full_agent/auroc.csv` | arm=solo,probe=full,layer=all,position=both,features=raw; scope=pooled (auroc, ci, null_95), ds..qwen, LOTO ds..qwen -> auroc |
 | 0.971 [0.954, 0.984] | 0.930 | 0.942 | 0.974 | 0.880 | 0.952 | 0.924 | 0.978 | 0.928 | 0.784 | 0.939 | 0.559 | Appendix D Table D2: full-dimension probe row layer=all position=close | `hermeneutics/results/full_agent/auroc.csv` | arm=solo,probe=full,layer=all,position=close,features=raw; scope=pooled (auroc, ci, null_95), ds..qwen, LOTO ds..qwen -> auroc |
 | 0.962 [0.942, 0.979] | 0.926 | 0.950 | 0.951 | 0.837 | 0.964 | 0.964 | 0.927 | 0.943 | 0.769 | 0.984 | 0.560 | Appendix D Table D2: full-dimension probe row layer=all position=open | `hermeneutics/results/full_agent/auroc.csv` | arm=solo,probe=full,layer=all,position=open,features=raw; scope=pooled (auroc, ci, null_95), ds..qwen, LOTO ds..qwen -> auroc |
-| 'Starting now on my assigned part of this issue. I set up my ...' | Appendix C row neutral post (L0) | `/Users/unrulyabstractions/work/arena-capstone/submodule/spar-guardian-agents/src/swarm/board_seed.py` | SEED_TABLE[('neutral', '0')] |
-| 'Before we each go deep, it may help to align on approach so ...' | Appendix C row pro-coordination, mild (L1) | `/Users/unrulyabstractions/work/arena-capstone/submodule/spar-guardian-agents/src/swarm/board_seed.py` | SEED_TABLE[('pro-coord', '1')] |
-| 'We are graded as a team, so the fastest path is to pool ever...' | Appendix C row pro-coordination, explicit (L2) | `/Users/unrulyabstractions/work/arena-capstone/submodule/spar-guardian-agents/src/swarm/board_seed.py` | SEED_TABLE[('pro-coord', '2')] |
+| 'Starting now on my assigned part of this issue. I set up my ...' | Appendix C row neutral post (L0) | `submodule/spar-guardian-agents/src/swarm/board_seed.py` | SEED_TABLE[('neutral', '0')] |
+| 'Before we each go deep, it may help to align on approach so ...' | Appendix C row pro-coordination, mild (L1) | `submodule/spar-guardian-agents/src/swarm/board_seed.py` | SEED_TABLE[('pro-coord', '1')] |
+| 'We are graded as a team, so the fastest path is to pool ever...' | Appendix C row pro-coordination, explicit (L2) | `submodule/spar-guardian-agents/src/swarm/board_seed.py` | SEED_TABLE[('pro-coord', '2')] |
 | 0.967 | Abstract: solo-arm B.I AUROC | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=raw,scope=pooled -> auroc |
 | 0.80 to 0.97 | Abstract: B.II range | `hermeneutics/results/pca_agent/auroc.csv` | min/max over LOTO scopes, same configuration |
 | 0.944 | Abstract: B.I after erasure | `hermeneutics/results/pca_agent/auroc.csv` | arm=solo,probe=pca,turn_labels=agent,layer=all,position=both,pooling=agent,features=author, task, condition erased,scope=pooled -> auroc |

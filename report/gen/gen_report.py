@@ -11,7 +11,7 @@ import re
 import sys
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))  # report/gen -> repo root
-SUB = "/Users/unrulyabstractions/work/arena-capstone/submodule/spar-guardian-agents"  # ledger label only (never read); the board-seed mechanism lives on its branch board-seed-injection
+SUB = f"{REPO}/submodule/spar-guardian-agents"  # the repo submodule on branch board-seed-injection: read for the board-seed texts (Appendix C) and cited in the ledger
 PILOT = f"{REPO}/data/board_seed_pilot"
 HF_README = f"{REPO}/report/gen/sources/hf_README.md"  # tracked copy of the published dataset README (byte-identical to the HF upload)
 OUT = f"{REPO}/report"
@@ -167,7 +167,7 @@ TM3 = """| setting | value |
 | folds | 5, grouped by run, stratified by author x label |
 | intervals | 95% bootstrap over runs, 1000 draws |
 | null | labels shuffled inside each author, 100 draws |
-| erasure | LEACE of author; of author, task and condition; fitted on training rows |
+| erasure | linear concept erasure (LEACE) of author; of author, task and condition; fitted on training rows |
 | probed runs | 600 (about 120 per author, balanced over arm x label, runs over 100k tokens left out) |
 | probed tokens / turns | 14,182,746 / 10,985 |
 | extraction | one L40S GPU, 1.94 h, on a free host |"""
@@ -415,8 +415,8 @@ T4.append(t4_row("lexical-only reader null: TF-IDF on the think windows", tfidf_
 T4.append(t4_row("judge: Claude Haiku 5.5 (author-level; reasoning off)", judges, JUDGES, dict(probe="judge:anthropic/claude-haiku-5.5"), "judge Haiku", has_loto=False))
 T4.append(t4_row("judge: Claude Sonnet 5.5 (above the authors; low reasoning effort; stopped by the spend cap)", judges, JUDGES, dict(probe="judge:anthropic/claude-sonnet-5.5"), "judge Sonnet", has_loto=False, n_note=" of 373"))
 T4.append(t4_row("judge: GPT-5 mini (author-level; minimal reasoning)", judges, JUDGES, dict(probe="judge:openai/gpt-5-mini"), "judge GPT-5 mini", has_loto=False))
-T4.append("| random-weights reader (same architecture, untrained) | | [PENDING: random-weights] | [PENDING: random-weights] | [PENDING: random-weights] | | |")
-T4.append("| reader interrogation (ask the reader) | | [PENDING: interrogation] | [PENDING: interrogation] | [PENDING: interrogation] | | |")
+T4.append("| random-weights reader (same architecture, untrained) | not run | not run | not run | not run | not run | not run |")
+T4.append("| reader interrogation (ask the reader) | not run | not run | not run | not run | not run | not run |")
 T4 = "\n".join(T4)
 # judge coverage and cost from the judges file
 son = pick(judges, arm="solo", probe="judge:anthropic/claude-sonnet-5.5", scope="pooled")
@@ -503,7 +503,7 @@ for arm in ("none", "neutral", "procoordL2"):
     posts25 = "0.4 (one team, two posts)" if arm == "procoordL2" else "0"
     T5.append(f"| pilot | 25 | {ARMNAME[arm]} | {d['n']} | {d['crossed+']}/{d['n']} | 0/{d['n']} | {posts25} | | | 0 | 0 |")
 led("passed False in all 12 rows; crs 0, asm 0", "Table 5 tb=25 rows cols passed, crossed, assembled", rel(TB25), "columns passed, crs, asm of every pilot_* row")
-led("agent posts 0 in neutral 5/5, none 2/2, pro-coord 4/5; s4 posted 2", "Table 5 tb=25 rows col mean posts", f"{SUB}/VERIFICATION_LOG.md",
+led("agent posts 0 in neutral 5/5, none 2/2, pro-coord 4/5; s4 posted 2", "Table 5 tb=25 rows col mean posts", rel(f"{SUB}/VERIFICATION_LOG.md"),
     "entry '2026-11-07 Board-seed LOCAL pilot', tb=25 bullet")
 for arm in ("none", "procoordL2"):
     d = arms60[arm]
@@ -561,10 +561,10 @@ led(first, "Appendix A: first controls launch", rel(RUNS), "min(launch_time) ove
 led(last, "Appendix A: last controls launch", rel(RUNS), "max(launch_time) over all rows")
 led("Nov 6 to 8, 2026; submissions close Nov 8 11:59 PM AoE", "Appendix A: sprint window",
     "https://apartresearch.com/sprints/swarm-alignment-2026 (fetched 2026-11-07)", "Overview and 'Submissions close' lines")
-led("2026-11-07 (mechanism commit 2c72d93; pilots the same day)", "Appendix A: board-seed dates", f"{SUB}/VERIFICATION_LOG.md",
+led("2026-11-07 (mechanism commit 2c72d93; pilots the same day)", "Appendix A: board-seed dates", rel(f"{SUB}/VERIFICATION_LOG.md"),
     "entries '2026-11-07 — Board seed injection mechanism' and '2026-11-07 — Board-seed LOCAL pilot'")
-led("2026-10-09", "Appendix A: framework log begins", f"{SUB}/VERIFICATION_LOG.md", "first heading")
-led("2026-11-07T02-37-35 to 05-38-26 (eval log names)", "Appendix A: pilot run times", f"{PILOT}/*/run.json, confirm_doseresponse/*/run.json", "eval_log file names")
+led("2026-10-09", "Appendix A: framework log begins", rel(f"{SUB}/VERIFICATION_LOG.md"), "first heading")
+led("2026-11-07T02-37-35 to 05-38-26 (eval log names)", "Appendix A: pilot run times", rel(f"{PILOT}") + "/*/run.json, confirm_doseresponse/*/run.json", "eval_log file names")
 
 # spend table
 SPJ = json.load(open(f"{REPO}/hermeneutics/results/judges/spend.json"))
@@ -606,13 +606,10 @@ T6 = """| output | controls dataset (own, single-agent) | board-seed environment
 led("label map cells", "Table 6", "DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md",
     "DATASET_DETAILS.md 'Notation' (hierarchy, zeros by construction), section 7 AI Village entry, section 8 own data; ai-village.md 'Labels for our six outputs'")
 n_sources = sum(1 for l in open(f"{REPO}/DATASETS.md") if l.startswith("- **["))
-led(f"about sixty ({n_sources} graded entries)", "Section 3 Data and Section 4 Q6: size of the survey", rel(f"{REPO}/DATASETS.md"), "count of lines starting '- **['")
+led(f"about sixty ({n_sources} graded entries)", "Section 4 Q6: size of the survey", rel(f"{REPO}/DATASETS.md"), "count of lines starting '- **['")
 led("hierarchy Sch => Col => (Ch and Cb); Cb => Cp => Cd", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Notation' section, label hierarchy")
-led("no external dataset uses our authors", "Section 3 Data, Section 4 Q6, Section 5", rel(f"{REPO}/DATASET_DETAILS.md"), "'Key takeaways', first bullet")
-led("only two sources separate Cb from Col without a judge (Colosseum, own instrumentation)", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Key takeaways' bullet 5")
-led("no frontier-author source labels Sch", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Coverage' Gaps line")
+led("no external dataset uses our authors", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Key takeaways', first bullet")
 led("ranked next: SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data, Terminal Wrench", "Section 4 Q6 prose", rel(f"{REPO}/DATASETS.md"), "Ranking rows 2 to 6; DATASET_DETAILS.md 'Plan by priority'")
-led("fit criteria M, L, A, R, P", "Section 3 Data prose", rel(f"{REPO}/DATASETS.md"), "'Fit criteria' table")
 led("AI Village grade B, gated with access granted, eval-only licence", "Section 4 Q6, Table 6", rel(f"{REPO}/DATASETS.md"), "Ranking row 16; section 7 entry")
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -656,7 +653,7 @@ for key, text in seed_table.items():
     if text == "USE_REGULATOR":
         continue
     TC.append(f"| {LABEL[key]} | {text} |")
-    led(f"'{text[:60]}...'", f"Appendix C row {LABEL[key]}", BS, f"SEED_TABLE[{key}]")
+    led(f"'{text[:60]}...'", f"Appendix C row {LABEL[key]}", rel(BS), f"SEED_TABLE[{key}]")
 TC = "\n".join(TC)
 
 # ----------------------------------------------------------------------------------------------------------------

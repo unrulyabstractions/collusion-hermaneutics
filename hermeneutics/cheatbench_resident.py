@@ -124,7 +124,12 @@ def main():
     layers = list(LAYERS)
     convs, jobs, skipped = {}, [], []
     for _, r in df.iterrows():
-        row = {k: (None if not isinstance(v, (list, dict)) and pd.isna(v) else v) for k, v in r.items() if k != "trace"}
+        row = {}
+        for k, v in r.items():
+            if k == "trace":
+                continue
+            v = v.tolist() if hasattr(v, "tolist") else v  # numpy arrays (loc_events) and numpy scalars to Python
+            row[k] = None if not isinstance(v, (list, dict)) and pd.isna(v) else v
         row["_trace_sha256"] = hashlib.sha256(r.trace.encode()).hexdigest()
         if os.path.exists(os.path.join(args.out, row["harness"], row["trace_id"], "meta.json")):
             continue

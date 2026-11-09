@@ -51,6 +51,7 @@ ONSET_NOTE = {"cheat": "estimate (team_probes used_onset_step: first write of pl
               "coord": "direct (first read, post, discussed or solicited call from the board events)"}
 D, MAX_STEP, WD = 128, 160, 0.1
 DEVICE = "cpu"  # "mps" with --device mps
+LABEL_MODE = "set"  # "ladders": the six ladders from team_probes' labels/<set>_agents.csv (viewer/levels.py)
 LAYERS_IN = (38,)  # the input layer(s); (26, 38, 51) only for the all-layers variant
 T0 = time.time()
 
@@ -446,6 +447,8 @@ def other_set_records(sname):
                          "binary_name": {"cheat": "cheating (the set's label: from tried or opened by task)"},
                          "onset_call_step": onset_chk, "na": [x for x in LADDERS if x != "cheat"]})
         return recs
+    if LABEL_MODE == "ladders":
+        return records_from_agents_csv(sname, tp.OUT / "labels" / f"{sname}_agents.csv")
     if sname.startswith("spar"):
         return spar_records(sname)
     cands = sorted((tp.OUT / "labels").glob(f"*{sname}*.csv")) + sorted(tp.OUT.glob(f"*{sname}*labels*.csv"))
@@ -530,7 +533,7 @@ def folds_of(recs, split="folds"):
     if split == "author":
         au = sorted({r["author"] for r in recs})
         return np.array([au.index(r["author"]) for r in recs]), runs
-    if recs[0]["set"] == "controls_600" or recs[0]["set"].startswith("spar"):
+    if "binary" in recs[0]:
         strat = np.array([f"{r['author']}|{r['binary']['cheat']['final']}" for r in recs])
     else:
         strat = np.array([f"{r['final']['cheat'] >= tp.USED}|{r['final']['collude'] >= tp.CROSSED}" for r in recs])
@@ -769,13 +772,15 @@ def eval_labels(recs, n_t, ai, tpos):
 
 
 def set_tag(sname, tokens):
-    return f"{sname}_{tokens}" + ("" if tuple(LAYERS_IN) == (38,) else "_L" + "-".join(map(str, LAYERS_IN)))
+    return (f"{sname}_{tokens}" + ("" if tuple(LAYERS_IN) == (38,) else "_L" + "-".join(map(str, LAYERS_IN)))
+            + ("_ladders" if LABEL_MODE == "ladders" and sname.startswith("spar") else ""))
 
 
 def active_cuts(recs, EL):
     names = dict(MAIN_CUTS)
     names.update(recs[0].get("binary_name") or {})
-    return [(L, names[L]) for L, _ in MAIN_CUTS if EL[L][3].any() and EL[L][1][EL[L][3]].min() < 1 <= EL[L][1][EL[L][3]].max()]
+    return [(L, names[L]) for L, _ in MAIN_CUTS
+            if min(int(EL[L][1][EL[L][3]].sum()), int((1 - EL[L][1][EL[L][3]]).sum())) >= 3]  # at least 3 agents per class
 
 
 def run_set(sname, tokens="think", seeds=(0, 1), baselines=True, split="folds"):
@@ -1199,13 +1204,15 @@ def main():
     ap.add_argument("--device", default="cpu", choices=["cpu", "mps"])
     ap.add_argument("--arm", default="solo")
     ap.add_argument("--tag", default=None)
+    ap.add_argument("--labels", default="set", choices=["set", "ladders"])
     ap.add_argument("--threads", type=int, default=6)
     ap.add_argument("--layers", default="38", help="input layer(s), e.g. 38 or 26,38,51")
     a = ap.parse_args()
     import torch
     torch.set_num_threads(a.threads)
-    global LAYERS_IN, DEVICE
+    global LAYERS_IN, DEVICE, LABEL_MODE
     DEVICE = a.device
+    LABEL_MODE = a.labels
     LAYERS_IN = tuple(int(x) for x in a.layers.split(","))
     if a.stage == "labels":
         recs = board_seed_records()

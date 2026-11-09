@@ -31,3 +31,9 @@
 ## 2026-11-09, controls_600 seven tokens
 
 - All 600 agents have the boundary file. No run crosses folds. Per-step AUROC of the binary head, seed 1, recomputed with sklearn: 0.987832, equal to metrics_controls_600_seven.csv. Baseline rows equal the think-pair run's (0.916, 0.914, 0.943, 0.672, 0.973). VERIFIED.
+
+## 2026-11-09, solo_design and spar_mixed_41 six ladders
+
+- Labels from team_probes' labels/solo_design_agents.csv and labels/spar_mixed_41_agents.csv (viewer/levels.py ladders, same columns as board_seed's agents.csv); the mapper reproduces board_seed's own records exactly (129 of 129 final levels, 0 onset mismatches). Regulators left out.
+- solo_design: no run crosses folds; agent AUROC (last step) of the coordination binary head, seed 0, recomputed with sklearn from the last-step scores and the CSV's final coordination level: equal to metrics_solo_design_think.csv. Collusion has no agent at exploit crossed, so that cut is not scored. VERIFIED.
+- spar_mixed_41 six ladders: coordination posted is reached by 157 of 158 workers, so that cut is not scored (fewer than 3 agents per class); cheating used has 12 and collusion crossed 7 positive agents, so its intervals are wide.

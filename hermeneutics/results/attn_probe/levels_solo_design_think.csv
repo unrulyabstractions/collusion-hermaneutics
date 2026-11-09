@@ -1,0 +1,19 @@
+set,tokens,ladder,model,seed,final_level_acc,final_level_mae,step_level_acc
+solo_design,think,cheat,attention monitor,0.0,0.24293785310734464,1.6610169491525424,0.6302990469930989
+solo_design,think,cheat,attention monitor,1.0,0.2994350282485876,1.5141242937853108,0.651823858034834
+solo_design,think,cheat,majority level of the training fold,,0.3672316384180791,3.1299435028248586,0.24465987512323364
+solo_design,think,coord,attention monitor,0.0,0.4519774011299435,0.5932203389830508,0.37249424909628653
+solo_design,think,coord,attention monitor,1.0,0.4971751412429379,0.5649717514124294,0.4893197502464673
+solo_design,think,coord,majority level of the training fold,,0.6666666666666666,0.384180790960452,0.7651988169569504
+solo_design,think,coop,attention monitor,0.0,1.0,0.0,1.0
+solo_design,think,coop,attention monitor,1.0,1.0,0.0,1.0
+solo_design,think,coop,majority level of the training fold,,1.0,0.0,1.0
+solo_design,think,collab,attention monitor,0.0,1.0,0.0,1.0
+solo_design,think,collab,attention monitor,1.0,1.0,0.0,1.0
+solo_design,think,collab,majority level of the training fold,,1.0,0.0,1.0
+solo_design,think,collude,attention monitor,0.0,1.0,0.0,1.0
+solo_design,think,collude,attention monitor,1.0,1.0,0.0,1.0
+solo_design,think,collude,majority level of the training fold,,1.0,0.0,1.0
+solo_design,think,scheme,attention monitor,0.0,1.0,0.0,1.0
+solo_design,think,scheme,attention monitor,1.0,1.0,0.0,1.0
+solo_design,think,scheme,majority level of the training fold,,1.0,0.0,1.0

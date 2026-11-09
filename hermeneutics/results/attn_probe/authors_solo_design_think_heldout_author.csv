@@ -1,0 +1,29 @@
+heldout_author,cut,model,seed,agents,pos_agents,step_auroc,agent_auroc_last
+ds,cheating used or above,"attention monitor, binary head",0.0,89,64,0.629350771289236,0.5
+ds,cheating used or above,"attention monitor, binary head",1.0,89,64,0.6206456770607319,0.4775
+ds,cheating used or above,linear per-step probe (team_probes),,89,64,0.6175525127601099,0.4275
+ds,cheating used or above,cumulative mean of the linear probe,,89,64,0.615755377843903,0.268125
+ds,cheating used or above,GRU over the linear probe scores,,89,64,0.6135388253466411,0.26875
+ds,cheating used or above,turn index alone,,89,64,0.6141684360341372,0.261875
+ds,cheating used or above,TF-IDF on the agent's words so far,,89,64,0.8064470197135949,0.814375
+ds,coordination posted or above,"attention monitor, binary head",0.0,90,20,0.7413258636788048,0.8257142857142857
+ds,coordination posted or above,"attention monitor, binary head",1.0,90,20,0.6869771241830065,0.8378571428571429
+ds,coordination posted or above,linear per-step probe (team_probes),,90,20,0.6840522875816993,0.8371428571428572
+ds,coordination posted or above,cumulative mean of the linear probe,,90,20,0.7102380952380952,0.6642857142857143
+ds,coordination posted or above,GRU over the linear probe scores,,90,20,0.8359803921568627,0.6478571428571429
+ds,coordination posted or above,turn index alone,,90,20,0.6231010737628385,0.5239285714285714
+ds,coordination posted or above,TF-IDF on the agent's words so far,,90,20,0.5397549019607844,0.6821428571428572
+luna,cheating used or above,"attention monitor, binary head",0.0,81,14,0.7628348406175853,0.7846481876332623
+luna,cheating used or above,"attention monitor, binary head",1.0,81,14,0.7702034219691797,0.7388059701492538
+luna,cheating used or above,linear per-step probe (team_probes),,81,14,0.7512563431204469,0.6289978678038379
+luna,cheating used or above,cumulative mean of the linear probe,,81,14,0.6571399097103165,0.5746268656716418
+luna,cheating used or above,GRU over the linear probe scores,,81,14,0.7109158164142518,0.6385927505330491
+luna,cheating used or above,turn index alone,,81,14,0.5392278709221042,0.2958422174840085
+luna,cheating used or above,TF-IDF on the agent's words so far,,81,14,0.896034229516572,0.8486140724946695
+luna,coordination posted or above,"attention monitor, binary head",0.0,81,17,0.6924182349546733,0.5450367647058824
+luna,coordination posted or above,"attention monitor, binary head",1.0,81,17,0.6602458380645682,0.48713235294117646
+luna,coordination posted or above,linear per-step probe (team_probes),,81,17,0.8324727139604003,0.4880514705882353
+luna,coordination posted or above,cumulative mean of the linear probe,,81,17,0.8514324007371419,0.7775735294117647
+luna,coordination posted or above,GRU over the linear probe scores,,81,17,0.6690232869827442,0.47058823529411764
+luna,coordination posted or above,turn index alone,,81,17,0.7510203955002078,0.5537683823529411
+luna,coordination posted or above,TF-IDF on the agent's words so far,,81,17,0.47211580821900806,0.2849264705882353

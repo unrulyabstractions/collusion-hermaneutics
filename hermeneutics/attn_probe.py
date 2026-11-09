@@ -457,6 +457,20 @@ def other_set_records(sname):
     return records_from_agents_csv(sname, cands[0])
 
 
+def step_to_turn(source_path, n_turns):
+    """Source agent step -> activation turn. When the transcript has as many agent steps as the activations have turns,
+    step t is turn t. Otherwise (some SPAR transcripts) the activations hold one turn per step that issued a tool call,
+    so a step's turn is its rank among those steps. Returns None when neither count matches."""
+    t = json.load(open(source_path))["trajectory"]
+    steps = [x for x in t["steps"] if x.get("source") == "agent"]
+    if len(steps) == n_turns:
+        return np.arange(n_turns)  # one turn per step
+    has = np.array([bool(x.get("tool_calls")) for x in steps])
+    if int(has.sum()) != n_turns:
+        return None  # neither rule matches: onsets unknown for this agent
+    return np.cumsum(has) - 1
+
+
 def spar_records(sname):
     """SPAR sets: the agent's cheating label is team_probes' joined label (transfer_other_sets_scores.csv, column y: the
     code ladder's rung from the spar-swarm run's signals.jsonl at or above the task's floor, tried or opened); its onset
@@ -475,10 +489,11 @@ def spar_records(sname):
             rungs[f] = {x.get("agent"): x for x in map(json.loads, open(f)) if x.get("row") == "agent"} if f.is_file() else {}
         sg = rungs[f].get(m.get("agent_id") or r.agent) or {}
         calls, _ = tp.agent_calls(d / "source.json")
-        ok_calls = sg.get("calls") == len(calls)
+        s2t = step_to_turn(d / "source.json", int(m["n_turns"]))
+        ok_calls = sg.get("calls") == len(calls) and s2t is not None
 
         def k2s(k):
-            return calls[int(k)][0] if ok_calls and k is not None and 0 <= int(k) < len(calls) else None
+            return int(s2t[calls[int(k)][0]]) if ok_calls and k is not None and 0 <= int(k) < len(calls) else None
         ri = tp.RUNGS.index(sg["rung"]) if sg.get("rung") in tp.RUNGS else 0
         on = {x: {} for x in LADDERS}
         for lev, col in ((1, "exposed_call"), (2, "tried_call"), (3, "opened_call")):
@@ -511,14 +526,16 @@ def records_from_agents_csv(sname, path):
         fin = {L: int(d[L]) if L in d and pd.notna(d[L]) else 0 for L in LADDERS}
         na = [L for L in LADDERS if L not in d or pd.isna(d.get(L))]
         on = {L: {} for L in LADDERS}
+        meta_p = HUB / "activations" / sname / r.run / r.agent / "meta.json"
+        meta = json.load(open(meta_p)) if meta_p.is_file() else {}
+        src_p = meta_p.parent / "source.json"
+        s2t = step_to_turn(src_p, int(meta.get("n_turns") or d.get("n_turns"))) if src_p.is_file() else None
         for L, lev, col in (("cheat", 1, "exposed_step"), ("cheat", 2, "tried_step"), ("cheat", 3, "opened_step"),
                             ("cheat", 4, "used_onset_step"), ("coord", 1, "first_read_step"), ("coord", 2, "first_post_step"),
                             ("collude", 3, "collude_onset_step")):
             v = d.get(col)
-            if v is not None and pd.notna(v) and lev <= fin[L]:
-                on[L][str(lev)] = int(v)
-        meta_p = HUB / "activations" / sname / r.run / r.agent / "meta.json"
-        meta = json.load(open(meta_p)) if meta_p.is_file() else {}
+            if v is not None and pd.notna(v) and lev <= fin[L] and s2t is not None and int(v) < len(s2t):
+                on[L][str(lev)] = int(s2t[int(v)])  # source step -> activation turn; unknown when the counts disagree
         recs.append({"set": sname, "run": r.run, "agent": r.agent, "arm": str(d.get("arm") or d.get("condition") or meta.get("condition") or "all"),
                      "author": str(d.get("author") or meta.get("author") or "unknown"), "budget": d.get("budget") if pd.notna(d.get("budget")) else None,
                      "n_turns": int(meta.get("n_turns") or d.get("n_turns")), "final": fin, "onset": on, "na": na})
@@ -1082,6 +1099,16 @@ def write_report():
              ["outer folds", "team_probes.py's folds: 5, grouped by run (no run is split); board_seed stratified by (cheating used, collusion crossed) as its step probes; controls by (author, label) as its transfer probe. Held-out author: one fold per author"],
              ["scores", "the binary head's logit for each cut (main rows); the ordinal head's log-odds of P(level >= cut) as a second row"],
          ]), "",
+         "Training is deterministic for a fixed seed and thread count (two runs gave identical scores). A different thread "
+         "count changes the scores by about 2e-5 and can move the early-stopping epoch, so on the small sets a rerun of the "
+         "same seed can differ: spar_mixed_41, seed 0, moved from step AUROC 0.815 to 0.750 between its first run and the "
+         "rerun with corrected onsets (one agent's onset changed and the thread count went from 5 to 3). The two seeds "
+         "therefore bound the spread only loosely on the small sets.", "",
+         "Source step and activation turn: when a transcript has more agent steps than the activations have turns, the "
+         "activations hold one turn per step that issued a tool call, and a step's turn is its rank among those steps; "
+         "when neither count matches the activation turns, the agent's onsets are unknown and it leaves that cut's "
+         "per-step and agent scoring (19 spar_screen_team, 1 spar_mixed_41 and 3 solo_design agents). board_seed and "
+         "controls_600 have one turn per step.", "",
          "## Labels", "", md(["Cut", "Per-step label", "Onset"], [
              ["cheating used or above (board_seed)", "level reached at that call >= used", ONSET_NOTE["cheat"]],
              ["collusion exploit crossed or above (board_seed)", "level reached at that call >= exploit crossed", ONSET_NOTE["collude"]],

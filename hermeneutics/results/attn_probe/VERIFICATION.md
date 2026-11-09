@@ -12,3 +12,8 @@
 ## 2026-11-09, board_seed, seven tokens
 
 - No run crosses folds (43 runs). Per-step AUROC of the collusion binary head, seed 1, recomputed with sklearn from step_scores_board_seed_seven.csv.gz equals the CSV (all 129 agents reach collusion with an onset or not at all, so no agent is dropped). Baseline rows equal the think-pair run's to 0.0. Plot score_vs_turn_cheating_board_seed_seven.png viewed: six panels, same agents. VERIFIED.
+
+## 2026-11-09, board_seed null complete; controls_600 think pair, 5 folds
+
+- Board null: 50 draws on disk (draws 0-24 and 25-49, 3 cuts each); no draw reaches the real AUROC on any cut or metric, so p = 1/51 = 0.020, the floor. VERIFIED from the CSVs.
+- Controls: no run crosses folds (600 runs). Agent AUROC (last step) of the binary head, seed 0, recomputed with sklearn from the last-step scores and the set's labels: 0.98539, equal to the CSV. Solo-arm rows are recomputed from the same saved held-out scores restricted to the solo arm (subset_metrics asserts the per-step labels equal the saved ones). VERIFIED.

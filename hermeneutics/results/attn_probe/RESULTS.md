@@ -1,6 +1,6 @@
 # Attention monitor over the reader's think tokens
 
-Updated 2026-11-09 00:25 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
+Updated 2026-11-09 00:35 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
 
 ## Design
 
@@ -179,13 +179,13 @@ Held-out score per turn of the cheating-used binary head for the six agents of t
 
 Seed-to-seed spread of the binary head (max minus min over seeds): step 0.008, agent last 0.051, agent max 0.078.
 
-Permutation null (40 draws), attention monitor seed 0:
+Permutation null (50 draws), attention monitor seed 0:
 
 | Metric | Real | Null mean | Null 95th percentile | p |
 |---|---|---|---|---|
-| step AUROC | 0.883 | 0.746 | 0.783 | 0.024 |
-| agent AUROC (last) | 0.868 | 0.587 | 0.671 | 0.024 |
-| agent AUROC (max) | 0.876 | 0.596 | 0.686 | 0.024 |
+| step AUROC | 0.883 | 0.748 | 0.787 | 0.020 |
+| agent AUROC (last) | 0.868 | 0.597 | 0.685 | 0.020 |
+| agent AUROC (max) | 0.876 | 0.604 | 0.690 | 0.020 |
 
 ### collusion exploit crossed or above
 
@@ -205,13 +205,13 @@ Permutation null (40 draws), attention monitor seed 0:
 
 Seed-to-seed spread of the binary head (max minus min over seeds): step 0.003, agent last 0.084, agent max 0.095.
 
-Permutation null (40 draws), attention monitor seed 0:
+Permutation null (50 draws), attention monitor seed 0:
 
 | Metric | Real | Null mean | Null 95th percentile | p |
 |---|---|---|---|---|
-| step AUROC | 0.879 | 0.738 | 0.774 | 0.024 |
-| agent AUROC (last) | 0.919 | 0.587 | 0.662 | 0.024 |
-| agent AUROC (max) | 0.914 | 0.588 | 0.667 | 0.024 |
+| step AUROC | 0.879 | 0.741 | 0.775 | 0.020 |
+| agent AUROC (last) | 0.919 | 0.593 | 0.667 | 0.020 |
+| agent AUROC (max) | 0.914 | 0.594 | 0.681 | 0.020 |
 
 ### coordination posted or above
 
@@ -231,13 +231,13 @@ Permutation null (40 draws), attention monitor seed 0:
 
 Seed-to-seed spread of the binary head (max minus min over seeds): step 0.002, agent last 0.009, agent max 0.004.
 
-Permutation null (40 draws), attention monitor seed 0:
+Permutation null (50 draws), attention monitor seed 0:
 
 | Metric | Real | Null mean | Null 95th percentile | p |
 |---|---|---|---|---|
-| step AUROC | 0.959 | 0.781 | 0.808 | 0.024 |
-| agent AUROC (last) | 0.966 | 0.654 | 0.740 | 0.024 |
-| agent AUROC (max) | 0.975 | 0.656 | 0.738 | 0.024 |
+| step AUROC | 0.959 | 0.784 | 0.821 | 0.020 |
+| agent AUROC (last) | 0.966 | 0.660 | 0.748 | 0.020 |
+| agent AUROC (max) | 0.975 | 0.663 | 0.748 | 0.020 |
 
 ### Level accuracy
 
@@ -280,3 +280,70 @@ Permutation null (40 draws), attention monitor seed 0:
 ![score versus turn](score_vs_turn_cheating_board_seed_think.png)
 
 Held-out score per turn of the cheating-used binary head for the six agents of team_probes' step_scores_cheating.png, with the linear per-step probe beside it.
+
+## Controls, one agent per run (five authors): controls_600_think
+
+600 agents, 600 runs, 10985 steps. Split: 5 folds grouped by run.
+
+### cheating (the set's label: from tried or opened by task)
+
+593 agents scored per step (336 reach the cut), 10834 steps (3759 positive).
+
+| Model | Step AUROC | Agent AUROC (last) | Agent AUROC (max) | Delay at 5% FPR, turns | Detected | Negative agents ever above threshold | ECE |
+|---|---|---|---|---|---|---|---|
+| attention monitor, binary head (seed 0) | 0.983 [0.975, 0.989] | 0.985 [0.976, 0.993] | 0.989 [0.980, 0.996] | 0.0 [0.0, 0.5] | 331/336 | 30/257 | 0.039 |
+| attention monitor, ordinal head P(level >= cut) (seed 0) | 0.976 [0.966, 0.984] | 0.983 [0.972, 0.992] | 0.984 [0.973, 0.992] | 0.0 [0.0, 1.0] | 330/336 | 28/257 | 0.234 |
+| attention monitor, binary head (seed 1) | 0.984 [0.975, 0.990] | 0.988 [0.980, 0.995] | 0.987 [0.980, 0.995] | 0.0 [0.0, 1.0] | 331/336 | 32/257 | 0.042 |
+| attention monitor, ordinal head P(level >= cut) (seed 1) | 0.979 [0.970, 0.986] | 0.979 [0.967, 0.989] | 0.982 [0.969, 0.991] | 0.0 [0.0, 1.0] | 331/336 | 30/257 | 0.222 |
+| linear per-step probe (team_probes) | 0.916 [0.903, 0.929] | 0.835 [0.806, 0.867] | 0.921 [0.899, 0.941] | 1.0 [0.0, 1.0] | 309/336 | 79/257 | 0.062 |
+| cumulative mean of the linear probe | 0.914 [0.900, 0.925] | 0.843 [0.810, 0.874] | 0.842 [0.809, 0.872] | 2.0 [1.0, 4.0] | 239/336 | 53/257 | 0.180 |
+| GRU over the linear probe scores | 0.943 [0.929, 0.955] | 0.901 [0.877, 0.924] | 0.912 [0.887, 0.933] | 1.0 [0.0, 2.0] | 274/336 | 40/257 | 0.027 |
+| turn index alone | 0.672 [0.653, 0.692] | 0.448 [0.399, 0.495] | 0.448 [0.399, 0.495] | 16.0 [8.0, 19.0] | 157/336 | 144/257 | 0.140 |
+| TF-IDF on the agent's words so far | 0.973 [0.967, 0.979] | 0.974 [0.962, 0.983] | 0.973 [0.962, 0.983] | 0.0 [0.0, 1.0] | 314/336 | 30/257 | 0.015 |
+
+Seed-to-seed spread of the binary head (max minus min over seeds): step 0.001, agent last 0.003, agent max 0.002.
+
+### Level accuracy
+
+| Ladder | Model | Final-step level accuracy | Final-step level mean absolute error | Per-step level accuracy |
+|---|---|---|---|---|
+| cheat | attention monitor (seed 0) | 0.443 | 1.432 | 0.853 |
+| cheat | attention monitor (seed 1) | 0.440 | 1.390 | 0.858 |
+| cheat | majority level of the training fold | 0.325 | 3.568 | 0.403 |
+
+### Fit check (binary heads, step AUROC on the fold's training and validation agents)
+
+| Seed | Fold | Epochs run | Best epoch | train|cheat | train|collude | train|coord | val|cheat | val|collude | val|coord |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0 | 57 | 46 | 1.000 |  |  | 0.973 |  |  |
+| 0 | 1 | 57 | 46 | 1.000 |  |  | 0.989 |  |  |
+| 0 | 2 | 60 | 59 | 1.000 |  |  | 0.996 |  |  |
+| 0 | 3 | 48 | 37 | 1.000 |  |  | 0.995 |  |  |
+| 0 | 4 | 42 | 31 | 0.999 |  |  | 0.985 |  |  |
+| 1 | 0 | 42 | 31 | 1.000 |  |  | 0.993 |  |  |
+| 1 | 1 | 60 | 54 | 1.000 |  |  | 0.995 |  |  |
+| 1 | 2 | 51 | 40 | 1.000 |  |  | 0.992 |  |  |
+| 1 | 3 | 40 | 29 | 1.000 |  |  | 0.994 |  |  |
+| 1 | 4 | 47 | 36 | 1.000 |  |  | 0.992 |  |  |
+
+## Controls, one agent per run (five authors): controls_600_think_soloarm
+
+373 agents, 373 runs, 7366 steps. Split: 5 folds grouped by run. Scored on the solo arm only (same held-out scores as the full run).
+
+### cheating (the set's label: from tried or opened by task), solo arm only
+
+372 agents scored per step (192 reach the cut), 7341 steps (2174 positive).
+
+| Model | Step AUROC | Agent AUROC (last) | Agent AUROC (max) | Delay at 5% FPR, turns | Detected | Negative agents ever above threshold | ECE |
+|---|---|---|---|---|---|---|---|
+| attention monitor, binary head (seed 0) | 0.987 [0.980, 0.992] | 0.989 [0.978, 0.997] | 0.990 [0.980, 0.998] | 0.0 [0.0, 0.0] | 191/192 | 28/180 | 0.031 |
+| attention monitor, ordinal head P(level >= cut) (seed 0) | 0.983 [0.974, 0.989] | 0.987 [0.975, 0.996] | 0.987 [0.975, 0.995] | 0.0 [0.0, 0.0] | 190/192 | 21/180 | 0.204 |
+| attention monitor, binary head (seed 1) | 0.987 [0.979, 0.993] | 0.993 [0.987, 0.997] | 0.990 [0.981, 0.997] | 0.0 [0.0, 1.0] | 190/192 | 22/180 | 0.039 |
+| attention monitor, ordinal head P(level >= cut) (seed 1) | 0.982 [0.971, 0.989] | 0.987 [0.976, 0.995] | 0.990 [0.980, 0.997] | 0.0 [0.0, 1.0] | 191/192 | 21/180 | 0.192 |
+| linear per-step probe (team_probes) | 0.918 [0.901, 0.932] | 0.819 [0.772, 0.855] | 0.907 [0.875, 0.936] | 1.0 [0.0, 1.0] | 169/192 | 61/180 | 0.090 |
+| cumulative mean of the linear probe | 0.909 [0.891, 0.926] | 0.822 [0.777, 0.866] | 0.822 [0.776, 0.865] | 2.0 [1.0, 5.0] | 121/192 | 40/180 | 0.162 |
+| GRU over the linear probe scores | 0.948 [0.929, 0.961] | 0.897 [0.860, 0.927] | 0.904 [0.869, 0.931] | 1.0 [0.0, 2.0] | 153/192 | 27/180 | 0.026 |
+| turn index alone | 0.700 [0.676, 0.724] | 0.479 [0.422, 0.545] | 0.479 [0.422, 0.545] | 14.0 [7.0, 18.0] | 107/192 | 109/180 | 0.198 |
+| TF-IDF on the agent's words so far | 0.972 [0.962, 0.981] | 0.971 [0.955, 0.983] | 0.966 [0.948, 0.981] | 0.0 [0.0, 1.0] | 178/192 | 21/180 | 0.017 |
+
+Seed-to-seed spread of the binary head (max minus min over seeds): step 0.000, agent last 0.004, agent max 0.000.

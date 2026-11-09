@@ -358,6 +358,9 @@ def boundary_path(s, run, agent):
     return HUB / "boundary" / s / run / f"{agent}.npz"
 
 
+EMPTY = set()  # (set, run, agent) left out for having zero turns
+
+
 def load_think(s, rows):
     """{(run, agent): {L: think [n_turns, 2, 5120], ("b", L): boundary [n_turns, 5, 5120]}} (float16) for the rows
     with a local npz; the boundary entries only when that agent's turns.safetensors has been fetched."""
@@ -366,6 +369,9 @@ def load_think(s, rows):
         p = think_path(s, r.run, r.agent)
         if p.is_file():
             z = np.load(p)
+            if z["think_L26"].shape[0] == 0:  # an agent with no assistant turn has no features
+                EMPTY.add((s, r.run, r.agent))
+                continue
             d = {L: z[f"think_L{L}"] for L in LAYERS}
             bp = boundary_path(s, r.run, r.agent)
             if bp.is_file():
@@ -577,6 +583,65 @@ def prep_folds(X, fold, rows=None):
             continue
         Ztr, Zte = pca_z(X[tr], X[te])
         P.append((tr, te, Ztr, Zte))
+    return P
+
+
+def _blocks(layer, pos):
+    """The (layer, token kind, token index) blocks of 5120 columns that make up a feature setting, in turn_matrix order."""
+    Ls = LAYERS if layer == "all" else [int(layer)]
+    toks = ([("t", i) for i in POS[pos]] if pos in POS else [("b", i) for i in BPOS[pos]] if pos in BPOS
+            else [("t", 0), ("t", 1)] + [("b", i) for i in range(5)])
+    return [(L, k, i) for L in Ls for k, i in toks]
+
+
+def _block_rows(acts, keys, L, kind, i):
+    """float32 [all turns, 5120] for one token at one layer; zero rows for an agent without the boundary tensors."""
+    ns = [acts[k][26].shape[0] for k in keys]
+    out = np.zeros((sum(ns), 5120), np.float32)
+    o = 0
+    for k, n in zip(keys, ns):
+        a = acts[k]
+        if kind == "t":
+            out[o:o + n] = a[L][:, i, :]
+        elif ("b", L) in a:
+            out[o:o + n] = a[("b", L)][:, i, :]
+        o += n
+    return out
+
+
+def prep_folds_stream(acts, keys, layer, pos, fold, rows=None, kmax=128):
+    """prep_folds without the full turn matrix: per fold, the training Gram matrix and the test-by-training cross-Gram
+    are summed over 5120-column blocks centred with training means, then the exact top-k PCA comes from the Gram's
+    eigenvectors (training scores U S, test scores Gte U / S). Peak memory is one block and the two Gram matrices."""
+    from scipy.linalg import eigh
+    n = sum(acts[k][26].shape[0] for k in keys)
+    rows = np.ones(n, bool) if rows is None else rows
+    P = []
+    for f in range(K):
+        tr, te = np.flatnonzero(rows & (fold != f)), np.flatnonzero(rows & (fold == f))
+        if len(tr) < 6 or not len(te):
+            P.append(None)
+            continue
+        G = np.zeros((len(tr), len(tr)), np.float64)
+        Gte = np.zeros((len(te), len(tr)), np.float64)
+        for L, kind, i in _blocks(layer, pos):
+            B = _block_rows(acts, keys, L, kind, i)
+            Btr = B[tr]
+            mu = Btr.mean(0)
+            Btr -= mu
+            Bte = B[te] - mu
+            del B
+            G += Btr @ Btr.T
+            Gte += Bte @ Btr.T
+            del Btr, Bte
+        k = min(kmax, max(2, len(tr) // 2))
+        w, U = eigh(G, subset_by_index=[len(tr) - k, len(tr) - 1])
+        w, U = w[::-1], U[:, ::-1]
+        S = np.sqrt(np.maximum(w, 1e-12))
+        Ptr, Pte = U * S, (Gte @ U) / S
+        sd = Ptr.std(0) + 1e-9
+        P.append((tr, te, Ptr / sd, Pte / sd))
+        del G, Gte
     return P
 
 
@@ -926,10 +991,13 @@ def run_step_probes(W, acts, keys, turn_words, turn_whole):
     hb = has_b(acts, keys)
     items = [(c, "A") for c in CONFIGS] + ([(c, "B") for c in BCONFIGS] if hb.sum() >= MIN_B else [])
     for cfg, st in items:
-        X, ai2, _ = turn_matrix(acts, keys, *cfg)
-        assert (ai2 == ai).all()
-        P = prep_folds(X, fold, hb[ai] if st == "B" else None)
-        del X
+        if st == "B":  # the seven-token settings stream their blocks to keep this machine's memory low
+            P = prep_folds_stream(acts, keys, cfg[0], cfg[1], fold, hb[ai])
+        else:
+            X, ai2, _ = turn_matrix(acts, keys, *cfg)
+            assert (ai2 == ai).all()
+            P = prep_folds(X, fold)
+            del X
         for name, (reach, onset, rk, keep_a0, y) in labs.items():
             keep_a = keep_a0 & hb if st == "B" else keep_a0
             if min(reach[keep_a].sum(), (1 - reach[keep_a]).sum()) < 3:
@@ -1369,6 +1437,7 @@ def write_report(hub_counts, transfer_counts=None):
         ["null (per step)", "each agent's pair (reaches the level, onset as a fraction of its turns) permuted within arm, turn labels rebuilt from it, 100 draws, C fixed; for the main settings only"],
         ["metadata baseline", "arm one-hot, turn budget one-hot, seed; logistic regression on the same folds"],
         ["text baselines", "TF-IDF (word 1-2 grams, fitted on the training fold) with L2 logistic regression and C by inner CV: the agent's own words (reasoning and tool calls, no tool results) and the whole rendered text"],
+        ["PCA solver", "randomized SVD for the per-step setting A fits; for the per-step setting B fits, the exact top components of the training Gram matrix summed over 5120-column blocks (to bound memory); the think pair fitted both ways agrees"],
         ["call index", "signals.jsonl call k is the 0-based index over the agent's individual tool calls; it maps to the assistant step holding it, and acts turn t is step t"],
     ]), ""]
 

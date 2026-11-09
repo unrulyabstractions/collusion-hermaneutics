@@ -27,3 +27,16 @@
 | team authors | meta.json and episodes.jsonl: all 134 agents (129 workers, 5 regulators) are DeepSeek V4.1 Flash | VERIFIED |
 | spar_mixed_41 labels | one cheat and one no-cheat agent traced by hand to the spar-swarm signals.jsonl rung and the task floor | VERIFIED |
 | RESULTS.md wording | null denominators, the per-step null, the anticoord-only negatives of 1b and 5c, and 5d keeping the discussed or solicited workers now stated | FIXED |
+
+## 2026-11-09 01:10 PST: setting B on the full board_seed set (134 of 134 agents with turns.safetensors)
+
+| Output | How it was checked | Result |
+|---|---|---|
+| boundary files | fetch_log.jsonl for all 134 agents: shape [n_turns, 5, 5120], turn ids 248046 198 248045 74455 198, positions increasing and the last one token before think-open | VERIFIED |
+| streamed exact PCA | on 12 agents, the Gram-matrix projections equal a full SVD of the training rows up to sign (max difference 0.002 in z units, float32 accumulation) | VERIFIED |
+| setting A rows after the rerun | every A row reproduced the previous run | VERIFIED |
+| setting B agent and step rows | all 125 recomputed from agent_scores.csv and step_turn_scores.csv.gz with sklearn, 0 mismatches; row counts equal the kept rows | VERIFIED |
+| setting B team rows | all 20 recomputed from team_scores.csv, 0 mismatches | VERIFIED |
+| B think pair against A think pair | same agents, two PCA solvers: per-step turn AUROCs agree within 0.01 | VERIFIED |
+| PNGs | reopened after the rerun; same six agents and curves | VERIFIED |
+| zero-turn agents | one cheatbench agent with zero turns is now skipped at load (it crashed the watch loop's transfer scoring) | FIXED |

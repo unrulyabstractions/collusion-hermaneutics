@@ -3,7 +3,7 @@
 S=/private/tmp/claude-501/-Users-unrulyabstractions-work-collusion-hermaneutics/f66b8846-aba6-4751-8519-31c57899b754/scratchpad/pod
 DST=/Users/unrulyabstractions/work/collusion-hermaneutics/data/goodfire_v2/snapshots
 PY=/Users/unrulyabstractions/work/collusion-hermaneutics/.venv/bin/python
-SNAP=/Users/unrulyabstractions/work/ch-goodfire-runpod/hermeneutics/goodfire_snapshot.py
+SNAP=/Users/unrulyabstractions/work/collusion-hermaneutics/worktree/goodfire-runpod/hermeneutics/goodfire_snapshot.py
 while true; do
   free_gb=$(df -g "$DST" | awk 'NR==2{print $4}')
   if [ "$free_gb" -lt 5 ]; then echo "$(date -u +%T) Mac has ${free_gb} GB free: not pulling"; sleep 1800; continue; fi

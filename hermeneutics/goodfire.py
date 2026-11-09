@@ -487,7 +487,10 @@ def write_labels(run_path, out_csv):
         lab = labels.get(t["id"], {})
         rows.append({"run_dir": info["run_dir"], "benchmark": info["benchmark"], "author": info["author"], "rollout_id": t["id"],
                      "row_index": i, "task": data.get("name"), "n_nodes": len(t["nodes"]), "n_turns": n_turns,
-                     "label_source": lab.get("label_source"), "verdict": lab.get("verdict"), "verdict_enacted": lab.get("verdict_enacted"),
+                     "label_source": lab.get("label_source"),
+                     # the earlier labels.csv format's column, kept so readers of that format still work
+                     "label_type": {"judge": "judge_consensus", "monitor": "monitor_evidence"}.get(lab.get("label_source")),
+                     "verdict": lab.get("verdict"), "verdict_enacted": lab.get("verdict_enacted"),
                      "cheat": binary(lab.get("verdict")), "cheat_enacted": binary(lab.get("verdict_enacted")),
                      "categories": "|".join(lab.get("categories") or []), "split": lab.get("split"), "reward": lab.get("reward"),
                      "status": lab.get("status"), "n_passages": lab.get("n_passages"),

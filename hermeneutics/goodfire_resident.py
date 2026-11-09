@@ -47,10 +47,12 @@ def versions(dev):
 class Resident:
     """The embeddings and blocks 0 .. max(layers)-1 on the GPU, built once."""
 
-    def __init__(self, mdir, layers, dev):
+    def __init__(self, mdir, layers, dev, weights=None):
+        """weights: an object with extract.Weights' get()/layer_names() (e.g. goodfire_stream.RemoteWeights for a host
+        without the checkpoint on disk); default: the safetensors shards under mdir."""
         self.cfg = AutoConfig.from_pretrained(mdir).text_config
         self.cfg._attn_implementation = "sdpa"
-        w = Weights(mdir)
+        w = weights or Weights(mdir)
         t0 = time.time()
         self.emb = w.get([f"{PREFIX}embed_tokens.weight"], dev)[f"{PREFIX}embed_tokens.weight"]
         self.blocks = []

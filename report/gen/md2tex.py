@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Markdown (GitHub flavour) to LaTeX for the hackathon report, plus a page report.
+"""Markdown (GitHub flavour) to ICML 2026 LaTeX (preprint, two columns) for the report, plus a page report.
 
 Usage
   md2tex.py convert REPORT.md report.tex     write report.tex (and nothing else)
@@ -10,19 +10,20 @@ Standard library only. The converter is lossless for text: it escapes LaTeX
 specials, converts **bold**, *italic*, `code`, links, URLs, headings, lists,
 pipe tables (with "**Table X.**" caption lines) and images. It never rewords.
 
-Headings: "# " -> title block (the paragraphs that follow it, up to the first
-"## ", are the author / affiliation / meta block); "## Abstract" -> bold
-"Abstract" heading with the text in \\small; other "## " -> \\section*,
-"### " -> \\subsection*, "#### " -> \\subsubsection*. Numbers stay as written.
+Headings: "# " -> the ICML title; the paragraph after it is "Author, Affiliation", and a
+"Correspondence: <address>" paragraph sets the corresponding author. "## Abstract" -> the abstract
+environment; other "## " -> \\section (numbered; Code and data, Acknowledgements and similar unnumbered),
+"### " -> \\subsection. "## References" -> natbib bibliography from ../gen/refs.bib with icml2026.bst;
+"## Appendix" -> \\appendix in one column, where "### Appendix X: Title" -> \\section{Title} lettered X.
+Citations: [@key] or [@a; @b] -> \\citep.
 
-Tables: tabularx (longtable above LONGTABLE_ROWS body rows) with column widths
-estimated from the cell text, the first column favoured, text wrapped and
-ragged right, caption above in a [H] float (set MD2TEX_PLACEMENT=ht to let a
-table that does not fit move to the top of the next page while the text flows
-on). Nothing is auto-numbered.
+Tables: booktabs at one font size (9pt). A table whose cells fit on one line is set at its natural width;
+otherwise tabularx fills the column (or both columns, as table*, when it does not fit one column; a
+caption ending in {wide} or {narrow} forces the choice). Appendix tables longer than LONGTABLE_ROWS
+break across pages. Captions above, unnumbered by LaTeX: the markdown carries the numbers.
 
-Every heading carries a position mark that is written to the .aux at shipout
-(page and vertical position), so `pages` can say what starts on which page.
+Every heading carries a position mark that is written to the .aux at shipout, so `pages` can say what
+starts on which page.
 """
 from __future__ import annotations
 
@@ -34,21 +35,23 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 # ----------------------------------------------------------------- settings --
-TEXTWIDTH_PT = 469.75          # letterpaper, 1in margins: 6.5in
+COLUMN_PT = 234.87             # ICML two-column: 3.25in column
+TEXT_PT = 487.82               # ICML text width: 6.75in (both columns, and the one-column appendix)
 TABCOLSEP_PT = 3.0
-LONGTABLE_ROWS = 35            # body rows above which longtable is used
-TABLE_SIZES = [("\\small", 10.0), ("\\footnotesize", 9.0), ("\\scriptsize", 8.0)]
+LONGTABLE_ROWS = 20            # appendix tables with more body rows than this break across pages
+TABLE_SIZES = [("\\small", 9.0)]          # one table font size throughout (icml2026.sty: \\small = 9pt)
+FALLBACK_SIZE = ("\\scriptsize", 7.0)     # used only when a table cannot fit at the main size (warned)
 SHORT_CELL_EM = 12.0           # a column whose body cells are all shorter than this
                                # is "numeric": prefer a size where its cells wrap
                                # to at most two lines
 CELL_TARGET_EM = 45.0          # a column never asks for more than this per line
 FIRST_COL_BONUS = 1.3
-TABLE_PLACEMENT = os.environ.get("MD2TEX_PLACEMENT", "!htbp")   # !htbp (default): float within the
-                               # section, fenced by \FloatBarrier at every heading; H: strictly here
 HEADING_TOP_SKIP_PT = 25.0     # estimated gap from a heading's baseline to the
                                # top of its before-skip (for the page fraction)
+UNNUMBERED = {"code and data", "acknowledgements", "llm usage statement", "impact statement"}
 
 CAPTION_RE = re.compile(r"^\*\*(Table|Figure)\b[^*]*\*\*")
+WIDTH_TAG_RE = re.compile(r"\s*\{(wide|narrow)\}\s*$")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 LIST_RE = re.compile(r"^(\s*)([-*+]|\d+[.)])\s+(.*)$")
 TABLE_SEP_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$")
@@ -285,9 +288,13 @@ def text_run(s: str, cell: bool = False) -> str:
     # paired straight double quotes become typographic quotes
     out = re.sub(r'"([^"]*?)"', r"``\1''", out)
     if cell:
-        # inside a table cell a slash may take a line break (paths, "a/b")
+        # inside a table cell a slash may take a line break ("a/b"); an interval "v [lo, hi]" breaks only before "["
         out = out.replace("/", "\\slash{}")
+        out = INTERVAL_RE.sub(lambda m: m.group(1) + " \\mbox{[" + m.group(2) + ", " + m.group(3) + "]}", out)
     return out
+
+
+INTERVAL_RE = re.compile(r"(-?\d+\.\d+) \[(-?\d+\.\d+), (-?\d+\.\d+)\]")
 
 
 def code_run(s: str) -> str:
@@ -302,6 +309,7 @@ def code_run(s: str) -> str:
 INLINE_RE = re.compile(
     r"""
       (?P<code>`+)(?P<ctext>.+?)(?P=code)
+    | \[(?P<cites>@[A-Za-z0-9_:-]+(?:\s*;\s*@[A-Za-z0-9_:-]+)*)\]
     | !\[(?P<ialt>[^\]]*)\]\((?P<ipath>[^)\s]+)\)
     | \[(?P<ltext>[^\]]+)\]\((?P<lhref>[^)\s]+)\)
     | (?P<url>https?://[^\s<>"'`]+)
@@ -323,6 +331,9 @@ def split_url(url: str) -> tuple[str, str]:
     return url, tail
 
 
+CITED: list[str] = []          # citation keys in order of use (checked against the .bib by check_report.py)
+
+
 def inline(s: str, tex_dir: Path | None = None, md_dir: Path | None = None, cell: bool = False) -> str:
     out: list[str] = []
     pos = 0
@@ -331,6 +342,10 @@ def inline(s: str, tex_dir: Path | None = None, md_dir: Path | None = None, cell
         pos = m.end()
         if m.group("code") is not None:
             out.append(code_run(m.group("ctext")))
+        elif m.group("cites") is not None:
+            keys = [k.strip().lstrip("@") for k in m.group("cites").split(";")]
+            CITED.extend(keys)
+            out.append(r"\citep{" + ",".join(keys) + "}")
         elif m.group("ipath") is not None:
             out.append(r"\includegraphics[width=\linewidth]{" + image_path(m.group("ipath"), tex_dir, md_dir) + "}")
         elif m.group("lhref") is not None:
@@ -371,7 +386,7 @@ def em_width(tok: str, bold: bool = False, mono: bool = False) -> float:
             w += 0.50
         elif c.isalpha():
             w += 0.46
-        elif c == " ":
+        elif c in " \x00":
             w += 0.25
         elif c in ".,;:'`|!":
             w += 0.28
@@ -391,8 +406,9 @@ def cell_tokens(cell: str, bold: bool = False) -> list[float]:
     widths: list[float] = []
 
     def text_pieces(s: str) -> None:
+        s = INTERVAL_RE.sub(lambda m: m.group(1) + " [" + m.group(2) + ",\x00" + m.group(3) + "]", s)   # "[lo, hi]" is one piece
         for tok in re.sub(r"\*+", "", s).split():
-            for piece in re.split(r"(?<=/)", tok):
+            for piece in re.split(r"(?<=[/-])(?=[A-Za-z])", tok):   # TeX may break after a slash or a hyphen
                 if piece:
                     widths.append(em_width(piece, bold))
 
@@ -421,21 +437,21 @@ def two_line_width(toks: list[float]) -> float:
     return best
 
 
-def column_plan(header: list[str], rows: list[list[str]]) -> tuple[str, float, list[float]]:
-    """Pick a font size and column widths (pt). Returns (size cmd, size pt, widths).
+def column_plan(header: list[str], rows: list[list[str]], width_pt: float) -> tuple[str, float, list[float], bool]:
+    """Column widths (pt) for a table of total width width_pt at the one table font size.
 
-    The largest size whose unbreakable pieces fit is tried first. For every
-    size the slack is spread (fill); a size is accepted when every numeric
-    column (short body cells) wraps to at most two lines, else the next
-    smaller size is tried; if none satisfies that, the size with the fewest
-    wrapped lines wins, the larger size on ties.
+    Returns (size cmd, size pt, widths, natural). natural is True when every cell fits on one
+    line inside width_pt: the table is then set at its natural width (plain tabular), never
+    stretched. Otherwise the widths fill width_pt (tabularx) and long cells wrap; numeric
+    columns get room to wrap to at most two lines first. Only when the unbreakable pieces do
+    not fit at the main size is the fallback size used, with a warning.
     """
     ncols = len(header)
-    avail = TEXTWIDTH_PT - ncols * 2 * TABCOLSEP_PT
-    longest_tok = [0.0] * ncols      # header and body
-    longest_any = [0.0] * ncols      # header and body, whole cell
-    longest_body = [0.0] * ncols     # body only, whole cell
-    two_line = [0.0] * ncols         # body only
+    avail = width_pt - ncols * 2 * TABCOLSEP_PT
+    longest_tok = [0.0] * ncols
+    longest_any = [0.0] * ncols
+    longest_body = [0.0] * ncols
+    two_line = [0.0] * ncols
     for r, row in enumerate([header] + rows):
         for j in range(ncols):
             cell = row[j] if j < len(row) else ""
@@ -449,26 +465,39 @@ def column_plan(header: list[str], rows: list[list[str]]) -> tuple[str, float, l
                 longest_body[j] = max(longest_body[j], total)
                 two_line[j] = max(two_line[j], two_line_width(toks))
     short = [0 < longest_body[j] <= SHORT_CELL_EM for j in range(ncols)]
-
-    candidates = []
-    for cmd, pt in TABLE_SIZES:
+    for cmd, pt in TABLE_SIZES + [FALLBACK_SIZE]:
+        natural = [(t + 0.4) * pt for t in longest_any]
+        if sum(natural) <= avail:
+            return cmd, pt, natural, True
         minw = [(t + 0.3) * pt for t in longest_tok]
         if sum(minw) > avail:
             continue
-        widths = fill(minw, two_line, longest_any, short, pt, avail)
-        lines = max((math.ceil(longest_body[j] * pt / widths[j]) for j in range(ncols) if short[j]), default=1)
-        candidates.append((lines, -pt, cmd, widths))
-        if lines <= 2:
-            break
-    if not candidates:
-        cmd, pt = TABLE_SIZES[-1]
-        minw = [(t + 0.3) * pt for t in longest_tok]
-        scale = avail / sum(minw)
-        print(f"md2tex: warning: table with {ncols} columns does not fit at {cmd}; "
-              f"columns scaled by {scale:.2f}", file=sys.stderr)
-        return cmd, pt, [w * scale for w in minw]
-    lines, neg_pt, cmd, widths = min(candidates, key=lambda c: (c[0], c[1]))
-    return cmd, -neg_pt, widths
+        if (cmd, pt) == FALLBACK_SIZE:
+            print(f"md2tex: warning: table with {ncols} columns needs the fallback size {cmd}", file=sys.stderr)
+        return cmd, pt, fill(minw, two_line, longest_any, short, pt, avail), False
+    cmd, pt = FALLBACK_SIZE
+    minw = [(t + 0.3) * pt for t in longest_tok]
+    scale = avail / sum(minw)
+    print(f"md2tex: warning: table with {ncols} columns does not fit at {cmd}; columns scaled by {scale:.2f}", file=sys.stderr)
+    return cmd, pt, [w * scale for w in minw], False
+
+
+def fits_column(header: list[str], rows: list[list[str]]) -> bool:
+    """A main-text table goes in one column when, at the main size, every numeric column wraps
+    to at most two lines and every text column to at most four."""
+    cmd, pt, widths, natural = column_plan(header, rows, COLUMN_PT)
+    if (cmd, pt) != TABLE_SIZES[0]:
+        return False
+    if natural:
+        return True
+    for j in range(len(header)):
+        body = [cell_tokens(r[j] if j < len(r) else "") for r in rows]
+        need = max((sum(t) + 0.25 * (len(t) - 1) for t in body if t), default=0.0) * pt
+        lines = math.ceil(need / max(widths[j] - 2.0, 1.0)) if need else 1
+        numeric = max((sum(t) for t in body if t), default=0.0) <= SHORT_CELL_EM
+        if lines > (2 if numeric else 4):
+            return False
+    return True
 
 
 def fill(minw: list[float], two_line: list[float], longest_any: list[float],
@@ -511,6 +540,8 @@ class Emitter:
         self.tex_dir = tex_path.parent
         self.marks: list[tuple[int, str]] = []   # (level, title) in mark order
         self.tables = 0
+        self.in_appendix = False
+        self.appendix_letters = 0
 
     def inl(self, s: str) -> str:
         return inline(s, self.tex_dir, self.md_dir)
@@ -521,48 +552,66 @@ class Emitter:
 
     # -- blocks
     def title_block(self, title: str, meta: list[str]) -> str:
-        out = ["\\begin{center}",
-               "{\\LARGE\\bfseries " + self.inl(title) + self.mark(0, "Title block") + "\\par}",
-               "\\vspace{1.5ex}"]
-        for k, line in enumerate(meta):
-            size = "\\large " if k == 0 else ""
-            out.append("{" + size + self.inl(line) + "\\par}")
-            if k == 0:
-                out.append("\\vspace{0.5ex}")
-        out.append("\\end{center}")
-        out.append("\\vspace{0.5ex}")
+        """meta[0] is "Author, Affiliation"; ICML preprint byline with the affiliation footnote."""
+        author, _, affil = (meta[0] if meta else "").partition(",")
+        author, affil = author.strip(), affil.strip()
+        out = ["\\twocolumn[",
+               "\\icmltitle{" + self.inl(title) + "}",
+               "\\begin{icmlauthorlist}",
+               "\\icmlauthor{" + self.inl(author) + "}{aff1}",
+               "\\end{icmlauthorlist}",
+               "\\icmlaffiliation{aff1}{" + self.inl(affil) + "}"]
+        corr = next((m.split(":", 1)[1].strip() for m in meta[1:] if m.lower().startswith("correspondence:")), None)
+        if corr:
+            out.append("\\icmlcorrespondingauthor{" + self.inl(author) + "}{" + esc(corr) + "}")
+        out += [
+               "\\icmlkeywords{multi-agent systems, collusion, monitoring, interpretability, probes}",
+               "\\vskip 0.3in",
+               "]",
+               "\\printAffiliationsAndNotice{}"]
         return "\n".join(out)
 
     def abstract(self, blocks: list) -> str:
-        out = ["\\noindent{\\bfseries Abstract" + self.mark(1, "Abstract") + "}\\par\\vspace{0.4ex}",
-               "\\begingroup\\small"]
+        out = ["\\begin{abstract}" + self.mark(1, "Abstract")]
         for b in blocks:
             out.append(self.block(b, noindent=True))
-        out.append("\\endgroup\\vspace{1ex}")
+        out.append("\\end{abstract}")
         return "\n".join(out)
 
     def heading(self, h: Heading) -> str:
-        cmd = {2: "\\section*", 3: "\\subsection*"}.get(h.level, "\\subsubsection*")
-        # fence floats at section level only: a table may float to the next page top while the
-        # following subsection fills the current page; it can never leave its section
-        # appendix subsections ("### Appendix X: ...") are fenced too, so each appendix keeps its own tables
-        fenced = h.level == 2 or (h.level == 3 and h.text.startswith("Appendix"))
-        barrier = "" if (TABLE_PLACEMENT == "H" or not fenced) else "\\FloatBarrier\n"
-        # the appendix starts on a new page, and so does each appendix after A, so no heading is stranded
-        if barrier and ((h.level == 2 and h.text.strip() == "Appendix")
-                        or (h.level == 3 and not h.text.startswith("Appendix A"))):
-            barrier += "\\clearpage\n"
-        return barrier + cmd + "{" + self.inl(h.text) + self.mark(h.level, h.text) + "}"
+        text = h.text.strip()
+        low = text.lower()
+        if h.level == 2 and low == "references":
+            return ("\\FloatBarrier\n" + self.mark(2, "References") +
+                    "\n\\bibliographystyle{icml2026}\n\\bibliography{../gen/refs}")
+        if h.level == 2 and low == "appendix":
+            self.in_appendix = True
+            return "\\clearpage\n\\appendix\n\\onecolumn" + self.mark(2, "Appendix")
+        if self.in_appendix and h.level == 3:
+            m = re.match(r"^Appendix ([A-Z]):\s*(.*)$", text)
+            if m:
+                expect = chr(ord("A") + self.appendix_letters)
+                if m.group(1) != expect:
+                    raise SystemExit(f"md2tex: appendix '{text}' is out of order; LaTeX will letter it {expect}")
+                self.appendix_letters += 1
+                barrier = "\\FloatBarrier\n" + ("\\clearpage\n" if self.appendix_letters > 1 else "")
+                return barrier + "\\section{" + self.inl(m.group(2)) + self.mark(2, text) + "}"
+        if self.in_appendix:
+            cmd = {2: "\\section", 3: "\\section", 4: "\\subsection"}.get(h.level, "\\subsubsection")
+        else:
+            cmd = {2: "\\section", 3: "\\subsection"}.get(h.level, "\\subsubsection")
+        if low in UNNUMBERED:
+            cmd += "*"
+        barrier = "\\FloatBarrier\n" if (self.in_appendix and h.level == 2) else ""
+        return barrier + cmd + "{" + self.inl(text) + self.mark(h.level, text) + "}"
 
     def para(self, p: Para, noindent: bool = False) -> str:
         body = self.inl(p.text)
-        if REF_ITEM_RE.match(p.text):
-            return "\\noindent\\hangindent=1.5em\\hangafter=1 " + guard(body) + "\\par"
         return ("\\noindent " if noindent else "") + guard(body) + "\n"
 
     def list_block(self, lb: ListBlock) -> str:
         env = "enumerate" if lb.ordered else "itemize"
-        opts = "leftmargin=*, itemsep=2pt, topsep=3pt"
+        opts = "leftmargin=*, itemsep=1pt, topsep=2pt, parsep=0pt"
         if lb.ordered and lb.start != 1:
             opts += f", start={lb.start}"
         out = [f"\\begin{{{env}}}[{opts}]"]
@@ -574,11 +623,17 @@ class Emitter:
         return "\n".join(out)
 
     def image(self, im: Image) -> str:
-        out = ["\\begin{figure}[" + TABLE_PLACEMENT + "]", "\\centering",
-               "\\includegraphics[width=\\linewidth]{" + image_path(im.path, self.tex_dir, self.md_dir) + "}"]
-        if im.caption:
-            out.append("\\caption*{" + self.inl(im.caption) + "}")
-        out.append("\\end{figure}")
+        cap = im.caption or ""
+        tag = WIDTH_TAG_RE.search(cap)
+        cap = WIDTH_TAG_RE.sub("", cap)
+        wide = (tag is not None and tag.group(1) == "wide") and not self.in_appendix
+        env = "figure*" if wide else "figure"
+        width = "0.72\\linewidth" if self.in_appendix else "\\linewidth"
+        out = ["\\begin{" + env + "}[" + ("!htbp" if self.in_appendix else "!t") + "]", "\\centering",
+               "\\includegraphics[width=" + width + "]{" + image_path(im.path, self.tex_dir, self.md_dir) + "}"]
+        if cap:
+            out.append("\\caption*{" + self.inl(cap) + "}")
+        out.append("\\end{" + env + "}")
         return "\n".join(out)
 
     def table(self, t: Table) -> str:
@@ -591,36 +646,51 @@ class Emitter:
                       f"extra cells joined into the last column", file=sys.stderr)
                 r = r[:ncols - 1] + [" ".join(r[ncols - 1:])]
             rows.append(r + [""] * (ncols - len(r)))
-        size_cmd, size_pt, widths = column_plan(t.header, rows)
-        avail = TEXTWIDTH_PT - ncols * 2 * TABCOLSEP_PT
+        cap = t.caption or ""
+        tag = WIDTH_TAG_RE.search(cap)
+        cap = WIDTH_TAG_RE.sub("", cap)
+        if self.in_appendix:
+            width, env = TEXT_PT, "table"
+        elif tag is not None:
+            width, env = (TEXT_PT, "table*") if tag.group(1) == "wide" else (COLUMN_PT, "table")
+        else:
+            width, env = (COLUMN_PT, "table") if fits_column(t.header, rows) else (TEXT_PT, "table*")
+        size_cmd, size_pt, widths, natural = column_plan(t.header, rows, width)
+        avail = width - ncols * 2 * TABCOLSEP_PT
         cell = lambda c: inline(c, self.tex_dir, self.md_dir, cell=True)
         cells = lambda row: " & ".join(guard(cell(c)) for c in row) + " \\\\"
         head = " & ".join(guard("\\textbf{" + cell(c) + "}") if c else "" for c in t.header) + " \\\\"
         out: list[str] = []
-        if len(rows) > LONGTABLE_ROWS:
-            spec = "".join(
-                ">{\\RaggedRight\\arraybackslash}p{\\dimexpr %.5f\\textwidth-2\\tabcolsep\\relax}" % (w / TEXTWIDTH_PT)
-                for w in widths)
+        long = self.in_appendix and len(rows) > LONGTABLE_ROWS
+        if natural:
+            spec = "l" * ncols
+        elif long:
+            spec = "".join(">{\\RaggedRight\\arraybackslash}p{%.2fpt}" % (w - 0.01) for w in widths)
+        else:
+            spec = "".join(">{\\hsize=%.4f\\hsize\\RaggedRight\\arraybackslash}X" % (w / (avail / ncols)) for w in widths)
+        if long:
             out += ["\\begingroup", size_cmd, "\\setlength{\\tabcolsep}{%gpt}" % TABCOLSEP_PT,
                     "\\begin{longtable}{" + spec + "}"]
-            if t.caption:
-                out.append("\\caption*{" + self.inl(t.caption) + "}\\\\")
+            if cap:
+                out.append("\\caption*{" + self.inl(cap) + "}\\\\")
             out += ["\\toprule", head, "\\midrule", "\\endfirsthead",
                     "\\toprule", head, "\\midrule", "\\endhead",
                     "\\bottomrule", "\\endlastfoot"]
             out += [cells(r) for r in rows]
             out += ["\\end{longtable}", "\\endgroup"]
+            return "\n".join(out)
+        place = "!htbp" if self.in_appendix else "!t"
+        out += ["\\begin{" + env + "}[" + place + "]", "\\centering", size_cmd,
+                "\\setlength{\\tabcolsep}{%gpt}" % TABCOLSEP_PT]
+        if cap:
+            out.append("\\caption*{" + self.inl(cap) + "}")
+        if natural:
+            out.append("\\begin{tabular}{" + spec + "}")
         else:
-            spec = "".join(
-                ">{\\hsize=%.4f\\hsize\\RaggedRight\\arraybackslash}X" % (w / (avail / ncols))
-                for w in widths)
-            out += ["\\begin{table}[" + TABLE_PLACEMENT + "]", "\\centering", size_cmd,
-                    "\\setlength{\\tabcolsep}{%gpt}" % TABCOLSEP_PT]
-            if t.caption:
-                out.append("\\caption*{" + self.inl(t.caption) + "}")
-            out += ["\\begin{tabularx}{\\textwidth}{" + spec + "}", "\\toprule", head, "\\midrule"]
-            out += [cells(r) for r in rows]
-            out += ["\\bottomrule", "\\end{tabularx}", "\\end{table}"]
+            out.append("\\begin{tabularx}{%.2fpt}{" % width + spec + "}")
+        out += ["\\toprule", head, "\\midrule"]
+        out += [cells(r) for r in rows]
+        out += ["\\bottomrule", "\\end{tabular}" if natural else "\\end{tabularx}", "\\end{" + env + "}"]
         return "\n".join(out)
 
     def block(self, b, noindent: bool = False) -> str:
@@ -639,41 +709,31 @@ class Emitter:
         raise TypeError(type(b))
 
 
-PREAMBLE = r"""\documentclass[11pt,letterpaper]{article}
-\usepackage[margin=1in]{geometry}
-\usepackage{fontspec}
-\IfFontExistsTF{texgyretermes-regular.otf}{%
-  \setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold,
-    ItalicFont=*-italic, BoldItalicFont=*-bolditalic, Ligatures=TeX]}{%
-  \IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}[Ligatures=TeX]}{}}
-\IfFontExistsTF{texgyrecursor-regular.otf}{%
-  \setmonofont{texgyrecursor}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold,
-    ItalicFont=*-italic, BoldItalicFont=*-bolditalic, Scale=MatchLowercase]}{}
+PREAMBLE = r"""\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
 \usepackage{microtype}
-\usepackage{xcolor}
-\definecolor{darkblue}{RGB}{0,0,139}
+\usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{tabularx}
 \usepackage{longtable}
-\usepackage{float}
 \usepackage{placeins}
-\usepackage{needspace}
 \usepackage{enumitem}
 \usepackage{ragged2e}
-\usepackage{graphicx}
 \PassOptionsToPackage{hyphens}{url}
-\usepackage[colorlinks=true,linkcolor=darkblue,urlcolor=darkblue,citecolor=darkblue,breaklinks=true]{hyperref}
+\usepackage{hyperref}
+\usepackage[preprint]{icml2026}
+\definecolor{darkblue}{RGB}{0,0,139}
+\hypersetup{colorlinks=true,linkcolor=darkblue,urlcolor=darkblue,citecolor=darkblue,breaklinks=true}
 \urlstyle{same}
-\usepackage{caption}
-\captionsetup{font=small,justification=justified,singlelinecheck=false,skip=4pt}
-\captionsetup[table]{position=above}
+\captionsetup{font=small,justification=justified,singlelinecheck=false,skip=3pt}
 \setlength{\emergencystretch}{2em}
 \clubpenalty=10000 \widowpenalty=10000
-\renewcommand{\arraystretch}{1.12}
-\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.7}
-\renewcommand{\textfraction}{0.07}\renewcommand{\floatpagefraction}{0.75}
+\renewcommand{\arraystretch}{1.08}
 \makeatletter
+% a page of floats starts at the top of the page, not in its middle
+\setlength{\@fptop}{0pt}\setlength{\@fpsep}{14pt plus 2fil}\setlength{\@fpbot}{0pt plus 1fil}
 % heading position marks: \mdtexpos{n}{page}{y in sp}, written at shipout
 \newcommand{\mdtexmark}[1]{\pdfsavepos\protected@write\@auxout{}{\string\mdtexpos{#1}{\thepage}{\noexpand\the\pdflastypos}}}
 \providecommand{\mdtexpos}[3]{}
@@ -697,10 +757,7 @@ def convert(md_path: Path, tex_path: Path) -> None:
         i = 1
         while i < len(blocks) and not (isinstance(blocks[i], Heading) and blocks[i].level <= 2):
             b = blocks[i]
-            if isinstance(b, Para):
-                meta.append(b.text)
-            else:
-                meta.append(b.text if hasattr(b, "text") else "")
+            meta.append(b.text if hasattr(b, "text") else "")
             i += 1
         body.append(em.title_block(title, meta))
 
@@ -715,28 +772,32 @@ def convert(md_path: Path, tex_path: Path) -> None:
             body.append(em.abstract(inner))
             i = j
             continue
-        if isinstance(b, Heading) and b.level == 1:
-            body.append(em.heading(Heading(2, b.text)))
-        else:
-            body.append(em.block(b))
+        if isinstance(b, Heading) and b.text.strip().lower() == "references":
+            body.append(em.heading(b))
+            i += 1
+            while i < len(blocks) and not isinstance(blocks[i], Heading):
+                i += 1          # any reference list typed under the heading is replaced by the .bib
+            continue
+        body.append(em.block(b))
         i += 1
 
     pdf_title = esc(title or md_path.stem)
-    pdf_author = esc(meta[0]) if meta else ""
-    head = PREAMBLE + "\\hypersetup{pdftitle={%s},pdfauthor={%s}}\n" % (pdf_title, pdf_author)
+    head = PREAMBLE + "\\icmltitlerunning{%s}\n\\hypersetup{pdftitle={%s}}\n" % (esc(title or ""), pdf_title)
     marks = "\n".join("%%%% SECMARK %d %d %s" % (k, lvl, ttl.replace("\n", " "))
                       for k, (lvl, ttl) in enumerate(em.marks))
+    cites = "%% CITED " + " ".join(dict.fromkeys(CITED)) + "\n"
     doc = (
         "%% Generated by report/gen/md2tex.py from %s. Do not edit; edit the markdown.\n" % md_path.name
-        + head + marks + "\n\\begin{document}\n" + "\n\n".join(body) + "\n\\end{document}\n"
+        + head + marks + "\n" + cites + "\\begin{document}\n" + "\n\n".join(body) + "\n\\end{document}\n"
     )
     tex_path.parent.mkdir(parents=True, exist_ok=True)
     tex_path.write_text(doc, encoding="utf-8")
 
     md_tables = sum(1 for b in blocks if isinstance(b, Table))
-    tex_tables = doc.count("\\begin{tabularx}") + doc.count("\\begin{longtable}")
+    tex_tables = len(re.findall(r"\\begin\{(tabular|tabularx|longtable)\}", doc))
     print(f"md2tex: wrote {tex_path} ({len(blocks)} blocks, {len(em.marks)} headings, "
-          f"tables: {md_tables} in markdown, {tex_tables} in tex)")
+          f"tables: {md_tables} in markdown, {tex_tables} in tex; "
+          f"{doc.count(chr(92) + 'begin{table*}')} across both columns)")
     if md_tables != tex_tables:
         print("md2tex: ERROR: table count mismatch", file=sys.stderr)
         sys.exit(2)
@@ -751,19 +812,12 @@ def pages(tex_path: Path) -> int:
     stem = tex_path.with_suffix("")
     log = stem.with_suffix(".log")
     aux = stem.with_suffix(".aux")
-    pdf = stem.with_suffix(".pdf")
     if not log.exists() or not aux.exists():
         print("md2tex: no .log/.aux next to the tex; compile first", file=sys.stderr)
         return 1
     log_text = log.read_text(encoding="utf-8", errors="replace")
     m = re.search(r"Output written on .*?\((\d+) pages?", log_text)
     total = int(m.group(1)) if m else None
-    if total is None and pdf.exists():
-        import shutil
-        import subprocess
-        if shutil.which("pdftotext"):
-            txt = subprocess.run(["pdftotext", "-layout", str(pdf), "-"], capture_output=True, text=True).stdout
-            total = txt.count("\f") or None
 
     marks: dict[int, tuple[int, str]] = {}
     for mm in re.finditer(r"^%% SECMARK (\d+) (\d+) (.*)$", tex_path.read_text(encoding="utf-8"), re.M):
@@ -772,25 +826,16 @@ def pages(tex_path: Path) -> int:
     pos: dict[int, tuple[int, float]] = {}
     for mm in re.finditer(r"\\mdtexpos\{(\d+)\}\{(\d+)\}\{(-?\d+)\}", aux_text):
         pos[int(mm.group(1))] = (int(mm.group(2)), int(mm.group(3)) / 65536.0)
-    g = re.search(r"\\mdtexgeom\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}", aux_text)
-    if g:
-        paperheight, topmargin, headheight, headsep, textheight = (pt(x) for x in g.groups())
-        text_top = paperheight - (72.27 + topmargin + headheight + headsep)
-    else:
-        text_top, textheight = 722.7, 650.43
-
-    def frac_before(y: float) -> float:
-        return min(1.0, max(0.0, (text_top - y - HEADING_TOP_SKIP_PT) / textheight))
 
     print(f"pages: total = {total}")
-    ref = next((k for k, (lvl, ttl) in marks.items() if ttl.strip().lower().startswith("references")), None)
+    for name in ("References", "Appendix"):
+        k = next((k for k, (lvl, ttl) in marks.items() if ttl.strip() == name), None)
+        if k is not None and k in pos:
+            print(f"pages: {name} mark on page {pos[k][0]}")
+    ref = next((k for k, (lvl, ttl) in marks.items() if ttl.strip() == "References"), None)
     if ref is not None and ref in pos:
-        page, y = pos[ref]
-        f = frac_before(y)
-        print(f"pages: References heading starts on page {page}, {f:.2f} of the way down")
-        print(f"pages: body pages (title through the section before References) = {page - 1 + f:.2f}")
-    else:
-        print("pages: References heading not found in the aux")
+        print(f"pages: main text = pages 1 to {pos[ref][0]} (References begin on page {pos[ref][0]}; "
+              f"see check_report.py for the measured fill of that page)")
     by_page: dict[int, list[str]] = {}
     for k in sorted(marks):
         if k in pos:

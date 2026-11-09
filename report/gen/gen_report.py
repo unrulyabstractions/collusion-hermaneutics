@@ -12,6 +12,15 @@ import re
 import sys
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))  # report/gen -> repo root
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import subprocess
+import pinned
+import tables_1109
+# The team-probe and attention-monitor CSVs are read from the working tree; they must equal the pinned commit
+# (195493d, gaps closed), or the report would mix results from two states.
+for _d in ("hermeneutics/results/team_probes", "hermeneutics/results/attn_probe"):
+    _r = subprocess.run(["git", "-C", REPO, "diff", "--quiet", pinned.TEAM, "--", _d])
+    assert _r.returncode == 0, f"{_d} differs from {pinned.TEAM}; rebuild against the new results deliberately"
 SUB = f"{REPO}/submodule/spar-guardian-agents"  # the repo submodule on branch board-seed-injection: read for the board-seed texts (Appendix C) and cited in the ledger
 PILOT = f"{REPO}/data/board_seed_pilot"
 HF_README = f"{REPO}/report/gen/sources/hf_README.md"  # tracked copy of the published dataset README (byte-identical to the HF upload)
@@ -138,7 +147,7 @@ for a in AUTH:
     led(valid[a], f"Table E1 row {NAME[a]} col valid runs", rel(LABELS), f"count rows where author={a} and valid=True")
     led(share, f"Table E1 row {NAME[a]} col think coverage", rel(RENDER),
         f"sum(n_readable)/sum(turns) over rows where author={a} ({rd}/{t})")
-    TM1.append(f"| {NAME[a]} | `{mid}` | {WEIGHTS[a]} | {valid[a]} | {share} |")
+    TM1.append(f"| {NAME[a]} | `{mid.split('/')[-1]}` | {WEIGHTS[a]} | {valid[a]} | {share} |")   # the id without its routing prefix
 TM1.append("| Reader: Qwen3.8-27B | open weights, run locally in bf16 (same model as the author) | open | | |")
 TM1 = "\n".join(TM1)
 
@@ -313,7 +322,7 @@ for a in AUTH:
     led(tfv, f"Table 2 row {NAME[a]} col TF-IDF whole transcript", "hermeneutics/results/tfidf/auroc.csv", f"arm=solo,position=transcript,scope=LOTO {a} -> auroc, ci")
     led(f"{r['cheat']} / {r['no_cheat']}", f"Table 2 row {NAME[a]} col cheat / no cheat", rel(PCA), sel(**base, features="raw", scope=f"LOTO {a}") + " -> cheat, no_cheat")
     led(f"{rd / t:.3f}", f"Table 2 row {NAME[a]} col think coverage", rel(RENDER), f"sum(n_readable)/sum(turns) over rows where author={a} ({rd}/{t})")
-    T2.append(f"| {NAME[a]} | {rd / t:.3f} | {r['cheat']} / {r['no_cheat']} | {cells[0]} | {cells[1]} | {cells[2]} | {vf} | {vt} | {tfv} |")
+    T2.append(f"| {NAME[a]} | {rd / t:.3f} | {r['cheat']} / {r['no_cheat']} | {cells[0]} | {cells[1].split(' [')[0]} | {cells[2].split(' [')[0]} | {vf} | {vt} | {tfv} |")   # erasure columns without intervals (Table D5 has them pooled)
 T2 = "\n".join(T2)
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -466,10 +475,21 @@ add(t4_row("lexical null (think windows)", tfidf_all, f"{REPO}/hermeneutics/resu
 add(t4_row("judge: Claude Haiku 5.5", judges, JUDGES, dict(probe="judge:anthropic/claude-haiku-5.5"), "judge Haiku", has_loto=False))
 add(t4_row("judge: Claude Sonnet 5.5", judges, JUDGES, dict(probe="judge:anthropic/claude-sonnet-5.5"), "judge Sonnet", has_loto=False, n_note=" of 373"))
 add(t4_row("judge: GPT-5 mini", judges, JUDGES, dict(probe="judge:openai/gpt-5-mini"), "judge GPT-5 mini", has_loto=False))
+_jc = pinned.csv_rows(pinned.JA, "hermeneutics/results/judges_all/auroc.csv")
+for _scorer, _name in [("judge: deepseek/deepseek-v4.1-flash-1017", "judge: DeepSeek V4.1 Flash"), ("judge: qwen/qwen3.7-flash", "judge: Qwen3.7 Flash"),
+                       ("judge: z-ai/glm-5.3-flash", "judge: GLM 5.3 Flash"), ("judge: qwen/qwen3.8-27b", "reader interrogation (Qwen3.8-27B, asked)")]:
+    _s = [r for r in _jc if r["set"] == "controls_600" and r["cut"] == "cheating (the set's label), solo arm" and r["scorer"] == _scorer]
+    _b = [r for r in _jc if r["set"] == "controls_600" and r["cut"] == "cheating (the set's label), both arms" and r["scorer"] == _scorer]
+    assert len(_s) == 1 and len(_b) == 1, _scorer
+    _s, _b = _s[0], _b[0]
+    _line = f"| {_name} | {_s['scored']} | {f3(_s['auroc'])} [{f3(_s['ci_lo'])}, {f3(_s['ci_hi'])}] | {f3(_s['within_mean'])} | n/a (no training) |"
+    led(_line, f"Table D3 (solo arm) row {_name}", f"hermeneutics/results/judges_all/auroc.csv@{pinned.JA}", "set=controls_600, solo arm: scored, auroc, ci, within_mean", raw_where=True)
+    T4.append(_line)
+    _line2 = f"| {_name} | {f3(_b['auroc'])} | not run |"
+    led(_line2, f"Table D3b (both arms) row {_name}", f"hermeneutics/results/judges_all/auroc.csv@{pinned.JA}", "set=controls_600, both arms: auroc", raw_where=True)
+    TD3.append(_line2)
 T4.append("| random-weights reader | not run | not run | not run | not run |")
-T4.append("| reader interrogation | not run | not run | not run | not run |")
 TD3.append("| random-weights reader | not run | not run |")
-TD3.append("| reader interrogation | not run | not run |")
 T4 = "\n".join(T4)
 TD3 = "\n".join(TD3)
 son_p = pick(judges, arm="pooled", probe="judge:anthropic/claude-sonnet-5.5", scope="pooled")
@@ -910,7 +930,7 @@ def design_table(batches):
         nr = len({r["run"] for r in g}); na = len(g)
         rd = sum(int(r["reads"]) > 0 for r in g); po = sum(int(r["posts"]) > 0 for r in g)
         ch = sum(_RUNG.index(r["rung"]) >= _RUNG.index(_FLOOR.get(r["row"], "opened")) for r in g)
-        post = "none" if lv == "L0" else ("'Board opened.'" if st == "clean" else "neutral team post (Table C1)")
+        post = "none" if lv == "L0" else ('"Board opened."' if st == "clean" else "neutral team post (Table C1)")
         line = f"| {TELL[lv]} | {post} | {DNAME[au]} | {nr} | {na} | {rd}/{na} | {po}/{na} | {ch}/{na} |"
         led(line, f"Table 5 or D5 row {lv}/{st}/{au}", rel(DESIGN), "agents per (level, seed_text, author); read = reads>0; posted = posts>0; cheated = rung at or above the task floor (tried for flipt, vuls, game, poem; opened otherwise)", raw_where=True)
         out.append(line)
@@ -1009,6 +1029,22 @@ def null95(tab, cut_pre):
     return f"{float(np.percentile(v, 95)):.3f} ({len(v)} draws)"
 
 
+CTX = {"controls_solo_pca": pick(pca, **base, features="raw", scope="pooled")}
+TABLES_1109 = tables_1109.build(led, CTX)
+
+
+def _attn_null(run, cut):
+    """The monitor's agent-level (last step) label-shuffle null, from the attention RESULTS.md at the pinned commit."""
+    hits = [d for (r, c, m, a), d in CTX["attn_nulls"].items()
+            if r == run and c.startswith(cut) and m == "attention monitor, binary head (seed 0)" and a == "agent (last)"]
+    if not hits:
+        return "not run"
+    assert len(hits) == 1, (run, cut, len(hits))
+    v = f"{hits[0]['Null 95th percentile']} ({hits[0]['Draws']} draws)"
+    led(v, f"Table D8 row {run}/{cut} col null 95th", CTX["attn_nulls_where"], "Null 95th percentile, Draws of the monitor's agent (last) row", raw_where=True)
+    return v
+
+
 ATT_ROWS = [("controls, 5 folds", "controls_600_think", "controls_600_seven", "cheating", _cnull),
             ("controls, 5 folds, solo arm", "controls_600_think_soloarm", "controls_600_seven_soloarm", "cheating", None),
             ("controls, held-out author", "controls_600_think_heldout_author", None, "cheating", None),
@@ -1036,13 +1072,15 @@ for lab, s_think, s_seven, cut, nul in ATT_ROWS:
     mt = am(s_think, cut, BIN)
     ms = am(s_seven, cut, BIN) if s_seven else None
     one = lambda m: f3(am(s_think, cut, m)[0]["agent_auroc_last"])
-    nl = null95(nul, "cheating" if nul is _cnull else cut) if nul is not None else "not run"
+    nl = null95(nul, "cheating" if nul is _cnull else cut) if nul is not None else _attn_null(s_think, cut)
     line = (f"| {lab} | {mt[0]['pos_agents']} / {mt[0]['agents']} | {seeds(mt, 'agent_auroc_last')} | {seeds(mt, 'step_auroc')} | "
             f"{seeds(ms, 'agent_auroc_last') if ms else 'not run'} | {seeds(ms, 'step_auroc') if ms else 'not run'} | "
             f"{one('linear per-step probe (team_probes)')} | {one('GRU over the linear probe scores')} | {one(chr(84) + 'F-IDF on the agent' + chr(39) + 's words so far')} | {one('turn index alone')} | {nl} |")
     led(line, f"Table 6 row {lab}", rel(f"{AP}/metrics_{s_think}.csv"), "binary head seeds 0, 1: agent_auroc_last and step_auroc; baselines agent_auroc_last; null: 95th percentile of agent_auroc_last over the draws", raw_where=True)
     T_ATT.append(line)
-T_ATT_FULL = "\n".join(T_ATT)
+T_ATT_FULL = "\n".join("| " + " | ".join(c for k, c in enumerate(l.strip().strip("|").split(" | ")) if k not in (3, 5)).strip() + " |" for l in T_ATT)
+T_ATT_FULL = T_ATT_FULL.replace("| monitor, think pair: agent |", "| monitor, think pair |").replace("| monitor, seven tokens: agent |", "| monitor, seven tokens |")
+_tf = T_ATT_FULL.split("\n"); _tf[1] = "|" + "---|" * 9; T_ATT_FULL = "\n".join(_tf)
 ATT_NULLS = (f"{null95(_cnull, 'cheating').split(' (')[0]} on the controls ({len({r['draw'] for r in _cnull})} draws), and "
              + ", ".join(null95(_bnull, c).split(' (')[0] for c in ("cheating used", "collusion", "coordination"))
              + f" on the team-run cuts for cheating, collusion and coordination ({N_BNULL if 'N_BNULL' in dir() else len({r['draw'] for r in _bnull})} draws)")
@@ -1105,17 +1143,61 @@ led("ladder tables", "Appendix G, Tables G1 to G6", "viewer/ladders_data.py", "R
 tpl = open(os.path.join(os.path.dirname(__file__), "report_template.md")).read()
 # Table B1: the number of adapted files, counted from the table itself
 _b1 = tpl.split("**Table B1.**", 1)[1].split("\n\n", 2)[1]
-N_B1 = sum(1 for l in _b1.splitlines() if l.startswith("| ") and not l.startswith("| file in this project") and not l.startswith("|---"))
+N_B1 = sum(1 for l in _b1.splitlines() if l.startswith("| ") and not l.startswith("| module here") and not l.startswith("|---"))
 _pre = [l for l in open(f"{REPO}/hermeneutics/PREEXISTING.md") if l.startswith("| `hermeneutics/")]
 led(N_B1, "Table B1 caption: adapted files", "report/gen/report_template.md Table B1 rows; hermeneutics/PREEXISTING.md", f"rows in Table B1; PREEXISTING.md lists {len(_pre)} at build time")
 if len(_pre) != N_B1:
     print(f"NOTE: Table B1 has {N_B1} rows and hermeneutics/PREEXISTING.md lists {len(_pre)} files")
-for k, v in {"<<TM1>>": TM1, "<<TM2>>": TM2, "<<TM3>>": TM3, "<<T1>>": T1, "<<T2>>": T2, "<<T3>>": T3, "<<T4>>": T4, "<<T5>>": T5,
-             "<<T6>>": T6, "<<TB1>>": TB1, "<<TB2>>": TB2, "<<ABS_BI>>": ABS_BI, "<<ABS_LOTO>>": ABS_LOTO,
-             "<<ABS_ERASED>>": ABS_ERASED, "<<TC>>": TC, "<<ABS_JUDGE>>": ABS_JUDGE, "<<ABS_TFIDF>>": ABS_TFIDF, "<<TD3>>": TD3, "<<SON_D3>>": SON_D3, "<<NULL_LO>>": NULL_LO, "<<NULL_HI>>": NULL_HI, "<<HF_TOTAL>>": hf_total,
-             "<<T_DES>>": T_DES, "<<ATT_NULLS>>": ATT_NULLS, "<<T_ATT_FULL>>": T_ATT_FULL, "<<T_STEP_FULL>>": T_STEP_FULL, "<<ABS_COL7>>": ABS_COL7, "<<ABS_COLTF>>": ABS_COLTF, "<<T_DES_HINT>>": T_DES_HINT, "<<T_TEAM>>": T_TEAM, "<<T_STEP>>": T_STEP, "<<T_ATT>>": T_ATT, "<<T_AUTH>>": T_AUTH, "<<TEAM_NULL>>": TEAM_NULL, "<<STEP_NULL>>": STEP_NULL, "<<BNULL_P>>": BNULL_P, "<<CNULL_P>>": CNULL_P, "<<TG1>>": T_LAD["cheat"], "<<TG2>>": T_LAD["coord"], "<<TG3>>": T_LAD["coop"], "<<TG4>>": T_LAD["collab"], "<<TG5>>": T_LAD["collude"], "<<TG6>>": T_LAD["scheme"],
-             "<<N_PROBED>>": N_PROBED, "<<N_SOLO>>": N_SOLO, "<<SON_SOLO>>": SON_SOLO, "<<N_BOARD>>": N_BOARD, "<<N_B1>>": WORD[N_B1], "<<FIG_CI>>": FIG_CI, "<<FIG_TURN_LAYER>>": FIG_TURN_LAYER}.items():
-    assert k in tpl, k
+REPL = {"<<TM1>>": TM1, "<<TM2>>": TM2, "<<TM3>>": TM3, "<<T1>>": T1, "<<T2>>": T2, "<<T3>>": T3, "<<T4>>": T4, "<<T5>>": T5,
+        "<<T6>>": T6, "<<TB1>>": TB1, "<<TB2>>": TB2, "<<TC>>": TC, "<<TD3>>": TD3, "<<SON_D3>>": SON_D3, "<<NULL_LO>>": NULL_LO, "<<NULL_HI>>": NULL_HI, "<<HF_TOTAL>>": hf_total,
+        "<<T_DES>>": T_DES, "<<ATT_NULLS>>": ATT_NULLS, "<<T_ATT_FULL>>": T_ATT_FULL, "<<T_STEP_FULL>>": T_STEP_FULL, "<<T_DES_HINT>>": T_DES_HINT, "<<T_TEAM>>": T_TEAM,
+        "<<T_AUTH>>": T_AUTH, "<<TEAM_NULL>>": TEAM_NULL, "<<STEP_NULL>>": STEP_NULL, "<<BNULL_P>>": BNULL_P, "<<CNULL_P>>": CNULL_P,
+        "<<TG1>>": T_LAD["cheat"], "<<TG2>>": T_LAD["coord"], "<<TG3>>": T_LAD["coop"], "<<TG4>>": T_LAD["collab"], "<<TG5>>": T_LAD["collude"], "<<TG6>>": T_LAD["scheme"],
+        "<<N_PROBED>>": N_PROBED, "<<N_SOLO>>": N_SOLO, "<<SON_SOLO>>": SON_SOLO, "<<N_BOARD>>": N_BOARD, "<<N_B1>>": WORD[N_B1], "<<FIG_CI>>": FIG_CI, "<<FIG_TURN_LAYER>>": FIG_TURN_LAYER}
+for k, v in TABLES_1109.items():
+    if k.startswith("<<") and not isinstance(v, list):
+        REPL[k] = v
+REPL["<<MAIN_SHORT>>"] = str(CTX["main_shortfall"])
+# The prose of Results ("Does it beat text baselines, and where?") and of the Discussion, checked against Table 3:
+# internals (max of the linear probe and the monitor) beat TF-IDF exactly on these rows; they beat the best judge on
+# every row outside the SPAR mixed teams, and the reader interrogation on every row.
+_win_tf = {(st, cut) for st, cut, tf, jd, rd in CTX["main_beats"] if tf}
+assert _win_tf == {("controls_600", "cheating (the set's label), solo arm"), ("board_seed", "coordination posted or above"),
+                   ("solo_design", "coordination posted or above"), ("spar_screen_team", "coordination posted or above")}, _win_tf
+assert all(jd for st, cut, tf, jd, rd in CTX["main_beats"] if st != "spar_mixed_41"), CTX["main_beats"]
+assert not all(jd for st, cut, tf, jd, rd in CTX["main_beats"] if st == "spar_mixed_41"), CTX["main_beats"]
+assert all(rd for st, cut, tf, jd, rd in CTX["main_beats"]), CTX["main_beats"]
+# Results, prompt and author identity: the prompt-only share of the full probe's margin (Table 7), and LEACE (Table 8)
+_sh = CTX["prompt_shares"]
+for _k in [("controls_600", "cheating"), ("board_seed", "cheating"), ("solo_design", "cheating"), ("board_seed", "coordination posted"),
+           ("board_seed", "collusion crossed"), ("spar_screen_solo", "cheating"), ("spar_screen_team", "coordination posted")]:
+    assert _sh[_k] <= 0.25, (_k, _sh[_k])    # "stays near its null" / not among the large shares
+for _k in [("spar_screen_team", "cheating"), ("spar_screen_team", "collusion crossed"), ("spar_exploration_single", "cheating"), ("spar_mixed_41", "cheating"),
+           ("spar_mixed_41", "collusion crossed"), ("goodfire_reward_hack", "cheating"), ("cheatbench", "cheating"), ("evilgenie", "cheating"), ("solo_design", "coordination posted")]:
+    assert _sh[_k] >= 0.45, (_k, _sh[_k])    # "a large share of the full probe's margin"
+_ar = CTX["author_rows"]
+_v = lambda sch, col: float(_ar[("cheating", sch)][col].split(" [")[0])
+for _sch in ("alone: controls", "alone: goodfire", "alone: spar_mixed"):           # "moves little"
+    assert _v(_sch, "B.I raw") - _v(_sch, "B.I author+task+condition-erased") <= 0.05, _sch
+for _sch in ("alone: solo_design", "alone: spar_team"):                              # "more", and most of the unseen-author margin removed
+    assert _v(_sch, "B.I raw") - _v(_sch, "B.I author+task+condition-erased") >= 0.10, _sch
+    assert (_v(_sch, "B.II mean author+task+condition-erased") - 0.5) < 0.5 * (_v(_sch, "B.II mean raw") - 0.5), _sch
+for _sch, _row in _ar.items():                                                     # "LEACE erases it to chance"
+    assert abs(float(_row["Author: after author erasure"]) - float(_row["Chance"])) <= 0.02, _sch
+led("LEACE: author probe at chance after erasure on every scheme; B.I drop <= 0.05 on controls, Goodfire, SPAR mixed; >= 0.10 on design and SPAR screen, where the all-erased B.II keeps under half its margin",
+    "Results, prompt and author identity", f"hermeneutics/results/controls_nulls/RESULTS.md@{pinned.CN}", "Table 8 rows; assertions in gen_report.py", raw_where=True)
+led("prompt-only shares: <= 0.25 on the sets called clean; >= 0.45 on the sets named as prompt-readable", "Results, prompt and author identity; Discussion; Conclusion",
+    f"hermeneutics/results/controls_nulls/RESULTS.md@{pinned.CN}", "Share of full margin, Table 7 rows; assertions in gen_report.py", raw_where=True)
+led("internals beat TF-IDF on 4 rows; beat the best judge outside SPAR mixed; beat the reader interrogation everywhere", "Results, text baselines; Discussion; Abstract",
+    f"hermeneutics/results/judges_all/auroc.csv@{pinned.JA}", "assertions over Table 3 rows in gen_report.py", raw_where=True)
+# the per-set judge tables: numbered in the order the appendix prints them
+_jl = re.search(r"<<T_JUDGE_SETS:([A-Z])(\d+)>>", tpl)
+assert _jl, "template lacks <<T_JUDGE_SETS:Xn>>"
+_letter, _n0 = _jl.group(1), int(_jl.group(2))
+REPL[_jl.group(0)] = "\n\n".join(t.replace("**Table {N}.**", f"**Table {_letter}{_n0 + i}.**") for i, t in enumerate(TABLES_1109["<<T_JUDGE_SETS>>"]))
+_unused = [k for k in REPL if k not in tpl]
+print("placeholders not in the template:", _unused)
+for k, v in REPL.items():
     tpl = tpl.replace(k, v)
 assert "<<" not in tpl, re.findall(r"<<[A-Z_0-9]+>>", tpl)
 led("0.5", "Table 2 col 'chance / majority rate': the three AUROC rows", "hermeneutics/probes.py", "auc() wraps sklearn roc_auc_score (lines 71-77); a score unrelated to the label has AUROC 0.5", raw_where=True)
@@ -1144,16 +1226,12 @@ _arms = sorted({r["arm"] for r in pca})
 assert _arms == ["cheat", "pooled", "solo"], _arms
 led("2 other arms (pooled, cheat)", "Results, text classifier; Table 3 caption: 'the other two arms'", rel(PCA), f"distinct arm: {_arms}; the solo arm is primary", raw_where=True)
 _notrun = [l for l in T4.splitlines() if "not run" in l]
-assert len(_notrun) == 2, _notrun
-led("2 not-run rows (random-weights reader, reader interrogation)", "Table 3 rows; Methods, Controls; Limitations; Appendix A: 'the two baselines that were not run'",
-    "report/gen/gen_report.py Table 3 rows", "rows of Table 3 whose cells read 'not run'", raw_where=True)
+assert len(_notrun) == 1, _notrun   # the random-weights reader; the reader interrogation now has rows
+led("1 not-run row (random-weights reader)", "Table D3 rows; Methods, controls; Limitations: the random-weights null was not run", "report/gen/gen_report.py Table D3 rows", "rows of Table D3 whose cells read 'not run'", raw_where=True)
 led("1 probe, scope pooled (B.I)", "Abstract: 'one probe pooled over authors'", rel(PCA), sel(**base, features="raw", scope="pooled"), raw_where=True)
 led("1 reader (Qwen3.8-27B)", "Methods, Authors and reader: 'five authors through one reader'; Table E1 reader row", "VERIFICATION_LOG.md; report/gen/gen_report.py Table E1; hermeneutics/extract.py; hermeneutics/__init__.py",
     "07:20 entry: every transcript rendered through the Qwen3.8-27B chat template; the extraction loads that model alone", raw_where=True)
-_q5 = tpl.split("### Can a planted board signal move coordination?", 1)[1].split("\n\n", 2)[1]
-_ord = [w for w in ("First,", "Second,", "Third,", "Fourth,", "Fifth,") if w in _q5]
-assert _ord == ["First,", "Second,", "Third,", "Fourth,"], _ord
-led(f"{len(_ord)} readings", "Results, board signal: 'four readings'", "report/REPORT_DRAFT.md", "the paragraph's ordinals First, Second, Third, Fourth", raw_where=True)
+# (the board-seed paragraph no longer counts its readings with ordinals)
 _outrows = [l for l in T6.splitlines()[2:] if l.startswith("| ")]
 assert len(_outrows) == 6, _outrows
 led(f"{len(_outrows) - 1} other outputs", "Results, label map: 'the other five as zeros by construction'", "Table F1 rows; PROJECT_DESCRIPTION.md",

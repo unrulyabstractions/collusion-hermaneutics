@@ -4,3 +4,6 @@
 *.xdv
 *.synctex.gz
 *.pass*.out
+*.bbl
+*.blg
+*.bibtex.out

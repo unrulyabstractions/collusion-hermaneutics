@@ -37,3 +37,7 @@ Intent, concealment and denial are not recorded. Cooperation, collaboration and 
 ## Checks
 
 For all 43 board-seed runs the viewer's levels were compared with signals.jsonl: 134 agents, cheat level and marker calls equal in every case; team cheat and collaboration equal in every run; 23 of 43 teams at the collusion floor (team cheat at least used and collaboration at least crossed), 28 cheated, 30 at discussed or above. See VERIFICATION_LOG.md.
+
+## Lens colouring
+
+A lens tints every sentence, blue to red over minus two to plus two standard deviations, in the strip and the transcript, as the case-study viewer does. The first lens is lexical: word weights fitted on the controls (data/lens/lexical_cheat.json, held-out AUROC 0.92 on the not-told arm). Its strongest terms are the names of the planted files, so it marks contact with the exploit more than cheating language. An activation lens from a reader pass plugs into the same sentence spans; the expected file shape is documented at the top of viewer/static/app/lens.js.

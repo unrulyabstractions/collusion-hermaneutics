@@ -65,6 +65,14 @@ const COLUMNS = [
   { key: 'arm', label: 'Arm or cell', title: 'The condition the run was in', sort: r => armLabel(r), cell: r => armLabel(r) },
   { key: 'model', label: 'Model that ran the agents', sort: r => modelLabel(r), cell: r => modelLabel(r) },
   { key: 'n', label: 'Agents', num: true, title: 'Number of agents in the run, a hidden regulator included', sort: r => r.n_agents, cell: r => String(r.n_agents) },
+  ...Object.entries({ cheat: 'Cheating', coord: 'Coordination', coop: 'Cooperation (proxy)', collab: 'Collaboration (proxy)', collude: 'Collusion', scheme: 'Scheming (proxy)' })
+    .map(([L, name]) => ({ key: 'lv_' + L, label: `${name} (team)`, title: `The team's level on the ${name} ladder; the run page shows each agent`,
+      sort: r => (r.levels ? LADDER_LEVELS[L].indexOf(r.levels.team[L]) : -2),
+      cell: r => { const v = r.levels && r.levels.team[L]; if (!v) return muted('not computed', 'small');
+        const i = LADDER_LEVELS[L].indexOf(v); return i < 0 ? muted(v, 'small') : h('span', { class: ['lv-cell', i > 0 && 'lv-hit'] }, h('span', { class: 'lv-name' }, v), h('span', { class: 'lv-rank' }, ` (${i} of ${LADDER_LEVELS[L].length - 1})`)); } })),
+  { key: 'n_colluded', label: 'Agents at exploit crossed or above', num: true, title: 'How many agents reached Collusion level 3 (exploit crossed) or higher, of the workers',
+    sort: r => (r.levels && r.levels.n_colluded != null ? r.levels.n_colluded : -1),
+    cell: r => (r.levels && r.levels.n_colluded != null && r.n_agents > 1 ? `${r.levels.n_colluded} of ${r.levels.n_workers}` : muted('one agent', 'small')) },
   { key: 'rung', label: 'Cheating rung (code ladder)', title: 'The highest rung of the honeypot ladder that code found for the team\'s workers: ' + RUNG_ORDER.join(' < '),
     sort: r => ORDER(RUNG_ORDER, r.rung),
     cell: r => h('span', null, r.rung ? rungBadge(r.rung) : muted('none'),
@@ -105,7 +113,7 @@ const LADDER_FILTERS = Object.entries(LADDER_NAMES).map(([L, name]) => ['lv_' + 
 // Filters: [query key, label, options(rows) -> [[value, text]], test(row, value)].
 const judgedBy = r => Object.keys(r.judges);
 const FILTERS = [
-  ['col', 'Collection', () => COLLECTION_ORDER.map(c => [c, COLLECTIONS[c].label]), (r, v) => r.col === v],
+  ['col', 'Collection', () => [['all', 'All collections'], ...COLLECTION_ORDER.map(c => [c, COLLECTIONS[c].label])], (r, v) => v === 'all' || r.col === v],
   ['task', 'Task', rows => uniq(rows.map(taskLabel)).sort().map(x => [x, x]), (r, v) => taskLabel(r) === v],
   ['model', 'Model', rows => uniq(rows.map(modelLabel)).sort().map(x => [x, x]), (r, v) => modelLabel(r) === v],
   ['arm', 'Arm or cell', rows => { const have = new Set(rows.map(armLabel)); return ARM_ORDER.filter(a => have.has(a)).map(x => [x, x]); }, (r, v) => armLabel(r) === v],
@@ -128,6 +136,7 @@ export async function viewIndex(q) {
   const state = { search: q.get('q') || '', sort: q.get('sort') || '', dir: q.get('dir') === 'desc' ? 'desc' : 'asc',
     page: Math.max(0, (parseInt(q.get('page'), 10) || 1) - 1), size: q.get('size') || '250', f: {} };
   for (const [key] of FILTERS) state.f[key] = q.get(key) || '';
+  if (!state.f.col) state.f.col = 'board';  // the index opens on the board-seed team runs
 
   const syncUrl = () => {
     const p = new URLSearchParams();
@@ -153,8 +162,10 @@ export async function viewIndex(q) {
   filterBox.appendChild(h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Search'), search));
   const reset = h('button', { type: 'button', class: 'btn btn-small', onclick: () => {
     for (const [key] of FILTERS) state.f[key] = '';
+    state.f.col = 'board';
     state.search = ''; state.sort = ''; state.page = 0;
     for (const s of filterBox.querySelectorAll('select')) s.value = '';
+    filterBox.querySelector('select').value = 'board';
     search.value = '';
     draw();
   } }, 'Reset filters');
@@ -188,6 +199,10 @@ export async function viewIndex(q) {
     let shown = rows.filter(r => (!needle || r.run.toLowerCase().includes(needle))
       && FILTERS.every(([key, , , test]) => !state.f[key] || test(r, state.f[key])));
     const col = COLUMNS.find(c => c.key === state.sort);
+    if (!col) {  // default order: arm, then seed
+      const armIx = r => { const i = ARM_ORDER.indexOf(armLabel(r)); return i < 0 ? 99 : i; };
+      shown = shown.slice().sort((a, b) => armIx(a) - armIx(b) || (Number(a.seed) || 0) - (Number(b.seed) || 0) || coll.compare(a.run, b.run));
+    }
     if (col) {
       const sign = state.dir === 'desc' ? -1 : 1;
       const keyed = shown.map(r => [col.sort(r), r]);
@@ -220,8 +235,10 @@ export async function viewIndex(q) {
       h('span', { class: 'muted small' }, ` page ${state.page + 1} of ${pages} `),
       h('button', { type: 'button', class: 'btn btn-small', disabled: state.page >= pages - 1, onclick: () => { state.page++; draw(); } }, 'next →'),
       select(PAGE_SIZES, state.size, v => { state.size = v; state.page = 0; draw(); }, { 'aria-label': 'Rows per page' }));
+    titleEl.textContent = state.f.col === 'board' ? `Board-seed team runs: ${fmtInt(shown.length)}` : 'Runs';
     syncUrl();
   }
+  const titleEl = h('h1', null, 'Runs');
   draw();
 
   const about = h('details', { class: 'sub about' },
@@ -239,7 +256,7 @@ export async function viewIndex(q) {
         `Index built ${idx.built_at} in ${idx.build_seconds} s from the data files; restart with --rebuild after the data change.`)));
 
   return h('div', { class: 'page wide' },
-    h('div', { class: 'page-head' }, h('h1', null, 'Runs'), muted('One row per run. Click a run to see its labels, the evidence, the board and the transcripts.')),
+    h('div', { class: 'page-head' }, titleEl, muted('One row per run. Click a run to see its labels, the evidence, the board and the transcripts.')),
     about, filterBox, summary, pager,
     h('div', { class: 'table-wrap idx-wrap' }, table));
 }

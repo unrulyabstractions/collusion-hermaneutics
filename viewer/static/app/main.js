@@ -38,7 +38,7 @@ async function route() {
     const m = /^\/run\/(.+)$/.exec(path);
     if (m) node = await viewRun(m[1].split('/').map(decodeURIComponent).join('/'), q, view);
     else if (path === '/ladders') { node = await viewLadders(q); document.title = 'Ladders · SGA transcripts'; }
-    else { node = await viewIndex(q); document.title = 'Runs · SGA transcripts'; }
+    else { node = await viewIndex(q); document.title = 'Six ladders: board-seed team runs'; }
     if (my !== token) return;
     main().replaceChildren(node);
     if (m) window.scrollTo(0, 0);

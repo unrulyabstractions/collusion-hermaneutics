@@ -324,7 +324,9 @@ def team_levels_for_index(run_dir: Path, board_view_fn, jsonl):
                            bool((rj.get("config") or {}).get("board_seed")))
     r = compute(team, sa, episodes, boards, roles)
     return {"team": {L: r["team"][L]["level"] for L in ORDER},
-            "agents": {L: sorted({c[L]["level"] for c in r["agents"].values()}) for L in ORDER}}
+            "agents": {L: sorted({c[L]["level"] for c in r["agents"].values()}) for L in ORDER},
+            "n_colluded": sum(1 for c in r["agents"].values() if (c["collude"]["index"] or 0) >= 3),
+            "n_workers": sum(1 for a in r["agents"] if roles.get(a) != "regulator")}
 
 
 def single_levels(rung):

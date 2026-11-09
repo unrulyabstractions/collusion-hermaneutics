@@ -122,25 +122,25 @@ A monitor must work on authors it never saw, and an author leaves a strong signa
 
 ### Which probe type and which architecture hold up across sources?
 
-A monitor deployed on a new swarm meets new sources as well as new authors. The probe matrix tests this by crossing probe types, inclusion schemes and architectures (Table 4). Inside a distribution the text classifier beats the linear probe on every cheating cell, and the probe leads only on coordination and on collusion in the mixed teams (Appendix L). On a held-out source the order turns for coordination: the probe leads the classifier whichever source is held out. For cheating it leads only when CheatBench or EvilGenie is held out, and for collusion only without the SPAR screen teams. Unseen authors lower the linear probe's score on every pooled scheme. Transfer between sources is weak and asymmetric: a probe trained on our sets reads the external sets poorly, and one trained on the external sets falls below chance on ours. Among the trained architectures the MLP per step with a running max holds best on unseen authors for cheating and coordination on our sets. On a held-out source the best trained architecture beats the linear probe for coordination by a wide margin, though we choose it on the test score itself. No architecture wins everywhere: on unseen authors the linear probe matches or beats every trained architecture for collusion, and with CheatBench held out it leads them all. The stack reads TF-IDF too and scores next to the text alone. The per-step probe beats its null, and on cheating and collusion it edges metadata with turn index only slightly (Appendix L). We therefore posit that no single architecture dominates, and that the reader's advantage over the text lies on unseen sources and on coordination.
+A monitor deployed on a new swarm meets new sources as well as new authors. The probe matrix tests this by crossing probe types, inclusion schemes and architectures (Table 4). Inside a distribution the text classifier beats the linear probe on every cheating cell, and the probe leads only on coordination in our sets and the SPAR screen teams and on collusion in the mixed teams (Appendix L). On a held-out source the order turns for coordination: the probe leads the classifier whichever source is held out. For cheating it leads only when CheatBench or EvilGenie is held out, and for collusion only without the SPAR screen teams. Unseen authors lower the linear probe's score on every pooled scheme. Transfer between sources is weak and asymmetric: a probe trained on our sets reads the external sets poorly, and one trained on the external sets falls below chance on ours. Among the trained architectures the MLP per step with a running max holds best on unseen authors for cheating and coordination on our sets. On a held-out source the best trained architecture beats the linear probe for coordination by a wide margin, though we choose it on the test score itself. No architecture wins everywhere: on unseen authors the linear probe matches or beats every trained architecture for collusion on our sets, and with CheatBench held out it leads them all. The stack reads TF-IDF too and scores next to the text alone. The per-step probe beats its null, and on cheating and collusion it edges metadata with turn index only slightly (Appendix L). We therefore posit that no single architecture dominates, and that the reader's advantage over the text lies on unseen sources and on coordination.
 
-**Table 4.** Probe matrix, main cells: held-out AUROC, type B.I unless marked B.II (B.II: mean over held-out authors). Null: the 95th percentile of the linear probe's 20-draw label-shuffle null. Best architecture: the highest AUROC among the eight trained architectures (the stack excluded), selected on the held-out score itself and therefore optimistic. Architectures were not run on B.II of the leave-one-source-out schemes or on the transfer schemes. Appendix L gives every cell. {wide}
+**Table 4.** Probe matrix, main cells: held-out AUROC, type B.I unless marked B.II (B.II: mean over held-out authors). Null: the 95th percentile of the linear probe's 20-draw label-shuffle null. Best architecture: the highest AUROC among the seven trained architectures (the linear probe and the stack excluded; ties named together; MLP, mean and MLP, max: an MLP per step with a running mean or max; pooled MLP: an MLP on the pooled vector), selected on the held-out score itself and therefore optimistic. Architectures were not run on B.II of the leave-one-source-out schemes or on the transfer schemes. Appendix L gives every cell. {wide}
 
 | label and scheme | positive / agents | linear probe | null 95th | TF-IDF | best architecture | B.II: linear probe | best architecture | TF-IDF |
 |---|---|---|---|---|---|---|---|---|
-| cheating, our sets | 722 / 1973 | 0.950 | 0.772 | 0.981 | 0.969 (attention monitor) | 0.860 | 0.906 (MLP per step, running max) | 0.945 |
-| cheating, all sets | 3072 / 5296 | 0.920 | 0.787 | 0.964 | 0.943 (MLP per step, running max) | 0.795 | 0.814 (attention pooling) | 0.895 |
-| coordination, our sets | 736 / 970 | 0.969 | 0.883 | 0.957 | 0.990 (MLP per step, running max) | 0.904 | 0.977 (MLP per step, running max) | 0.863 |
-| collusion, our sets | 122 / 793 | 0.933 | 0.758 | 0.984 | 0.945 (MLP on the pooled vector) | 0.843 | 0.748 (MLP per step, running max) | 0.856 |
-| cheating, all but controls | 343 / 600 | 0.684 | 0.681 | 0.802 | 0.817 (MLP per step, running max) | 0.682 | not run | 0.748 |
-| cheating, all but CheatBench | 134 / 224 | 0.805 | 0.670 | 0.582 | 0.717 (MLP per step, running mean) | 0.664 | not run | 0.729 |
-| cheating, all but EvilGenie | 133 / 266 | 0.652 | 0.587 | 0.554 | 0.672 (linear per step, running mean) | 0.704 | not run | 0.651 |
+| cheating, our sets | 722 / 1973 | 0.950 | 0.772 | 0.981 | 0.969 (attention monitor) | 0.860 | 0.906 (MLP, max) | 0.945 |
+| cheating, all sets | 3072 / 5296 | 0.920 | 0.787 | 0.964 | 0.943 (MLP, max) | 0.795 | 0.814 (attention pooling) | 0.895 |
+| coordination, our sets | 736 / 970 | 0.969 | 0.883 | 0.957 | 0.990 (MLP, max) | 0.904 | 0.977 (MLP, max) | 0.863 |
+| collusion, our sets | 122 / 793 | 0.933 | 0.758 | 0.984 | 0.945 (pooled MLP) | 0.843 | 0.748 (MLP, max; linear per step) | 0.856 |
+| cheating, all but controls | 343 / 600 | 0.684 | 0.681 | 0.802 | 0.817 (MLP, max) | 0.682 | not run | 0.748 |
+| cheating, all but CheatBench | 134 / 224 | 0.805 | 0.670 | 0.582 | 0.717 (MLP, mean) | 0.664 | not run | 0.729 |
+| cheating, all but EvilGenie | 133 / 266 | 0.652 | 0.587 | 0.554 | 0.672 (linear per step) | 0.704 | not run | 0.651 |
 | coordination, all but design runs | 38 / 177 | 0.758 | 0.736 | 0.496 | 0.974 (attention pooling) | 0.763 | not run | 0.780 |
-| coordination, all but SPAR screen teams | 406 / 450 | 0.863 | 0.808 | 0.654 | 0.949 (MLP per step, running mean) | 0.805 | not run | 0.630 |
-| coordination, all but SPAR mixed teams | 205 / 209 | 0.854 | 0.833 | 0.470 | 0.957 (MLP per step, running max) | n/a | not run | n/a |
-| collusion, all but SPAR screen teams | 67 / 450 | 0.814 | 0.767 | 0.657 | 0.872 (MLP on the pooled vector) | 0.778 | not run | 0.390 |
-| cheating, our sets to external | 2350 / 3323 | 0.630 | 0.625 | 0.728 | not run | 0.541 | not run | n/a |
-| cheating, external to our sets | 722 / 1973 | 0.397 | 0.623 | 0.600 | not run | 0.443 | not run | n/a |
+| coordination, all but SPAR screen teams | 406 / 450 | 0.863 | 0.808 | 0.654 | 0.949 (MLP, mean) | 0.805 | not run | 0.630 |
+| coordination, all but SPAR mixed teams | 205 / 209 | 0.854 | 0.833 | 0.470 | 0.957 (MLP, max) | n/a | not run | n/a |
+| collusion, all but SPAR screen teams | 67 / 450 | 0.814 | 0.767 | 0.657 | 0.872 (pooled MLP) | 0.778 | not run | 0.390 |
+| cheating, our sets to external | 2350 / 3323 | 0.630 | 0.625 | 0.728 | not run | 0.541 | not run | 0.570 |
+| cheating, external to our sets | 722 / 1973 | 0.397 | 0.623 | 0.600 | not run | 0.443 | not run | 0.503 |
 
 ### Does it detect earlier per step?
 
@@ -1301,7 +1301,7 @@ Each cell is one probe type on one inclusion scheme, on the reader's think pair 
 | our sets to external | n/a | n/a |  | n/a | n/a | n/a | n/a |  |
 | external to our sets | n/a | n/a |  | n/a | n/a | n/a | n/a |  |
 
-**Table L4.** Architectures, type B.I: held-out AUROC, mean over seeds. Blank: not planned.
+**Table L4.** Architectures, type B.I: held-out AUROC, mean over seeds. Blank: not planned, or no feasible split (see the cells not run below).
 
 | label and scheme | linear, pooled | MLP per step, running mean | MLP per step, running max | attention pooling | attention monitor | GRU | linear per step, running mean | MLP on the pooled vector | stack with TF-IDF |
 |---|---|---|---|---|---|---|---|---|---|
@@ -1344,7 +1344,7 @@ Each cell is one probe type on one inclusion scheme, on the reader's think pair 
 | collusion, all but SPAR screen teams | 0.814 | 0.688 | 0.614 | 0.715 | 0.656 | 0.651 | 0.705 | 0.872 |  |
 | collusion, all but SPAR mixed teams | 0.907 | 0.965 | 0.776 | 0.970 | 0.858 | 0.909 | 0.857 | 0.904 |  |
 
-**Table L5.** Architectures, type B.II: held-out AUROC, mean over seeds and held-out authors. Blank: not planned.
+**Table L5.** Architectures, type B.II: held-out AUROC, mean over seeds and held-out authors. Blank: not planned, or no feasible split (see the cells not run below).
 
 | label and scheme | linear, pooled | MLP per step, running mean | MLP per step, running max | attention pooling | attention monitor | GRU | linear per step, running mean | MLP on the pooled vector |
 |---|---|---|---|---|---|---|---|---|

@@ -18,7 +18,9 @@ ARCH = [("linear", "linear, pooled"), ("mlp_mean", "MLP per step, running mean")
         ("attn_pool", "attention pooling"), ("attn_monitor", "attention monitor"), ("gru", "GRU"),
         ("linear_step", "linear per step, running mean"), ("mlp_traj", "MLP on the pooled vector"), ("stack", "stack with TF-IDF")]
 ANAME = dict(ARCH)
-TRAINED = [a for a, _ in ARCH if a not in ("linear", "stack")]   # the "best architecture" columns choose among these
+TRAINED = [a for a, _ in ARCH if a not in ("linear", "stack")]
+SHORT = {"mlp_mean": "MLP, mean", "mlp_max": "MLP, max", "attn_pool": "attention pooling", "attn_monitor": "attention monitor",
+         "gru": "GRU", "linear_step": "linear per step", "mlp_traj": "pooled MLP"}   # Table 4 cells; Appendix L uses the full names   # the "best architecture" columns choose among these
 
 
 def scheme_name(s):
@@ -62,14 +64,27 @@ def build(led, ctx):
     # B.II TF-IDF baseline per scheme, from the per-scheme architecture tables ("### <label>: <scheme>")
     def tfidf_bii(label, scheme):
         hits = [t for t in P.md_tables(P.MX, MR) if t["heads"][-1] == f"{label}: {scheme}" and t["header"][0] == "architecture"]
-        if not hits:
-            return None
-        r = [x for x in hits[0]["rows"] if x[0] == "baseline: TF-IDF rendered text"]
-        return r[0][6] if r and len(r[0]) > 6 and r[0][6] else None
+        for t in hits:    # the "###" architecture tables (B.II in column 6), then the "####" per-scheme tables (A, B.I, B.II)
+            r = [x for x in t["rows"] if x[0] == "baseline: TF-IDF rendered text"]
+            if not r:
+                continue
+            col = t["header"].index("B.II mean trajectory AUROC (seed range)") if "B.II mean trajectory AUROC (seed range)" in t["header"] else (
+                t["header"].index("B.II (mean over held-out authors)") if "B.II (mean over held-out authors)" in t["header"] else None)
+            if col is not None and len(r[0]) > col and r[0][col].strip() and r[0][col].strip()[0].isdigit():
+                return r[0][col].strip()
+        return None
 
     def best(d, k):
         cand = [(float(d[k][a]), a) for a in TRAINED if a in d.get(k, {})]
         return max(cand) if cand else None
+
+    def best_cell(d, k):
+        """The best trained architecture's AUROC and every architecture tied with it at three decimals."""
+        b = best(d, k)
+        if not b:
+            return "not run"
+        tied = [SHORT[a] for a in TRAINED if a in d[k] and f"{float(d[k][a]):.3f}" == f"{b[0]:.3f}"]
+        return f"{b[0]:.3f} ({'; '.join(tied)})"
 
     # ---------------------------------------------------------------- main summary table
     ROWS = [("cheating", "ours"), ("cheating", "all"), ("coordination posted", "ours"), ("collusion crossed", "ours"),
@@ -86,8 +101,8 @@ def build(led, ctx):
         b1 = best(bi, k); b2 = best(bii, k)
         tb2 = tfidf_bii(label, scheme)
         cells = [f"{LAB[label]}, {scheme_name(scheme)}", f"{pos} / {n}", v(m["B.I"]), m["B.I null 95th"], m["B.I TF-IDF"],
-                 f"{b1[0]:.3f} ({ANAME[b1[1]]})" if b1 else "not run", v(m["B.II mean"]) if m["B.II mean"] != "n/a" else "n/a",
-                 f"{b2[0]:.3f} ({ANAME[b2[1]]})" if b2 else "not run", tb2 or "n/a"]
+                 best_cell(bi, k), v(m["B.II mean"]) if m["B.II mean"] != "n/a" else "n/a",
+                 best_cell(bii, k), tb2 or "n/a"]
         line = "| " + " | ".join(cells) + " |"
         led(line, f"Table 4 row {label}/{scheme}", f"{MR}@{P.MX}", "matrix table (B.I, null 95th, TF-IDF, B.II mean); architecture summaries (max over architectures 2 to 8); per-scheme baseline TF-IDF B.II", raw_where=True)
         T.append(line)

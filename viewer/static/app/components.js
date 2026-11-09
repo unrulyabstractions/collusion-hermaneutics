@@ -268,7 +268,7 @@ export function rungBadge(rung) {
 }
 
 export function collaborationBadge(level) {
-  return badge(level, COLLABORATION_KIND[level] || 'plain', `the highest collaboration level: ${COLLABORATION.join(', ')}`);
+  return badge(level, COLLABORATION_KIND[level] || 'plain', `the highest level of the framework's collaboration ladder, shown here as Coordination: ${COLLABORATION.join(', ')}`);
 }
 
 export function presentationBadge(value) {

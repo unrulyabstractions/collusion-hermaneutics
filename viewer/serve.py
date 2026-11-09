@@ -42,7 +42,7 @@ CACHE = HERE / ".cache" / "index.json"
 SPAR_DEFAULT = Path("/Users/unrulyabstractions/work/arena-capstone/data/hf/spar-swarm")
 OLD_CONTROLS = "/Users/unrulyabstractions/work/arena-capstone/data/apart_controls/"
 NEW_CONTROLS = str(DATA / "apart_controls") + "/"
-INDEX_VERSION = 7
+INDEX_VERSION = 8
 
 # The honeypot ladder (SGA src/measures/rungs.py RUNGS) and the levels data/labels.csv reads it by
 # (hermeneutics/labels.py): used and tampered sit on one level.
@@ -551,6 +551,8 @@ def main(argv=None):
     print(f"index: {len(idx['rows'])} runs ({counts}); built {idx['built_at']} in {idx['build_seconds']} s; "
           f"loaded in {took:.2f} s", flush=True)
     Handler.viewer = Viewer(idx, args.spar)
+    # The page loads a dozen ES modules at once; the default listen backlog of 5 resets some of them.
+    ThreadingHTTPServer.request_queue_size = 128
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
 
     def stop(signum, frame):  # a background start ignores Ctrl-C, so SIGTERM stops the server cleanly too

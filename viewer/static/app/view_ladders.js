@@ -33,7 +33,8 @@ export async function viewLadders(q) {
       hl >= 0 ? h('p', { class: 'muted' }, `The column of this run's task (${d.domains[hl]}) is highlighted.`) : null),
     h('section', { class: 'card' }, h('h2', null, 'Colour legend'), fullLegend(d.ladders, d.order)),
     byTask('Cheating level by task', 'rung', d.rung_notes, d.rungs, d, hl),
-    byTask('Collaboration level by task (code ladder)', 'level', d.collab_notes, d.collab, d, hl),
+    byTask('Coordination level by task (the framework\'s collaboration ladder)', 'level', d.collab_notes, d.collab, d, hl,
+      h('p', { class: 'small lv-about' }, 'The framework calls this ladder collaboration; here it is Coordination, because it records exploit talk and exploit movement between agents, not a shared goal.')),
     ['coop', 'collab', 'collude', 'scheme'].filter(k => d.four[k]).map(k => {
       const T = d.four[k];
       const live = d.ladders[k] || T;

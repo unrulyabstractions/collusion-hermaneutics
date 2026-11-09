@@ -18,7 +18,7 @@ function shell() {
   app.replaceChildren(
     h('header', { class: 'topbar' },
       h('a', { class: 'brand', href: '#/' }, 'SGA transcripts'),
-      h('span', { class: 'muted small' }, 'code-ladder and judge labels for cheating and collaboration'),
+      h('span', { class: 'muted small' }, 'six ladders from cheating to scheming, with the code-ladder and judge labels'),
       h('span', { class: 'spacer' }),
       h('a', { class: 'btn btn-small', href: '#/ladders' }, 'Ladders'), ' ',
       h('a', { class: 'btn btn-small', href: '#/' }, 'All runs')),

@@ -543,3 +543,35 @@ table.idx-table tr.row-disagree td:first-child { box-shadow: inset 3px 0 0 var(-
 .case .cs-chip b{color:var(--ink-2);font-weight:600}
 .case .cs-chip.cs-new b{color:var(--accent)}
 .case .cs-board{font-size:12px;color:var(--accent);margin-top:6px}
+
+/* run page opened like the case-study artifact: one thin bar, then strip and transcript */
+.page.rp-page { max-width: none; }
+.rp-bar { position: sticky; top: var(--header-h); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+  padding: 6px 10px; margin: -8px -8px 8px; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 13px; }
+.rp-back { text-decoration: none; color: var(--muted); }
+.rp-run { font-family: var(--mono); font-size: 13px; }
+.rp-arm { color: var(--muted); }
+.rp-tabs { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.rp-tab { font: 500 12px var(--sans); padding: 3px 9px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel); color: var(--text); cursor: pointer; }
+.rp-tab.on { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.rp-role { color: var(--muted); font-weight: 400; }
+.rp-show { color: var(--muted); font-size: 12px; margin-left: auto; }
+.rp-show select { font-size: 12px; padding: 2px 6px; }
+.rp-dbtn { font: 500 12px var(--sans); padding: 3px 9px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel); color: var(--muted); cursor: pointer; }
+.rp-details { margin-top: 18px; }
+.rp-details > summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 6px 0; }
+.rp-team .card { margin-bottom: 10px; }
+.rp-stage .case { padding: 0; background: transparent; }
+.rp-stage .case .main { grid-template-columns: 280px 1fr; gap: 12px; }
+.rp-stage .case .left { top: calc(var(--header-h) + 44px); max-height: calc(100vh - var(--header-h) - 56px); padding: 10px; }
+.rp-stage .case .call { scroll-margin-top: calc(var(--header-h) + 50px); }
+.case .cs-six { font-size: 11.5px; color: var(--muted); line-height: 1.6; margin: 0 0 8px; }
+.case .cs-six i, .case .cs-mini i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 3px; vertical-align: baseline; }
+.case .cs-six b { color: var(--ink-2); font-weight: 600; }
+.case .cs-mini { display: inline-flex; gap: 2px; vertical-align: middle; }
+.case .cs-mini i { margin: 0; width: 7px; height: 11px; }
+.case .ev-w { color: var(--accent); }
+.rp-stage[data-show=reasoning] .k-tool, .rp-stage[data-show=reasoning] .k-input, .rp-stage[data-show=reasoning] .cs-board,
+.rp-stage[data-show=reasoning] .case .call:not(:has(.k-reasoning)) { display: none; }
+.rp-stage[data-show=tools] .k-reasoning, .rp-stage[data-show=tools] .k-input, .rp-stage[data-show=tools] .case .call.msg { display: none; }
+.rp-stage[data-show=board] .case .right .call:not(:has(.cs-board)) { display: none; }

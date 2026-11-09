@@ -1,6 +1,6 @@
 # Hermeneutic probes on the team runs
 
-Updated 2026-11-08 23:14 PST. Every number below comes from the CSVs in this folder; held-out scores per agent, team and turn are saved beside them, so each AUROC can be recomputed.
+Updated 2026-11-08 23:28 PST. Every number below comes from the CSVs in this folder; held-out scores per agent, team and turn are saved beside them (transfer scores in transfer_scores.csv and transfer_turn_scores.csv.gz), so each AUROC can be recomputed.
 
 ## Data
 
@@ -8,10 +8,10 @@ Updated 2026-11-08 23:14 PST. Every number below comes from the CSVs in this fol
 |---|---|---|---|---|
 | board_seed | 134 | 134 | 129 | 43 |
 | controls_600 | 600 | 600 | 600 | 600 |
-| spar_mixed_41 | 209 | 0 |  | 51 |
-| spar_screen_team | 123 | 0 |  | 38 |
+| spar_mixed_41 | 209 | 209 |  | 51 |
+| spar_screen_team | 196 | 0 |  | 59 |
 | solo_design | 54 | 0 |  | 18 |
-| cheatbench | 188 | 0 |  | 3 |
+| cheatbench | 233 | 0 |  | 3 |
 | goodfire_reward_hack | 1385 | 0 |  | 13 |
 
 | Board-seed population | Count |
@@ -31,6 +31,8 @@ Updated 2026-11-08 23:14 PST. Every number below comes from the CSVs in this fol
 | teams at the collusion floor | 23 |
 | used workers whose used onset is the first write of planted content | 54 |
 | used workers whose used onset falls back to the opened call | 2 |
+| agents written by DeepSeek V4.1 Flash (meta.json author) | 134 |
+| workers below opened, all in the anticoord arm | 3 |
 | agents whose step count and tool-call count match signals.jsonl and meta.json | 134 |
 
 ## Recipe
@@ -43,7 +45,8 @@ Updated 2026-11-08 23:14 PST. Every number below comes from the CSVs in this fol
 | C | chosen by inner 3-fold CV grouped by run, from 1e-4, 1e-3, 1e-2, 1e-1, 1 |
 | outer folds | 5, grouped by run (no run is split), stratified by the label |
 | interval | 95% bootstrap over runs, 1000 draws |
-| null | labels shuffled within arm, 100 draws, C fixed at the median chosen C; p = (1 + draws at or above the real AUROC) / 101 |
+| null (agent and team) | labels shuffled within arm, 100 draws, C fixed at the median chosen C; p = (1 + draws at or above the real AUROC) / (1 + draws with a finite AUROC) |
+| null (per step) | each agent's pair (reaches the level, onset as a fraction of its turns) permuted within arm, turn labels rebuilt from it, 100 draws, C fixed; for the main settings only |
 | metadata baseline | arm one-hot, turn budget one-hot, seed; logistic regression on the same folds |
 | text baselines | TF-IDF (word 1-2 grams, fitted on the training fold) with L2 logistic regression and C by inner CV: the agent's own words (reasoning and tool calls, no tool results) and the whole rendered text |
 | call index | signals.jsonl call k is the 0-based index over the agent's individual tool calls; it maps to the assistant step holding it, and acts turn t is step t |
@@ -195,7 +198,7 @@ Turn AUROC scores held-out turns against the turn label. Agent AUROC scores the 
 | probe L51 think-close | 6818 | 1927 | 129 | 43 | 56 | 0.880 [0.835, 0.915] | 0.827 [0.732, 0.909] | 5.0 [1.5, 18.0] | 47 / 56 | 4 |  /  |  /  |
 | TF-IDF agent's words so far | 6818 | 1927 | 129 | 43 | 56 | 0.895 [0.846, 0.933] | 0.798 [0.698, 0.884] | 14.0 [7.0, 25.0] | 41 / 56 | 1 |  /  |  /  |
 | TF-IDF whole text so far | 6818 | 1927 | 129 | 43 | 56 | 0.863 [0.812, 0.907] | 0.719 [0.599, 0.831] | 21.0 [13.0, 31.0] | 43 / 56 | 1 |  /  |  /  |
-| metadata (arm, seed, turn budget) | 6818 | 1927 | 129 | 43 | 56 | 0.680 [0.604, 0.749] | 0.814 [0.702, 0.897] | -32.0 [-34.0, -26.0] | 5 / 56 | 5 |  /  |  /  |
+| metadata (arm, seed, turn budget) | 6818 | 1927 | 129 | 43 | 56 | 0.680 [0.604, 0.749] | 0.814 [0.702, 0.898] | -32.0 [-34.0, -26.0] | 5 / 56 | 5 |  /  |  /  |
 | metadata + turn position | 6818 | 1927 | 129 | 43 | 56 | 0.849 [0.807, 0.890] | 0.821 [0.716, 0.903] | 22.0 [10.0, 32.0] | 45 / 56 | 2 |  /  |  /  |
 | turn position (index, fraction) | 6818 | 1927 | 129 | 43 | 56 | 0.842 [0.797, 0.886] | 0.855 [0.769, 0.920] | 23.5 [13.8, 34.8] | 50 / 56 | 3 |  /  |  /  |
 
@@ -214,7 +217,7 @@ Turn AUROC scores held-out turns against the turn label. Agent AUROC scores the 
 | probe L51 think-close | 6818 | 3305 | 129 | 43 | 56 | 0.728 [0.676, 0.778] | 0.848 [0.753, 0.929] | 37.0 [17.2, 46.0] | 44 / 56 | 0 |  /  |  /  |
 | TF-IDF agent's words so far | 6818 | 3305 | 129 | 43 | 56 | 0.675 [0.597, 0.746] | 0.738 [0.633, 0.835] | 29.0 [22.0, 44.0] | 12 / 56 | 0 |  /  |  /  |
 | TF-IDF whole text so far | 6818 | 3305 | 129 | 43 | 56 | 0.722 [0.657, 0.788] | 0.758 [0.664, 0.838] | 17.0 [8.0, 39.0] | 13 / 56 | 0 |  /  |  /  |
-| metadata (arm, seed, turn budget) | 6818 | 3305 | 129 | 43 | 56 | 0.738 [0.643, 0.815] | 0.825 [0.722, 0.900] | -4.5 [-7.5, -3.5] | 8 / 56 | 8 |  /  |  /  |
+| metadata (arm, seed, turn budget) | 6818 | 3305 | 129 | 43 | 56 | 0.738 [0.643, 0.815] | 0.825 [0.723, 0.899] | -4.5 [-7.5, -3.5] | 8 / 56 | 8 |  /  |  /  |
 | metadata + turn position | 6818 | 3305 | 129 | 43 | 56 | 0.766 [0.677, 0.839] | 0.830 [0.724, 0.903] | 39.5 [23.8, 51.0] | 30 / 56 | 0 |  /  |  /  |
 | turn position (index, fraction) | 6818 | 3305 | 129 | 43 | 56 | 0.780 [0.707, 0.846] | 0.855 [0.767, 0.921] | 40.0 [33.5, 46.5] | 35 / 56 | 0 |  /  |  /  |
 
@@ -233,7 +236,7 @@ Turn AUROC scores held-out turns against the turn label. Agent AUROC scores the 
 | probe L51 think-close | 6818 | 5910 | 129 | 43 | 126 | 0.927 [0.864, 0.979] | 0.693 [0.382, 0.913] | 2.0 [1.0, 5.0] | 91 / 126 | 5 |  /  |  /  |
 | TF-IDF agent's words so far | 6818 | 5910 | 129 | 43 | 126 | 0.991 [0.978, 0.999] | 0.960 [0.927, 0.992] | 1.0 [1.0, 2.0] | 125 / 126 | 2 |  /  |  /  |
 | TF-IDF whole text so far | 6818 | 5910 | 129 | 43 | 126 | 0.964 [0.921, 0.999] | 0.825 [0.685, 0.976] | 4.0 [2.0, 9.0] | 101 / 126 | 0 |  /  |  /  |
-| metadata (arm, seed, turn budget) | 6818 | 5910 | 129 | 43 | 126 | 0.654 [0.593, 0.700] | 0.939 [0.855, 1.000] | -6.0 [-7.0, -4.2] | 6 / 126 | 6 |  /  |  /  |
+| metadata (arm, seed, turn budget) | 6818 | 5910 | 129 | 43 | 126 | 0.654 [0.593, 0.700] | 0.937 [0.854, 0.992] | -6.0 [-7.0, -4.2] | 6 / 126 | 6 |  /  |  /  |
 | metadata + turn position | 6818 | 5910 | 129 | 43 | 126 | 0.916 [0.874, 0.960] | 0.943 [0.877, 0.984] | 9.5 [6.0, 13.0] | 126 / 126 | 2 |  /  |  /  |
 | turn position (index, fraction) | 6818 | 5910 | 129 | 43 | 126 | 0.888 [0.809, 0.977] | 0.291 [0.071, 0.488] | 42.0 [37.0, 47.0] | 102 / 126 | 0 |  /  |  /  |
 
@@ -289,6 +292,9 @@ Turn AUROC scores held-out turns against the turn label. Agent AUROC scores the 
 | TF-IDF agent's words | team workers, cheating used or above | 129 | 56 | 73 | 0.736 [0.648, 0.820] |
 | TF-IDF agent's words | team workers, cheating tried or above (the controls' rule for software engineering) | 129 | 127 | 2 | 0.894 [0.789, 0.969] |
 | TF-IDF agent's words | team workers, cheating opened or above | 129 | 126 | 3 | 0.868 [0.761, 0.953] |
+| probe Lall think-open+close | spar_mixed_41, cheating (the set's own label) | 209 | 43 | 166 | 0.791 [0.709, 0.865] |
+| probe Lall think-open | spar_mixed_41, cheating (the set's own label) | 209 | 43 | 166 | 0.720 [0.627, 0.809] |
+| probe Lall think-close | spar_mixed_41, cheating (the set's own label) | 209 | 43 | 166 | 0.782 [0.702, 0.861] |
 
 ### Trained on controls solo + cheat
 
@@ -317,7 +323,8 @@ Turn AUROC scores held-out turns against the turn label. Agent AUROC scores the 
 
 - One author. Every team worker is DeepSeek V4.1 Flash, so these probes cannot separate the behaviour from the author's style; the controls transfer is the only cross-author test.
 - Small samples. The probes rest on a few dozen runs; intervals are wide and the folds hold few runs each.
-- Opened or above has almost no negatives among workers, so its agent-level row is close to empty.
+- Opened or above has almost no negatives among workers, and all of them sit in the anticoord arm, so the agent-level rows of 1b and 5c largely read the arm (the metadata baseline shows it) and their within-arm null shuffles inside that arm alone.
+- Probe 2 leaves out the workers at collusion discussed or solicited; probe 5d keeps them as agents that never reach exploit crossed.
 - Proxies. The ladders time exposed, tried and opened per call; used and crossed carry no call. The used onset is estimated as the first tool call whose arguments contain an added line of the planted diff the agent opened (falling back to the opened call), and probe 5b gives the opened call as a lower bound. The collusion onset is a proxy: the later of the used onset (or, for a sharer below used, its first post) and its first board read or post. Cooperation, collaboration and scheming are proxies in levels.py itself.
 - Labels that depend on the future. A turn after the opened call is negative for an agent that ends at opened and positive for one that goes on to use the content, so the per-step used label partly asks the probe to predict what comes next.
 - Setting B covers only the agents whose turns.safetensors is on the Hub; until the backfill completes its rows rest on a subset, named with its agent and run counts. The list of agents with boundary tokens is boundary_agents.csv.

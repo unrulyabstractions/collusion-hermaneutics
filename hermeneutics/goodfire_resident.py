@@ -27,7 +27,8 @@ FP16_MAX = 65504.0
 TURN_IDS = (248046, 198, 248045, 74455, 198)  # <|im_end|> \n <|im_start|> assistant \n: the change of turn before <think>
 # Commits whose think_L vectors are identical to this code's (same forward; later commits only add turn_L): a resume may
 # skip folders they wrote. Folders without turn_L are the backfill list.
-THINK_COMPATIBLE = {"f4672813f425c6a5ba627198b720e7eb810883ba", "5724bb3f32272197c0a6a3e0c7456ebf85278618"}
+THINK_COMPATIBLE = {"f4672813f425c6a5ba627198b720e7eb810883ba", "5724bb3f32272197c0a6a3e0c7456ebf85278618",
+                    "92d1e1426c75e283e59050402a7783b39d09f11e"}
 
 
 def versions(dev):
@@ -168,6 +169,7 @@ def main():
     ap.add_argument("--truncate", action="store_true")
     ap.add_argument("--linear-chunk", type=int, default=LINEAR_CHUNK)
     ap.add_argument("--limit", type=int, default=0, help="at most N rollouts per traces file (pilots)")
+    ap.add_argument("--stream", action="store_true", help="fetch the weights from the Hub (host without the checkpoint)")
     args = ap.parse_args()
     layers = sorted(int(x) for x in args.layers.split(","))
     dev = torch.device("cuda")
@@ -178,7 +180,12 @@ def main():
     print("env", json.dumps(env), flush=True)
     if not env["code_sha"]:
         raise SystemExit("set HERM_CODE_SHA to the commit being run (git rev-parse HEAD): meta.json records it and resume checks it")
-    res = Resident(mdir, layers, dev)
+    weights = None
+    if args.stream:
+        from .goodfire_stream import RemoteWeights
+        weights = RemoteWeights(mdir)
+        weights.stop_block = max(layers)
+    res = Resident(mdir, layers, dev, weights=weights)
     for traces in args.traces:
         run_dir = run_dir_of(traces)
         os.makedirs(os.path.join(args.out, run_dir), exist_ok=True)

@@ -575,3 +575,20 @@ table.idx-table tr.row-disagree td:first-child { box-shadow: inset 3px 0 0 var(-
 .rp-stage[data-show=reasoning] .case .call:not(:has(.k-reasoning)) { display: none; }
 .rp-stage[data-show=tools] .k-reasoning, .rp-stage[data-show=tools] .k-input, .rp-stage[data-show=tools] .case .call.msg { display: none; }
 .rp-stage[data-show=board] .case .right .call:not(:has(.cs-board)) { display: none; }
+.case{--neg:33,102,172;--pos:178,24,43}
+@media (prefers-color-scheme:dark){.case{--neg:90,150,230;--pos:225,80,90}}
+.case .scale{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);margin-top:8px}
+.case .scale .grad{flex:1;height:10px;border-radius:2px;background:linear-gradient(90deg,rgb(var(--neg)),var(--surface),rgb(var(--pos)))}
+.case .cs-lz{color:var(--ink-2)}
+.rp-lens { margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--border); }
+.heat { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+.heat.heat-strong, .heat.heat-strong .lv-rank { color: #fff; }
+.heat .lv-glyph .lv-seg { outline: 1px solid rgba(127,127,127,.35); }
+.cs-full-legend { font-size: 12px; color: var(--muted, #888); margin: 8px 0; display: flex; flex-direction: column; gap: 3px; }
+.cs-full-legend .cfl-row { line-height: 1.5; }
+.cs-full-legend b { color: var(--ink-2, var(--text)); font-weight: 600; margin-right: 4px; }
+.cs-full-legend .cfl-item { display: inline-flex; align-items: center; gap: 3px; margin-right: 8px; white-space: nowrap; }
+.cs-full-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; border: 1px solid rgba(127,127,127,.4); }
+.case .cs-six-row { line-height: 1.55; }
+.heat.heat-light, .heat.heat-light .lv-rank { color: #16191a; }
+.case .cs-mile { font-size: 10px; }

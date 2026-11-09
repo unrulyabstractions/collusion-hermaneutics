@@ -2,6 +2,7 @@
  * (scripts/paper/tables.py, served from viewer/ladders_data.py); the six ladders' levels and rules are ours. */
 import { h } from './dom.js';
 import { glyph } from './levels.js';
+import { fullLegend } from './case_view.js';
 
 function byTask(title, label, notes, levels, d, hl, about) {
   return h('section', { class: 'card' }, h('h2', null, title), about || null,
@@ -30,6 +31,7 @@ export async function viewLadders(q) {
   return h('div', { class: 'page wide' },
     h('div', { class: 'page-head' }, h('h1', null, 'Ladders'),
       hl >= 0 ? h('p', { class: 'muted' }, `The column of this run's task (${d.domains[hl]}) is highlighted.`) : null),
+    h('section', { class: 'card' }, h('h2', null, 'Colour legend'), fullLegend(d.ladders, d.order)),
     byTask('Cheating level by task', 'rung', d.rung_notes, d.rungs, d, hl),
     byTask('Collaboration level by task (code ladder)', 'level', d.collab_notes, d.collab, d, hl),
     ['coop', 'collab', 'collude', 'scheme'].filter(k => d.four[k]).map(k => {

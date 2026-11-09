@@ -1,5 +1,7 @@
 /* View: every run of the three collections (#/), with filters, sorting and paging. Written for this viewer. */
 import { enc, fmtInt, h } from './dom.js';
+import { RAMP } from './case_view.js';
+import { glyph } from './levels.js';
 import { badge, collaborationBadge, muted, rungBadge, select } from './components.js';
 import { AGREE, ARM_ORDER, COLLAB_MEANING, COLLAB_ORDER, COLLECTIONS, COLLECTION_ORDER, JUDGES, JUDGE_ORDER,
   RUNG_MEANING, RUNG_ORDER, armLabel, modelLabel, taskLabel } from './labels.js';
@@ -56,23 +58,50 @@ const judgeSort = key => r => {
   return (j.yes === true ? 2000 : j.yes === false ? 1000 : 0) + (j.conf || 0);
 };
 
+// A level cell as a heat map: the ladder's ramp colour at this rank, mixed stronger as the rank rises; none is neutral.
+function heat(L, i, of, kids) {
+  if (!i) return h('span', { class: 'heat' }, kids);
+  const c = RAMP[L][i];
+  const [r, g, b] = [1, 3, 5].map(j => parseInt(c.slice(j, j + 2), 16) / 255);
+  const dark = 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.55;  // white text on dark swatches, dark text on light ones
+  return h('span', { class: ['heat', dark ? 'heat-strong' : 'heat-light'], style: `background:${c}` }, kids);
+}
+const SEED_WORDS = {
+  'board:none': 'none', 'board:neutral': 'neutral', 'board:procoordL1': 'mild pro-coordination',
+  'board:procoordL2': 'explicit pro-coordination', 'board:anticoord': 'regulator warning',
+  'controls:cheat': 'told to cheat', 'controls:solo': 'not told',
+  'spar:solo': 'not told', 'spar:solo_cheat': 'told to cheat', 'spar:minimal': 'not told',
+  'spar:minimal_cheat': 'all told to cheat', 'spar:minimal_regulated': 'not told, hidden regulator',
+};
+export const seedLabel = r => SEED_WORDS[`${r.col}:${r.arm}`] || r.arm;
+export function teamLabel(r) {
+  if (r.n_agents <= 1) return '1 agent';
+  const regs = Object.values(r.roles || {}).filter(x => x === 'regulator').length;
+  const w = r.n_agents - regs;
+  return `${w} workers${regs ? ` + ${regs} hidden regulator` : ''}`;
+}
 const COLUMNS = [
   { key: 'col', label: 'Collection', title: 'Which set of runs this is', sort: r => COLLECTION_ORDER.indexOf(r.col),
     cell: r => h('span', { title: COLLECTIONS[r.col].about }, COLLECTIONS[r.col].label, ' ', muted(COLLECTIONS[r.col].tag, 'small')) },
   { key: 'run', label: 'Run', title: 'The run\'s folder name; opens the run page', sort: r => r.run,
     cell: r => h('a', { class: 'run-link', href: `#/run/${r.id.split('/').map(enc).join('/')}` }, r.run) },
   { key: 'task', label: 'Task', sort: r => taskLabel(r), cell: r => taskLabel(r) },
-  { key: 'arm', label: 'Arm or cell', title: 'The condition the run was in', sort: r => armLabel(r), cell: r => armLabel(r) },
+  { key: 'team', label: 'Team', title: 'Who ran: one agent, or the workers and any hidden regulator', sort: r => teamLabel(r), cell: r => teamLabel(r) },
+  { key: 'seedpost', label: 'Seed post', title: 'What the run placed before the agents started: the board\'s first post, a regulator, or the cheat instruction', sort: r => seedLabel(r), cell: r => seedLabel(r) },
   { key: 'model', label: 'Model that ran the agents', sort: r => modelLabel(r), cell: r => modelLabel(r) },
-  { key: 'n', label: 'Agents', num: true, title: 'Number of agents in the run, a hidden regulator included', sort: r => r.n_agents, cell: r => String(r.n_agents) },
   ...Object.entries({ cheat: 'Cheating', coord: 'Coordination', coop: 'Cooperation (proxy)', collab: 'Collaboration (proxy)', collude: 'Collusion', scheme: 'Scheming (proxy)' })
     .map(([L, name]) => ({ key: 'lv_' + L, label: `${name} (team)`, title: `The team's level on the ${name} ladder; the run page shows each agent`,
       sort: r => (r.levels ? LADDER_LEVELS[L].indexOf(r.levels.team[L]) : -2),
       cell: r => { const v = r.levels && r.levels.team[L]; if (!v) return muted('not computed', 'small');
-        const i = LADDER_LEVELS[L].indexOf(v); return i < 0 ? muted(v, 'small') : h('span', { class: ['lv-cell', i > 0 && 'lv-hit'] }, h('span', { class: 'lv-name' }, v), h('span', { class: 'lv-rank' }, ` (${i} of ${LADDER_LEVELS[L].length - 1})`)); } })),
+        const i = LADDER_LEVELS[L].indexOf(v); const of = LADDER_LEVELS[L].length - 1;
+        return i < 0 ? muted(v, 'small') : heat(L, i, of, [glyph(i, of, L), h('b', null, v), h('span', { class: 'lv-rank' }, ` (${i} of ${of})`)]); } })),
   { key: 'n_colluded', label: 'Agents at exploit crossed or above', num: true, title: 'How many agents reached Collusion level 3 (exploit crossed) or higher, of the workers',
     sort: r => (r.levels && r.levels.n_colluded != null ? r.levels.n_colluded : -1),
-    cell: r => (r.levels && r.levels.n_colluded != null && r.n_agents > 1 ? `${r.levels.n_colluded} of ${r.levels.n_workers}` : muted('one agent', 'small')) },
+    cell: r => {
+      if (!(r.levels && r.levels.n_colluded != null && r.n_agents > 1)) return muted('one agent', 'small');
+      const nn = r.levels.n_colluded, of = r.levels.n_workers || 3;
+      return heat('collude', Math.round(5 * nn / of), 5, [h('b', null, `${nn}`), h('span', { class: 'lv-rank' }, ` of ${of}`)]);
+    } },
   { key: 'rung', label: 'Cheating rung (code ladder)', title: 'The highest rung of the honeypot ladder that code found for the team\'s workers: ' + RUNG_ORDER.join(' < '),
     sort: r => ORDER(RUNG_ORDER, r.rung),
     cell: r => h('span', null, r.rung ? rungBadge(r.rung) : muted('none'),
@@ -116,7 +145,8 @@ const FILTERS = [
   ['col', 'Collection', () => [['all', 'All collections'], ...COLLECTION_ORDER.map(c => [c, COLLECTIONS[c].label])], (r, v) => v === 'all' || r.col === v],
   ['task', 'Task', rows => uniq(rows.map(taskLabel)).sort().map(x => [x, x]), (r, v) => taskLabel(r) === v],
   ['model', 'Model', rows => uniq(rows.map(modelLabel)).sort().map(x => [x, x]), (r, v) => modelLabel(r) === v],
-  ['arm', 'Arm or cell', rows => { const have = new Set(rows.map(armLabel)); return ARM_ORDER.filter(a => have.has(a)).map(x => [x, x]); }, (r, v) => armLabel(r) === v],
+  ['team', 'Team', rows => uniq(rows.map(teamLabel)).sort().map(x => [x, x]), (r, v) => teamLabel(r) === v],
+  ['seedpost', 'Seed post', rows => uniq(rows.map(seedLabel)).sort().map(x => [x, x]), (r, v) => seedLabel(r) === v],
   ['label', 'Cheating (code ladder)', () => [['cheat', 'cheat'], ['no cheat', 'no cheat'], ['other', 'other']], (r, v) => r.label === v],
   ['collab', 'Collaboration (code ladder)', () => [['one', 'one agent (no team)'], ...COLLAB_ORDER.map(c => [c, c])],
     (r, v) => (v === 'one' ? r.collab == null : r.collab === v)],

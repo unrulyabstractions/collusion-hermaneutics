@@ -139,7 +139,7 @@ for a in AUTH:
     led(share, f"Table E1 row {NAME[a]} col think coverage", rel(RENDER),
         f"sum(n_readable)/sum(turns) over rows where author={a} ({rd}/{t})")
     TM1.append(f"| {NAME[a]} | `{mid}` | {WEIGHTS[a]} | {valid[a]} | {share} |")
-TM1.append("| Reader: Qwen3.8-27B | `openrouter/qwen/qwen3.8-27b` (same model, bf16) | open | | |")
+TM1.append("| Reader: Qwen3.8-27B | open weights, run locally in bf16 (same model as the author) | open | | |")
 TM1 = "\n".join(TM1)
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -645,18 +645,9 @@ T6 = """| output | controls dataset (own, single-agent) | board-seed environment
 | scheming | zero by construction | gap (no covertness signal) | gap (no covertness signal; judge only) |"""
 led("label map cells", "Table F1", "DATASETS.md (commit 45f8119); DATASET_DETAILS.md; datasets/ai-village.md",
     "DATASET_DETAILS.md 'Notation' (hierarchy, zeros by construction), section 7 AI Village entry, section 8 own data; ai-village.md 'Labels for our six outputs'")
-import subprocess
-if os.path.exists(f"{REPO}/DATASETS.md"):
-    _survey, _survey_src = open(f"{REPO}/DATASETS.md").read(), "DATASETS.md"
-else:  # the survey file is being reworked in the working tree; read the committed copy
-    _survey = subprocess.run(["git", "-C", REPO, "show", "HEAD:DATASETS.md"], capture_output=True, text=True, check=True).stdout
-    _survey_src = "DATASETS.md (committed copy, git show HEAD:DATASETS.md)"
-n_sources = sum(1 for l in _survey.splitlines() if l.startswith("- **["))
-assert 50 <= n_sources <= 70, n_sources
-led(f"about sixty ({n_sources} graded entries)", "Section 4 Q6: size of the survey", _survey_src, "count of lines starting '- **['")
 led("hierarchy Sch => Col => (Ch and Cb); Cb => Cp => Cd", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Notation' section, label hierarchy")
 led("no external dataset uses our authors", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Key takeaways', first bullet")
-led("ranked next: SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data, Terminal Wrench", "Section 4 Q6 prose", rel(f"{REPO}/DATASETS.md"), "Ranking rows 2 to 6; DATASET_DETAILS.md 'Plan by priority'")
+led("closest external sets: SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data, Terminal Wrench", "Section 4 Q6 prose", rel(f"{REPO}/DATASETS.md"), "Ranking rows 2 to 6; DATASET_DETAILS.md 'Plan by priority'")
 led("licence allows evaluation only", "Results, label map; Discussion; Table F1 header 'eval-only'", "datasets/ai-village.md; DATASETS.md",
     "ai-village.md 'Constraints': research and analysis only, no training or fine-tuning without written permission; DATASETS.md ranking row 'AI Village', role 'eval-only licence'")
 

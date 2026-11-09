@@ -1976,6 +1976,9 @@ def watch(poll=600, status_every=900, controls_step=100, resume=True):
         if t:
             state["last_ctl"] = t[-1]["local_agents"].get("controls_600", 0)
             state["ran"].append("6 transfer")
+        for r in rl:  # labelled sets already run: their agent counts
+            if r.get("stage", "").startswith("set "):
+                state["last_other"][r["set"]] = r["agents"]
         log(f"watch resumes from {state}")
 
     def status_loop():
@@ -2011,6 +2014,8 @@ def watch(poll=600, status_every=900, controls_step=100, resume=True):
                 fetch([o], listing)
                 n = local_counts().get(o, 0)
                 if n and n != state["last_other"].get(o):
+                    if o in LABEL_SETS:
+                        run_set(o)
                     run_transfer_stage(hc)
                     state["last_other"][o] = n
                     write_report(hc, saved_transfer_counts())

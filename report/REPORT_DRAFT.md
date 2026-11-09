@@ -1226,6 +1226,6 @@ Each table gives a ladder's levels above none, the rule for all tasks, and the e
 | | Creative writing | The floor holds, and this agent posted again after the regulator first posted, while reference segments crossed. |
 | | Chess | The floor holds, and this agent posted again after the regulator first posted, while credential halves crossed. |
 
-### Appendix L: LLM usage and compute
+### Appendix L: LLM usage
 
-We used Claude Code (Anthropic) under the author's direction. It ran the experiments and drafted the text. The author set the research questions, took every design decision, and reviewed the text. The judge baseline and the reader interrogation on every set cost $8.14 in model API calls.
+We used Claude Code (Anthropic) under the author's direction. It ran the experiments and drafted the text. The author set the research questions, took every design decision, and reviewed the text.

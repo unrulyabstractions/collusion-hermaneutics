@@ -150,11 +150,6 @@ def build(led, ctx):
     led(prom, "Appendix E judge setup: prompts per judge and the share cut", P.where(t, None), "Setup row 'prompts'", raw_where=True)
     out["<<JUDGE_PROMPTS>>"] = prom.split(" per judge")[0]
     out["<<JUDGE_CUT_SHARE>>"] = prom.split("cut in ")[1].split(" of them")[0]
-    jtext = P.show(P.JA, JR)
-    import re as _re
-    total = float(_re.search(r"total \$([0-9.]+?)\.?\n", jtext).group(1))
-    out["<<JUDGE_COST>>"] = f"${total:.2f}"
-    led(out["<<JUDGE_COST>>"], "Appendix H: the judge baseline's model spend (every judge_sets call)", f"{JR}@{P.JA}", "Cost section: 'Spend by key ... total $8.1364', rounded to cents", raw_where=True)
 
     # per-step judge prefixes (judges_all step table)
     t = P.table(P.JA, JR, "Detection delay: how soon does a judge flag cheating?", first_col="Set")

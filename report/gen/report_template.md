@@ -352,6 +352,6 @@ Each table gives a ladder's levels above none, the rule for all tasks, and the e
 
 <<TG6>>
 
-### Appendix L: LLM usage and compute
+### Appendix L: LLM usage
 
-We used Claude Code (Anthropic) under the author's direction. It ran the experiments and drafted the text. The author set the research questions, took every design decision, and reviewed the text. The judge baseline and the reader interrogation on every set cost <<JUDGE_COST>> in model API calls.
+We used Claude Code (Anthropic) under the author's direction. It ran the experiments and drafted the text. The author set the research questions, took every design decision, and reviewed the text.

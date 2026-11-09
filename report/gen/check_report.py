@@ -8,8 +8,7 @@
 3. paths: 0 file paths outside URLs in the main text and in the appendices (a token with a slash
    and a letter on both sides, or a file extension such as .py .csv .md .json .safetensors); the
    task file names that the framework's ladder tables quote verbatim (Appendix K) are counted apart
-4. dollar figures: 0 in the main text (PDF pages before the References heading); the appendix
-   count is printed
+4. dollar figures: 0 anywhere in the PDF (main text and appendices counted apart)
 5. citations: every \\citep key is in the .bib, every .bib entry is cited, no undefined citation
 6. main text: the References heading starts on page 8 or earlier, or at the head of page 9
 """
@@ -84,8 +83,8 @@ def main(argv: list[str]) -> int:
         rest = head[1] + "".join(pages[ref_page + 1:])
     n_main = len(DOLLAR_RE.findall(main_text))
     print(f"check: dollar figures in the main text {n_main}; after it {len(DOLLAR_RE.findall(rest))}")
-    if n_main:
-        fails.append("dollar figures in the main text")
+    if n_main or DOLLAR_RE.search(rest):
+        fails.append("dollar figures")      # no spend figure anywhere in the report
 
     bib = Path(tex.parent, "../gen/refs.bib").resolve().read_text(encoding="utf-8")
     keys = set(re.findall(r"^@\w+\{([^,]+),", bib, re.M))

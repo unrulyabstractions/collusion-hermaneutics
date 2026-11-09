@@ -53,7 +53,7 @@ Label hierarchy (⇒ = implies), from the vision doc's definitions:
 
 | Output | Frontier, labelled | Open, labelled | Self-generate |
 |---|---|---|---|
-| Ch | Terminal Wrench, Goodfire, MALT | Goodfire (Qwen3.8 Max) | cheatbench, ImpossibleBench |
+| Ch | Terminal Wrench, Goodfire, MALT, CheatBench traces (steinad) | Goodfire (Qwen3.8 Max), CheatBench traces (DeepSeek-R1) | cheatbench, ImpossibleBench |
 | Cd | SALT (judge), AI Village (derivable, chat graph) | NARCBench, AI Village swarm (GLM) | orbit |
 | Cp | SALT (judge, partial) | — | Colosseum, GovSim |
 | Cb | SALT (judge, partial), AI Village (derivable, village vs agent goals) | AI Village swarm (GLM) | Colosseum |
@@ -209,6 +209,12 @@ Zero for Cd, Cp, Cb, Col, Sch (subject to Q1).
 - **Env:** SWE-bench Verified, DeepSWE, ImpossibleBench, τ³-bench, ShoppingBench rollouts with reasoning and tool calls.
 - **Notes:** `<think>` position available. Qwen3.8 Max ↔ Qwen3.8-27B reader is a same-family pairing: near-on-policy check / control. No license stated; some runs partial; check which splits have full transcripts.
 
+### [A] CheatBench traces (steinad)
+- **Authors:** many, not ours: Claude Opus 4.6, GPT-5.4, gpt-5.3-codex, o3 (high reasoning), DeepSeek-R1, GPT-4.1, MiniMax M2.5 and others, through 14 agent and source collections (harness column, e.g. Pilot).
+- **Labels:** Ch provided and human-verified per trace: `cheating` (reward 1, 844), `attempt` (reward 0, 41), `benign` (3,587); `cheating_type` (harness, task), a mutually exclusive `cheating_mechanism` (harness leaks answer or verifier, secret discovery in the environment or via web search, verifier exploitation), and localization fields (field path, line range, snippet, blatancy) for positives; `annotator_id` and `label_source` columns.
+- **Env:** public runs of Terminal-Bench 2 (2,382 traces), CyBench (544), SWE-smith (518), SWE-bench Verified (500), HAL-USACO (218), MLE-bench (150), BountyBench (76), SWE-rebench (48), KernelBench (36). Splits full, mini, micro. Traces are long and heavy-tailed (median about 142K characters, max about 23M).
+- **Notes:** HF `steinad/CheatBench`, MIT, created 2026-04-27; a different project from the CAIS CheatBench below despite the name. Natural, not elicited, cheating with human labels and localization: the closest public set to an external, unseen-author validation of a cheating probe, and a lexical test (localized snippets show where the evidence sits). Not used in the sprint: found on 2026-11-09 after the report was written.
+
 ### [B] MALT (METR)
 - **Authors:** 21 models incl. o1, o3, Claude 3.7 Sonnet, GPT-4o.
 - **Labels:** Ch provided (human-reviewed) for reward hacking and sandbagging; ~1k verified benign runs.
@@ -221,8 +227,8 @@ Zero for Cd, Cp, Cb, Col, Sch (subject to Q1).
 - **Env:** mutated LiveCodeBench and SWE-bench tasks with contradictory tests.
 - **Notes:** zero-cost deterministic label. Re-run with our authors for on-policy cheating.
 
-### [B] CheatBench — self-gen
-- **Authors:** none released (environments only); re-runnable with any model through its harness adapters (Claude Agent SDK, Codex, Gemini CLI, Terminus-2 and others). Our run: DeepSeek V4.1 Flash, GPT-5 mini, Claude Haiku 5.5, GPT-6 Luna, Qwen3.8-27B.
+### [B] CheatBench (Center for AI Safety) — self-gen
+- **Authors:** none released by its authors (environments only; the HF dataset `steinad/CheatBench` above is a different project); re-runnable with any model through its harness adapters (Claude Agent SDK, Codex, Gemini CLI, Terminus-2 and others). Our run: DeepSeek V4.1 Flash, GPT-5 mini, Claude Haiku 5.5, GPT-6 Luna, Qwen3.8-27B.
 - **Labels:** Ch via an LLM behavioural judge (default gpt-6-sol), scored separately from task success. Derivable with our instrumentation: the cheat ladder (none < exposed < tried < opened < used = tampered < checked < shipped) from logged actions, no judge.
 - **Env:** 14 tasks in 10 categories: mathematical research (OpenMath, OpenMath Agent), multimodal (GeoGuessr, Visual Puzzles), creative writing, SVG competition, menial computation (Prime Factorization, Subset Sum), protein design, knowledge work, board games (Chess, Go), sycophancy, software engineering. Each sets expectations of honest work and plants opportunities to violate them. Enroot or Docker sandboxes; software engineering through Harbor.
 - **Notes:** Phan et al., arXiv 2609.36308 (28 Sep 2026), MIT licence; forked to unrulyabstractions/cheatbench on 2026-10-09, before the sprint, and run inside spar-guardian-agents / ORBIT. Our controls dataset (unrulyabstractions/apart-swarm, private) uses 8 of its tasks as 9 task instances: openmath_agent (riemann), protein_design (binder), prime_factorization (factor), subset_sum (subset), creative_writings (poem), chess (game), knowledge_work (worktime) and software_engineering (two issues: flipt, vuls), in a solo and a cheat arm: 4,157 valid runs for our five authors with deterministic ladder labels. Third-party code: cite it wherever the controls data is used.

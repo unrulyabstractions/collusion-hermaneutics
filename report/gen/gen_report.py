@@ -711,7 +711,7 @@ led("hierarchy Sch => Col => (Ch and Cb); Cb => Cp => Cd", "Section 4 Q6 prose",
 led("no external dataset uses our authors", "Section 4 Q6 prose", rel(f"{REPO}/DATASET_DETAILS.md"), "'Key takeaways', first bullet")
 led("ranked next: SALT-NLP agent-collusion, NARCBench, Colosseum, MAST-Data, Terminal Wrench", "Section 4 Q6 prose", rel(f"{REPO}/DATASETS.md"), "Ranking rows 2 to 6; DATASET_DETAILS.md 'Plan by priority'")
 led("licence allows evaluation only", "Results, label map; Discussion; Table F1 header 'eval-only'", "datasets/ai-village.md; DATASETS.md",
-    "ai-village.md 'Constraints': research and analysis only, no training or fine-tuning without written permission; DATASETS.md ranking row 16 'eval-only licence'")
+    "ai-village.md 'Constraints': research and analysis only, no training or fine-tuning without written permission; DATASETS.md ranking row 'AI Village', role 'eval-only licence'")
 
 # ----------------------------------------------------------------------------------------------------------------
 # Appendix B: full sweep

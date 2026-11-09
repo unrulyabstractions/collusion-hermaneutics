@@ -13,7 +13,7 @@ function cellView(c, L) {
   if (c.na) return h('td', { class: 'muted small', title: L.rule }, c.level);
   const tip = `${L.kind === 'proxy' ? 'Proxy' : 'Direct'} rule. ${L.rule}${c.evidence ? '\nEvidence: ' + c.evidence : ''}`;
   return h('td', { class: ['lv-cell', c.index > 0 && 'lv-hit'], title: tip },
-    glyph(c.index, c.of), h('span', { class: 'lv-name' }, c.level),
+    glyph(c.index, c.of), h('span', { class: 'lv-name' }, c.level), h('span', { class: 'lv-rank' }, ` (${c.index} of ${c.of})`),
     L.kind === 'proxy' ? h('span', { class: 'lv-proxy' }, 'proxy') : null);
 }
 
@@ -61,8 +61,10 @@ export function stepTracker(lv, agent) {
         const tip = na ? 'not applicable (one agent, no board)'
           : `${lad.name}: ${lad.levels[state[L]]}` + (f.length ? '\nNewly reached at this call: ' + f.map(([e, k]) => `${e.level} at call ${k} (${e.evidence})`).join('\n') : '');
         return h('span', { class: ['lv-chip', newL.has(L) && 'lv-new', na && 'lv-na'], title: tip },
-          h('span', { class: 'lv-chip-name' }, lad.name), na ? h('span', { class: 'muted' }, 'n/a') : glyph(state[L], lad.levels.length - 1),
-          newL.has(L) ? h('span', { class: 'lv-star' }, 'new: ' + f.map(([e]) => e.level).join(', ')) : null);
+          na ? h('span', { class: 'lv-chip-name' }, `${lad.name}: n/a (one agent, no board)`)
+            : [glyph(state[L], lad.levels.length - 1),
+              h('span', { class: 'lv-chip-name' }, `${lad.name}: `, h('b', null, lad.levels[state[L]]), ` (${state[L]} of ${lad.levels.length - 1})`)],
+          newL.has(L) ? h('span', { class: 'lv-star' }, 'new') : null);
       }),
       boardMarks && boardMarks.length ? h('span', { class: 'lv-board' }, boardMarks.join(' · ')) : null);
     return el;

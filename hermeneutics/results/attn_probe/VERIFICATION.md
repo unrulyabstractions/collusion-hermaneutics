@@ -7,3 +7,8 @@
 - Linear baseline: the per-step linear probe on the same folds gives 0.889 (cheating used) and 0.849 (collusion crossed), equal to team_probes' step_probes.csv rows 5a and 5d for probe Lall think-open+close. VERIFIED.
 - Plot score_vs_turn_cheating_board_seed_think.png opened and viewed: six panels, the six agents of team_probes' step_scores_cheating.png, both seeds and the linear probe drawn, shaded positive span from the estimated used onset. VERIFIED.
 - Labels: the final cheating, collusion and coordination levels of every record equal team_probes' labels/agents.csv (asserted while building labels_board_seed.jsonl). VERIFIED.
+- Independent verifier agent (read-only) on the board_seed think outputs: every AUROC of the 27 metric rows recomputed with sklearn to 1e-16; folds equal team_probes' on 6818 of 6818 rows; y|cheat and y|collude equal team_probes 5a and 5d per-turn labels on 6818 of 6818 rows; final levels equal agents.csv on all six ladders; RESULTS.md tables match the CSVs; PNG viewed; no test-fold leakage found in standardisation, early stopping, GRU inner scores or TF-IDF. One text error found and fixed: agents reaching a cut with no onset are dropped from that cut's agent-level scoring too (9 coordination agents), not kept. VERIFIED.
+
+## 2026-11-09, board_seed, seven tokens
+
+- No run crosses folds (43 runs). Per-step AUROC of the collusion binary head, seed 1, recomputed with sklearn from step_scores_board_seed_seven.csv.gz equals the CSV (all 129 agents reach collusion with an onset or not at all, so no agent is dropped). Baseline rows equal the think-pair run's to 0.0. Plot score_vs_turn_cheating_board_seed_seven.png viewed: six panels, same agents. VERIFIED.

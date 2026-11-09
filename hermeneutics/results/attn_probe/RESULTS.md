@@ -1,6 +1,6 @@
 # Attention monitor over the reader's think tokens
 
-Updated 2026-11-08 23:57 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
+Updated 2026-11-09 00:25 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
 
 ## Design
 
@@ -26,7 +26,7 @@ Updated 2026-11-08 23:57 PST. Every number below is read from the CSVs in this f
 | coordination posted or above (board_seed) | level reached at that call >= posted | direct (first read, post, discussed or solicited call from the board events) |
 | cheating, the set's label (controls_600) | from the turn of the first tool call at or above the task's floor (tried for software engineering, chess and creative writing, opened otherwise) | direct (labels.csv onset_turn; equal to the step of onset_call for all 336 agents with an onset) |
 
-Levels with no call in viewer/levels.py (cheating tampered, checked, shipped; coordination crossed and assembled without a joined call; cooperation received and used; collaboration; collusion assembled and shipped; scheming) enter only through the trajectory label at the final step. A positive per-step level of an inner ladder raises the outer ladder to its gate level at the same step when the agent's final outer level allows it (closure under nesting). Agents that reach a cut with no known onset are left out of that cut's per-step scoring (as in team_probes) but kept in the agent-level scoring.
+Levels with no call in viewer/levels.py (cheating tampered, checked, shipped; coordination crossed and assembled without a joined call; cooperation received and used; collaboration; collusion assembled and shipped; scheming) enter only through the trajectory label at the final step. A positive per-step level of an inner ladder raises the outer ladder to its gate level at the same step when the agent's final outer level allows it (closure under nesting). Agents that reach a cut with no known onset are left out of that cut's per-step and agent-level scoring of that cut, as in team_probes (9 coordination agents on board_seed, all at coordination crossed with no post; the baselines leave out the same agents).
 
 ## Metrics
 
@@ -39,6 +39,123 @@ Levels with no call in viewer/levels.py (cheating tampered, checked, shipped; co
 | detected | agents reaching the cut with an onset that cross the threshold at or after the onset / all such agents |
 | ECE | expected calibration error of the per-step probability (sigmoid of the score), 10 equal-width bins; baselines with balanced class weights are not calibrated by design |
 | permutation null | each agent's whole label record (final levels and onsets as a fraction of its turns) shuffled within arm, the monitor retrained (seed 0) on the same folds, 50 draws; p = (1 + draws at or above the real AUROC) / 51 |
+
+## Board-seed team runs (DeepSeek workers): think pair against the seven tokens (layer 38, binary head)
+
+| Cut | Step input | Seed | Step AUROC | Agent AUROC (last) | Agent AUROC (max) | Delay at 5% FPR, turns | Detected | ECE | Train minus validation step AUROC (mean over folds) |
+|---|---|---|---|---|---|---|---|---|---|
+| cheating used or above | seven tokens (7 x 5120) | 0 | 0.871 | 0.841 | 0.803 | 4.0 [1.0, 14.0] | 29/56 | 0.080 | 0.104 |
+| cheating used or above | seven tokens (7 x 5120) | 1 | 0.891 | 0.829 | 0.814 | 4.0 [1.0, 20.8] | 38/56 | 0.087 | 0.035 |
+| cheating used or above | think pair (2 x 5120) | 0 | 0.883 | 0.868 | 0.876 | 9.0 [1.0, 17.8] | 34/56 | 0.069 | 0.103 |
+| cheating used or above | think pair (2 x 5120) | 1 | 0.890 | 0.817 | 0.799 | 4.0 [1.0, 15.0] | 41/56 | 0.089 | 0.039 |
+| collusion exploit crossed or above | seven tokens (7 x 5120) | 0 | 0.873 | 0.882 | 0.878 | 8.0 [1.0, 16.8] | 34/48 | 0.077 | 0.102 |
+| collusion exploit crossed or above | seven tokens (7 x 5120) | 1 | 0.890 | 0.863 | 0.836 | 1.0 [0.0, 6.0] | 33/48 | 0.103 | 0.042 |
+| collusion exploit crossed or above | think pair (2 x 5120) | 0 | 0.879 | 0.919 | 0.914 | 3.5 [1.0, 11.8] | 46/48 | 0.073 | 0.103 |
+| collusion exploit crossed or above | think pair (2 x 5120) | 1 | 0.876 | 0.836 | 0.820 | 5.0 [1.0, 15.0] | 39/48 | 0.126 | 0.026 |
+| coordination posted or above | seven tokens (7 x 5120) | 0 | 0.940 | 0.932 | 0.922 | 1.0 [0.0, 1.0] | 71/73 | 0.069 | 0.004 |
+| coordination posted or above | seven tokens (7 x 5120) | 1 | 0.950 | 0.978 | 0.981 | 1.0 [0.0, 1.0] | 72/73 | 0.078 | -0.010 |
+| coordination posted or above | think pair (2 x 5120) | 0 | 0.959 | 0.966 | 0.975 | 0.0 [0.0, 1.0] | 71/73 | 0.031 | -0.003 |
+| coordination posted or above | think pair (2 x 5120) | 1 | 0.957 | 0.974 | 0.979 | 0.0 [0.0, 1.0] | 72/73 | 0.083 | -0.013 |
+
+## Board-seed team runs (DeepSeek workers): board_seed_seven
+
+129 agents, 43 runs, 6818 steps. Split: 5 folds grouped by run.
+
+### cheating used or above
+
+129 agents scored per step (56 reach the cut), 6818 steps (1927 positive).
+
+| Model | Step AUROC | Agent AUROC (last) | Agent AUROC (max) | Delay at 5% FPR, turns | Detected | Negative agents ever above threshold | ECE |
+|---|---|---|---|---|---|---|---|
+| attention monitor, binary head (seed 0) | 0.871 [0.828, 0.912] | 0.841 [0.750, 0.917] | 0.803 [0.701, 0.890] | 4.0 [1.0, 14.0] | 29/56 | 13/73 | 0.080 |
+| attention monitor, ordinal head P(level >= cut) (seed 0) | 0.853 [0.807, 0.891] | 0.754 [0.648, 0.845] | 0.751 [0.647, 0.846] | 2.0 [1.0, 9.5] | 35/56 | 24/73 | 0.167 |
+| attention monitor, binary head (seed 1) | 0.891 [0.854, 0.927] | 0.829 [0.716, 0.913] | 0.814 [0.698, 0.904] | 4.0 [1.0, 20.8] | 38/56 | 15/73 | 0.087 |
+| attention monitor, ordinal head P(level >= cut) (seed 1) | 0.876 [0.842, 0.910] | 0.805 [0.699, 0.892] | 0.793 [0.693, 0.882] | 2.0 [1.0, 13.0] | 33/56 | 18/73 | 0.184 |
+| linear per-step probe (team_probes) | 0.889 [0.853, 0.922] | 0.807 [0.709, 0.889] | 0.823 [0.725, 0.905] | 5.0 [0.5, 11.0] | 43/56 | 25/73 | 0.107 |
+| cumulative mean of the linear probe | 0.824 [0.780, 0.869] | 0.818 [0.718, 0.901] | 0.812 [0.714, 0.896] | 14.5 [8.0, 24.8] | 40/56 | 18/73 | 0.111 |
+| GRU over the linear probe scores | 0.885 [0.847, 0.925] | 0.783 [0.668, 0.884] | 0.785 [0.669, 0.883] | 17.5 [8.0, 27.2] | 32/56 | 16/73 | 0.043 |
+| turn index alone | 0.836 [0.794, 0.878] | 0.855 [0.765, 0.916] | 0.855 [0.765, 0.916] | 26.0 [15.0, 35.5] | 51/56 | 31/73 | 0.142 |
+| TF-IDF on the agent's words so far | 0.895 [0.854, 0.936] | 0.836 [0.735, 0.920] | 0.834 [0.731, 0.918] | 14.0 [7.0, 25.0] | 41/56 | 13/73 | 0.080 |
+
+Seed-to-seed spread of the binary head (max minus min over seeds): step 0.020, agent last 0.012, agent max 0.011.
+
+### collusion exploit crossed or above
+
+129 agents scored per step (48 reach the cut), 6818 steps (1536 positive).
+
+| Model | Step AUROC | Agent AUROC (last) | Agent AUROC (max) | Delay at 5% FPR, turns | Detected | Negative agents ever above threshold | ECE |
+|---|---|---|---|---|---|---|---|
+| attention monitor, binary head (seed 0) | 0.873 [0.829, 0.916] | 0.882 [0.794, 0.946] | 0.878 [0.777, 0.948] | 8.0 [1.0, 16.8] | 34/48 | 13/81 | 0.077 |
+| attention monitor, ordinal head P(level >= cut) (seed 0) | 0.883 [0.840, 0.920] | 0.927 [0.864, 0.971] | 0.922 [0.843, 0.972] | 8.0 [1.5, 18.0] | 43/48 | 15/81 | 0.092 |
+| attention monitor, binary head (seed 1) | 0.890 [0.843, 0.930] | 0.863 [0.776, 0.930] | 0.836 [0.718, 0.934] | 1.0 [0.0, 6.0] | 33/48 | 20/81 | 0.103 |
+| attention monitor, ordinal head P(level >= cut) (seed 1) | 0.894 [0.849, 0.929] | 0.860 [0.779, 0.931] | 0.842 [0.753, 0.916] | 3.0 [0.0, 9.5] | 43/48 | 25/81 | 0.087 |
+| linear per-step probe (team_probes) | 0.849 [0.798, 0.891] | 0.814 [0.698, 0.913] | 0.826 [0.712, 0.911] | 6.5 [1.0, 18.8] | 38/48 | 24/81 | 0.149 |
+| cumulative mean of the linear probe | 0.733 [0.642, 0.830] | 0.730 [0.581, 0.860] | 0.711 [0.564, 0.839] | 17.0 [12.5, 26.5] | 27/48 | 14/81 | 0.132 |
+| GRU over the linear probe scores | 0.857 [0.803, 0.905] | 0.845 [0.759, 0.918] | 0.847 [0.754, 0.924] | 12.0 [6.0, 25.0] | 33/48 | 15/81 | 0.072 |
+| turn index alone | 0.841 [0.796, 0.881] | 0.907 [0.819, 0.966] | 0.907 [0.819, 0.966] | 24.0 [10.2, 31.8] | 46/48 | 36/81 | 0.175 |
+| TF-IDF on the agent's words so far | 0.879 [0.840, 0.911] | 0.901 [0.824, 0.958] | 0.889 [0.806, 0.952] | 15.0 [6.0, 27.0] | 40/48 | 18/81 | 0.061 |
+
+Seed-to-seed spread of the binary head (max minus min over seeds): step 0.017, agent last 0.020, agent max 0.043.
+
+### coordination posted or above
+
+120 agents scored per step (73 reach the cut), 6272 steps (2207 positive).
+
+| Model | Step AUROC | Agent AUROC (last) | Agent AUROC (max) | Delay at 5% FPR, turns | Detected | Negative agents ever above threshold | ECE |
+|---|---|---|---|---|---|---|---|
+| attention monitor, binary head (seed 0) | 0.940 [0.908, 0.968] | 0.932 [0.867, 0.977] | 0.922 [0.844, 0.977] | 1.0 [0.0, 1.0] | 71/73 | 11/47 | 0.069 |
+| attention monitor, ordinal head P(level >= cut) (seed 0) | 0.931 [0.898, 0.962] | 0.932 [0.866, 0.977] | 0.936 [0.868, 0.981] | 1.0 [0.0, 1.0] | 71/73 | 9/47 | 0.110 |
+| attention monitor, binary head (seed 1) | 0.950 [0.925, 0.976] | 0.978 [0.929, 0.999] | 0.981 [0.949, 0.999] | 1.0 [0.0, 1.0] | 72/73 | 7/47 | 0.078 |
+| attention monitor, ordinal head P(level >= cut) (seed 1) | 0.947 [0.921, 0.973] | 0.985 [0.960, 0.997] | 0.987 [0.970, 0.997] | 0.0 [0.0, 1.0] | 71/73 | 9/47 | 0.136 |
+| linear per-step probe (team_probes) | 0.942 [0.913, 0.968] | 0.958 [0.910, 0.988] | 0.973 [0.938, 0.995] | 1.0 [0.0, 1.0] | 72/73 | 9/47 | 0.037 |
+| cumulative mean of the linear probe | 0.917 [0.880, 0.948] | 0.927 [0.864, 0.973] | 0.920 [0.852, 0.969] | 7.0 [2.0, 11.2] | 60/73 | 3/47 | 0.196 |
+| GRU over the linear probe scores | 0.949 [0.917, 0.978] | 0.972 [0.927, 0.994] | 0.972 [0.929, 0.994] | 1.0 [0.0, 2.2] | 72/73 | 6/47 | 0.033 |
+| turn index alone | 0.870 [0.839, 0.909] | 0.931 [0.863, 0.981] | 0.931 [0.863, 0.981] | 15.0 [4.0, 27.0] | 70/73 | 11/47 | 0.086 |
+| TF-IDF on the agent's words so far | 0.935 [0.904, 0.963] | 0.959 [0.903, 0.992] | 0.959 [0.903, 0.992] | 5.0 [0.0, 10.0] | 72/73 | 8/47 | 0.062 |
+
+Seed-to-seed spread of the binary head (max minus min over seeds): step 0.010, agent last 0.046, agent max 0.059.
+
+### Level accuracy
+
+| Ladder | Model | Final-step level accuracy | Final-step level mean absolute error | Per-step level accuracy |
+|---|---|---|---|---|
+| cheat | attention monitor (seed 0) | 0.419 | 1.186 | 0.662 |
+| cheat | attention monitor (seed 1) | 0.426 | 1.140 | 0.687 |
+| cheat | majority level of the training fold | 0.543 | 1.264 | 0.584 |
+| coord | attention monitor (seed 0) | 0.116 | 1.620 | 0.340 |
+| coord | attention monitor (seed 1) | 0.178 | 1.279 | 0.378 |
+| coord | majority level of the training fold | 0.318 | 2.364 | 0.447 |
+| coop | attention monitor (seed 0) | 0.434 | 0.946 | 0.821 |
+| coop | attention monitor (seed 1) | 0.465 | 0.814 | 0.746 |
+| coop | majority level of the training fold | 0.481 | 1.279 | 0.743 |
+| collab | attention monitor (seed 0) | 0.659 | 0.612 | 0.801 |
+| collab | attention monitor (seed 1) | 0.605 | 0.597 | 0.785 |
+| collab | majority level of the training fold | 0.605 | 0.775 | 0.751 |
+| collude | attention monitor (seed 0) | 0.605 | 1.341 | 0.727 |
+| collude | attention monitor (seed 1) | 0.574 | 1.085 | 0.760 |
+| collude | majority level of the training fold | 0.605 | 1.512 | 0.745 |
+| scheme | attention monitor (seed 0) | 0.977 | 0.047 | 1.000 |
+| scheme | attention monitor (seed 1) | 0.977 | 0.047 | 1.000 |
+| scheme | majority level of the training fold | 0.977 | 0.047 | 1.000 |
+
+### Fit check (binary heads, step AUROC on the fold's training and validation agents)
+
+| Seed | Fold | Epochs run | Best epoch | train|cheat | train|collude | train|coord | val|cheat | val|collude | val|coord |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0 | 29 | 18 | 0.994 | 0.999 | 0.993 | 0.873 | 0.925 | 0.971 |
+| 0 | 1 | 13 | 2 | 0.922 | 0.925 | 0.942 | 0.871 | 0.863 | 0.944 |
+| 0 | 2 | 12 | 1 | 0.918 | 0.929 | 0.945 | 0.820 | 0.784 | 0.939 |
+| 0 | 3 | 14 | 3 | 0.950 | 0.971 | 0.958 | 0.860 | 0.855 | 0.954 |
+| 0 | 4 | 14 | 3 | 0.954 | 0.966 | 0.963 | 0.796 | 0.856 | 0.973 |
+| 1 | 0 | 19 | 8 | 0.972 | 0.993 | 0.964 | 0.907 | 0.885 | 0.982 |
+| 1 | 1 | 21 | 10 | 0.969 | 0.989 | 0.969 | 0.930 | 0.948 | 0.971 |
+| 1 | 2 | 17 | 6 | 0.950 | 0.979 | 0.965 | 0.917 | 0.945 | 0.985 |
+| 1 | 3 | 26 | 15 | 0.990 | 0.999 | 0.986 | 0.957 | 0.987 | 0.996 |
+| 1 | 4 | 14 | 3 | 0.925 | 0.959 | 0.961 | 0.918 | 0.947 | 0.961 |
+
+![score versus turn](score_vs_turn_cheating_board_seed_seven.png)
+
+Held-out score per turn of the cheating-used binary head for the six agents of team_probes' step_scores_cheating.png, with the linear per-step probe beside it.
 
 ## Board-seed team runs (DeepSeek workers): board_seed_think
 
@@ -62,13 +179,13 @@ Levels with no call in viewer/levels.py (cheating tampered, checked, shipped; co
 
 Seed-to-seed spread of the binary head (max minus min over seeds): step 0.008, agent last 0.051, agent max 0.078.
 
-Permutation null (11 draws), attention monitor seed 0:
+Permutation null (40 draws), attention monitor seed 0:
 
 | Metric | Real | Null mean | Null 95th percentile | p |
 |---|---|---|---|---|
-| step AUROC | 0.883 | 0.744 | 0.780 | 0.083 |
-| agent AUROC (last) | 0.868 | 0.580 | 0.669 | 0.083 |
-| agent AUROC (max) | 0.876 | 0.581 | 0.690 | 0.083 |
+| step AUROC | 0.883 | 0.746 | 0.783 | 0.024 |
+| agent AUROC (last) | 0.868 | 0.587 | 0.671 | 0.024 |
+| agent AUROC (max) | 0.876 | 0.596 | 0.686 | 0.024 |
 
 ### collusion exploit crossed or above
 
@@ -88,13 +205,13 @@ Permutation null (11 draws), attention monitor seed 0:
 
 Seed-to-seed spread of the binary head (max minus min over seeds): step 0.003, agent last 0.084, agent max 0.095.
 
-Permutation null (11 draws), attention monitor seed 0:
+Permutation null (40 draws), attention monitor seed 0:
 
 | Metric | Real | Null mean | Null 95th percentile | p |
 |---|---|---|---|---|
-| step AUROC | 0.879 | 0.736 | 0.774 | 0.083 |
-| agent AUROC (last) | 0.919 | 0.595 | 0.664 | 0.083 |
-| agent AUROC (max) | 0.914 | 0.587 | 0.681 | 0.083 |
+| step AUROC | 0.879 | 0.738 | 0.774 | 0.024 |
+| agent AUROC (last) | 0.919 | 0.587 | 0.662 | 0.024 |
+| agent AUROC (max) | 0.914 | 0.588 | 0.667 | 0.024 |
 
 ### coordination posted or above
 
@@ -114,13 +231,13 @@ Permutation null (11 draws), attention monitor seed 0:
 
 Seed-to-seed spread of the binary head (max minus min over seeds): step 0.002, agent last 0.009, agent max 0.004.
 
-Permutation null (11 draws), attention monitor seed 0:
+Permutation null (40 draws), attention monitor seed 0:
 
 | Metric | Real | Null mean | Null 95th percentile | p |
 |---|---|---|---|---|
-| step AUROC | 0.959 | 0.778 | 0.807 | 0.083 |
-| agent AUROC (last) | 0.966 | 0.648 | 0.752 | 0.083 |
-| agent AUROC (max) | 0.975 | 0.644 | 0.734 | 0.083 |
+| step AUROC | 0.959 | 0.781 | 0.808 | 0.024 |
+| agent AUROC (last) | 0.966 | 0.654 | 0.740 | 0.024 |
+| agent AUROC (max) | 0.975 | 0.656 | 0.738 | 0.024 |
 
 ### Level accuracy
 

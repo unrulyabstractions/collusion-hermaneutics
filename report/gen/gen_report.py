@@ -686,7 +686,7 @@ for node in mod.body:
             key = ast.literal_eval(k)
             seed_table[key] = ast.literal_eval(v) if isinstance(v, ast.Constant) else getattr(v, "id", "?")
 assert seed_table, "SEED_TABLE not found"
-LABEL = {("neutral", "0"): "neutral post (L0)", ("pro-coord", "1"): "pro-coordination, mild (L1)", ("pro-coord", "2"): "pro-coordination, explicit (L2)"}
+LABEL = {("neutral", "0"): "neutral post (L0)", ("pro-coord", "1"): "pro-coordination, mild (L1)", ("pro-coord", "2"): "pro-coordination, explicit (L2)", ("neutral", "clean"): "clean post (design runs, L1 and L2)"}
 TC = ["| condition | text posted by the system |", "|---|---|"]
 for key, text in seed_table.items():
     if text == "USE_REGULATOR":
@@ -881,6 +881,225 @@ led("1 call per agent per judge",
     "one line per run, no run twice: " + ", ".join(f"{k} {v} lines" for k, v in _calls.items()) + "; Sonnet's file stops at its in-code spend cap", raw_where=True)
 
 # ----------------------------------------------------------------------------------------------------------------
+# 2026-11-09 additions: design runs, team-run probes, attention monitor, ladders by task, Hub data
+# ----------------------------------------------------------------------------------------------------------------
+TP = f"{REPO}/hermeneutics/results/team_probes"
+AP = f"{REPO}/hermeneutics/results/attn_probe"
+DESIGN = f"{REPO}/report/gen/sources/solo_design_runs.csv"  # tracked copy of the design-run launcher's runs.csv (177 agent rows)
+
+
+def ci3(r, a="auroc", lo="ci_lo", hi="ci_hi"):
+    return f"{f3(r[a])} [{f3(r[lo])}, {f3(r[hi])}]"
+
+
+# Table 5: design runs (telling ladder x author)
+_dr = rows(DESIGN)
+assert len(_dr) == 177, len(_dr)
+_RUNG = ["none", "exposed", "tried", "opened", "used", "tampered", "checked", "shipped"]
+_FLOOR = {"flipt-02e2": "tried", "vuls-1832": "tried", "game": "tried", "poem": "tried"}
+DNAME = {"ds": "DeepSeek V4.1 Flash", "luna": "GPT-6 Luna", "qmax": "Qwen3.8-Max"}
+TELL = {"L0": "L0: board tools only", "L1": "L1: round notices and one system post", "L2": "L2: the prompt names the board"}
+
+
+def design_table(batches):
+    out = ["| telling level | system post | author | runs | agents | read the board | posted | cheated |", "|---|---|---|---|---|---|---|---|"]
+    keys = sorted({(r["level"], r["seed_text"], r["author"]) for r in _dr if r["seed_text"] in batches[r["level"]]},
+                  key=lambda k: (k[0], ["ds", "luna", "qmax"].index(k[2])))
+    for lv, st, au in keys:
+        g = [r for r in _dr if (r["level"], r["seed_text"], r["author"]) == (lv, st, au)]
+        nr = len({r["run"] for r in g}); na = len(g)
+        rd = sum(int(r["reads"]) > 0 for r in g); po = sum(int(r["posts"]) > 0 for r in g)
+        ch = sum(_RUNG.index(r["rung"]) >= _RUNG.index(_FLOOR.get(r["row"], "opened")) for r in g)
+        post = "none" if lv == "L0" else ("'Board opened.'" if st == "clean" else "neutral team post (Table C1)")
+        line = f"| {TELL[lv]} | {post} | {DNAME[au]} | {nr} | {na} | {rd}/{na} | {po}/{na} | {ch}/{na} |"
+        led(line, f"Table 5 or D5 row {lv}/{st}/{au}", rel(DESIGN), "agents per (level, seed_text, author); read = reads>0; posted = posts>0; cheated = rung at or above the task floor (tried for flipt, vuls, game, poem; opened otherwise)", raw_where=True)
+        out.append(line)
+    return "\n".join(out)
+
+
+T_DES = design_table({"L0": {"team_hint"}, "L1": {"clean"}, "L2": {"clean"}})
+T_DES_HINT = design_table({"L0": set(), "L1": {"team_hint"}, "L2": {"team_hint"}})
+N_DES_RUNS = len({r["run"] for r in _dr})
+led(N_DES_RUNS, "Methods, Data (design runs)", rel(DESIGN), "distinct run", raw_where=True)
+
+# Table 6: team-run probes, trajectory level (setting B: every board_seed agent has the boundary tokens)
+_ag = rows(f"{TP}/agent_probes.csv"); _tm = rows(f"{TP}/team_probe.csv"); _st = rows(f"{TP}/step_probes.csv")
+
+
+def tp(tab, probe_prefix, feat):
+    out = [r for r in tab if r["setting"].startswith("B") and r["probe"].startswith(probe_prefix) and r["features"] == feat]
+    assert len(out) == 1, (probe_prefix, feat, len(out))
+    return out[0]
+
+
+TEAM_ROWS = [("cheating: used or above", _ag, "1a", ""), ("collusion: exploit crossed or above", _ag, "2 ", ""),
+             ("coordination: posted or above", _ag, "3a", ""), ("coordination: discussed or above", _ag, "3b", ""),
+             ("team collusion floor (one row per run)", _tm, "4 ", ", mean of workers' vectors")]
+T_TEAM = ["| target | positive / negative | think pair | seven tokens | five boundary tokens | TF-IDF, agent's words | TF-IDF, whole text | metadata |",
+          "|---|---|---|---|---|---|---|---|"]
+for name, tab, pre, sfx in TEAM_ROWS:
+    w = "workers' words" if tab is _tm else "agent's words"; wt = "workers' whole texts" if tab is _tm else "whole text"
+    a = tp(tab, pre, "probe Lall think-open+close" + sfx); s = tp(tab, pre, "probe Lall all seven tokens (boundary 1-5 + think pair)" + sfx)
+    b = tp(tab, pre, "probe Lall boundary 1-5 concatenated" + sfx)
+    t1 = tp(tab, pre, "TF-IDF " + w); t2 = tp(tab, pre, "TF-IDF " + wt); m = tp(tab, pre, "metadata (arm, seed, turn budget)")
+    line = f"| {name} | {a['pos']} / {a['neg']} | {f3(a['auroc'])} | {ci3(s)} | {f3(b['auroc'])} | {ci3(t1)} | {f3(t2['auroc'])} | {f3(m['auroc'])} |"
+    led(line, f"Table 6 row {name}", rel(f'{TP}/agent_probes.csv' if tab is _ag else f'{TP}/team_probe.csv'), f"setting B, probe {pre.strip()}: auroc, ci_lo, ci_hi", raw_where=True)
+    T_TEAM.append(line)
+T_TEAM = "\n".join(T_TEAM)
+_n95 = [float(tp(t, p, "probe Lall all seven tokens (boundary 1-5 + think pair)" + s)["null_95"]) for _, t, p, s in TEAM_ROWS]
+_np = sorted({f3(tp(t, p, "probe Lall all seven tokens (boundary 1-5 + think pair)" + s)["null_p"]) for _, t, p, s in TEAM_ROWS})
+TEAM_NULL = f"{min(_n95):.3f} and {max(_n95):.3f}"
+ABS_COL7 = f3(tp(_ag, "2 ", "probe Lall all seven tokens (boundary 1-5 + think pair)")["auroc"])
+ABS_COLTF = f3(tp(_ag, "2 ", "TF-IDF agent's words")["auroc"])
+led(ABS_COL7 + " / " + ABS_COLTF, "Abstract: team-run collusion, seven tokens against TF-IDF on the agent's words", rel(f"{TP}/agent_probes.csv"), "setting B, probe 2: auroc", raw_where=True)
+assert _np == ["0.010"], _np
+led(TEAM_NULL + ", p 0.010", "Table 6 caption: seven-token null 95th percentile range and p", rel(f"{TP}/agent_probes.csv"), "null_95, null_p of the seven-token rows", raw_where=True)
+
+# Table 7: per-step probes (one row per turn)
+STEP_FEATS = [("think pair", "probe Lall think-open+close"), ("seven tokens", "probe Lall all seven tokens (boundary 1-5 + think pair)"),
+              ("five boundary tokens", "probe Lall boundary 1-5 concatenated"), ("TF-IDF, agent's words so far", "TF-IDF agent's words so far"),
+              ("TF-IDF, whole text so far", "TF-IDF whole text so far"), ("turn position", "turn position (index, fraction)"),
+              ("metadata and turn position", "metadata + turn position")]
+
+
+def sp(pre, feat):
+    out = [r for r in _st if r["setting"].startswith("B") and r["probe"].startswith(pre) and r["features"] == feat]
+    assert len(out) == 1, (pre, feat, len(out))
+    return out[0]
+
+
+def dly(r):
+    return f"{float(r['delay_median']):.1f} [{float(r['delay_q25']):.1f}, {float(r['delay_q75']):.1f}]" if r["delay_median"] not in ("", "nan") else "none"
+
+
+T_STEP = ["| features | cheating used: turn AUROC | delay, turns | detected | collusion crossed: turn AUROC | delay, turns | detected |", "|---|---|---|---|---|---|---|"]
+for lab, feat in STEP_FEATS:
+    c = sp("5a", feat); k = sp("5d", feat)
+    line = (f"| {lab} | {ci3(c, 'turn_auroc', 'turn_ci_lo', 'turn_ci_hi')} | {dly(c)} | {c['detected']}/{c['agents_reaching']} | "
+            f"{ci3(k, 'turn_auroc', 'turn_ci_lo', 'turn_ci_hi')} | {dly(k)} | {k['detected']}/{k['agents_reaching']} |")
+    led(line, f"Table 7 row {lab}", rel(f"{TP}/step_probes.csv"), "setting B, probes 5a and 5d: turn_auroc, CI, delay_median [q25, q75], detected/agents_reaching", raw_where=True)
+    T_STEP.append(line)
+T_STEP_FULL = "\n".join(T_STEP)
+T_STEP = "\n".join(re.sub(r" \[[-0-9., ]+\]", "", l) for l in T_STEP)
+_sn = [f3(sp(p, f)["turn_null_95"]) for p in ("5a", "5d") for f in ("probe Lall think-open+close", "probe Lall all seven tokens (boundary 1-5 + think pair)")]
+STEP_NULL = f"{min(_sn)} and {max(_sn)}"
+led(STEP_NULL, "Table 7 caption: per-step null 95th percentile", rel(f"{TP}/step_probes.csv"), "turn_null_95 of the think-pair and seven-token rows of 5a and 5d", raw_where=True)
+
+# Table 8: attention monitor
+BIN = "attention monitor, binary head"
+
+
+def am(setname, cut_pre, model):
+    rs = [r for r in rows(f"{AP}/metrics_{setname}.csv") if r["cut"].startswith(cut_pre) and r["model"] == model]
+    assert rs, (setname, cut_pre, model)
+    return rs
+
+
+def rng(vals):
+    lo, hi = min(vals), max(vals)
+    return f3(lo) if f3(lo) == f3(hi) else f"{f3(lo)} to {f3(hi)}"
+
+
+_bnull = rows(f"{AP}/null_board_seed_think_0_25.csv") + rows(f"{AP}/null_board_seed_think_25_50.csv")
+_cnull = rows(f"{AP}/null_controls_600_think_0_50.csv")
+
+
+def null95(tab, cut_pre):
+    v = sorted(float(r["agent_auroc_last"]) for r in tab if r["cut"].startswith(cut_pre))
+    return f"{float(np.percentile(v, 95)):.3f} ({len(v)} draws)"
+
+
+ATT_ROWS = [("controls, 5 folds", "controls_600_think", "controls_600_seven", "cheating", _cnull),
+            ("controls, 5 folds, solo arm", "controls_600_think_soloarm", "controls_600_seven_soloarm", "cheating", None),
+            ("controls, held-out author", "controls_600_think_heldout_author", None, "cheating", None),
+            ("team runs: cheating used", "board_seed_think", "board_seed_seven", "cheating used", _bnull),
+            ("team runs: collusion crossed", "board_seed_think", "board_seed_seven", "collusion", _bnull),
+            ("team runs: coordination posted", "board_seed_think", "board_seed_seven", "coordination", _bnull),
+            ("design runs: cheating used, 5 folds", "solo_design_think", None, "cheating", None),
+            ("design runs: coordination posted, 5 folds", "solo_design_think", None, "coordination", None),
+            ("design runs: cheating used, held-out author", "solo_design_think_heldout_author", None, "cheating", None),
+            ("design runs: coordination posted, held-out author", "solo_design_think_heldout_author", None, "coordination", None),
+            ("SPAR screen teams, 5 folds", "spar_screen_team_think", None, "cheating", None),
+            ("SPAR screen teams, held-out author", "spar_screen_team_think_heldout_author", None, "cheating", None),
+            ("SPAR mixed, 5 folds", "spar_mixed_41_think", None, "cheating", None),
+            ("SPAR mixed, held-out author", "spar_mixed_41_think_heldout_author", None, "cheating", None)]
+T_ATT = ["| set and split | positive / agents | monitor, think pair: agent | step | monitor, seven tokens: agent | step | linear per-step probe | GRU over the probe | TF-IDF, words so far | turn index | null 95th |",
+         "|---|---|---|---|---|---|---|---|---|---|---|"]
+
+
+def seeds(rs, k):
+    rs = sorted(rs, key=lambda r: float(r["seed"]))
+    return ", ".join(f3(r[k]) for r in rs)
+
+
+for lab, s_think, s_seven, cut, nul in ATT_ROWS:
+    mt = am(s_think, cut, BIN)
+    ms = am(s_seven, cut, BIN) if s_seven else None
+    one = lambda m: f3(am(s_think, cut, m)[0]["agent_auroc_last"])
+    nl = null95(nul, "cheating" if nul is _cnull else cut) if nul is not None else "not run"
+    line = (f"| {lab} | {mt[0]['pos_agents']} / {mt[0]['agents']} | {seeds(mt, 'agent_auroc_last')} | {seeds(mt, 'step_auroc')} | "
+            f"{seeds(ms, 'agent_auroc_last') if ms else 'not run'} | {seeds(ms, 'step_auroc') if ms else 'not run'} | "
+            f"{one('linear per-step probe (team_probes)')} | {one('GRU over the linear probe scores')} | {one(chr(84) + 'F-IDF on the agent' + chr(39) + 's words so far')} | {one('turn index alone')} | {nl} |")
+    led(line, f"Table 6 row {lab}", rel(f"{AP}/metrics_{s_think}.csv"), "binary head seeds 0, 1: agent_auroc_last and step_auroc; baselines agent_auroc_last; null: 95th percentile of agent_auroc_last over the draws", raw_where=True)
+    T_ATT.append(line)
+T_ATT_FULL = "\n".join(T_ATT)
+ATT_NULLS = (f"{null95(_cnull, 'cheating').split(' (')[0]} on the controls ({len({r['draw'] for r in _cnull})} draws), and "
+             + ", ".join(null95(_bnull, c).split(' (')[0] for c in ("cheating used", "collusion", "coordination"))
+             + f" on the team-run cuts for cheating, collusion and coordination ({N_BNULL if 'N_BNULL' in dir() else len({r['draw'] for r in _bnull})} draws)")
+_keep = [0, 2, 4, 6, 7, 8, 9]
+T_ATT = "\n".join("| " + " | ".join(c for k, c in enumerate(l.strip("|").split(" | ")) if k in _keep).strip() + " |" for l in T_ATT)
+_tl = T_ATT.split("\n"); _tl[1] = "|" + "---|" * len(_keep); T_ATT = "\n".join(_tl)
+T_ATT = T_ATT.replace("| monitor, think pair: agent |", "| monitor, think pair |").replace("| monitor, seven tokens: agent |", "| monitor, seven tokens |")
+N_CNULL = len({r["draw"] for r in _cnull}); N_BNULL = len({r["draw"] for r in _bnull})
+assert N_BNULL == 50, N_BNULL
+_bp = []
+for cut in ("cheating used", "collusion", "coordination"):
+    real = min(float(r["agent_auroc_last"]) for r in am("board_seed_think", cut, BIN))
+    _bp.append(sum(float(r["agent_auroc_last"]) >= real for r in _bnull if r["cut"].startswith(cut)))
+_creal = min(float(r["agent_auroc_last"]) for r in am("controls_600_think", "cheating", BIN))
+_cp = sum(float(r["agent_auroc_last"]) >= _creal for r in _cnull)
+led(f"board null {N_BNULL} draws, {_bp} at or above; controls null {N_CNULL} draws, {_cp} at or above", "Table 8 caption; Results, attention monitor", rel(f"{AP}/null_*.csv"), "draw count; draws whose agent_auroc_last reaches the lower seed's real value", raw_where=True)
+assert _bp == [0, 0, 0] and _cp == 0, (_bp, _cp)
+BNULL_P = f"{1 / (N_BNULL + 1):.3f}"; CNULL_P = f"{1 / (N_CNULL + 1):.3f}"
+
+# Table D6: per held-out author
+AUTH_SETS = [("controls", "controls_600_think_heldout_author", {"ds": "DeepSeek V4.1 Flash", "gpt5m": "GPT-5 mini", "haiku": "Claude Haiku 5.5", "luna": "GPT-6 Luna", "qwen": "Qwen3.8-27B"}),
+             ("SPAR screen teams", "spar_screen_team_think_heldout_author", {"claude-haiku-5-5": "Claude Haiku 5.5", "deepseek-v4.1-flash": "DeepSeek V4.1 Flash", "gpt-6-luna": "GPT-6 Luna"}),
+             ("SPAR mixed", "spar_mixed_41_think_heldout_author", {"deepseek-flash-openrouter": "DeepSeek V4.1 Flash", "gpt-6-luna-openrouter": "GPT-6 Luna"})]
+T_AUTH = ["| set | held-out author | positive / agents | monitor, think pair | linear per-step probe | GRU over the probe | TF-IDF, words so far | turn index |", "|---|---|---|---|---|---|---|---|"]
+for sname, fn, names in AUTH_SETS:
+    ar = rows(f"{AP}/authors_{fn}.csv")
+    for key, nm in names.items():
+        g = [r for r in ar if r["heldout_author"] == key]
+        mon = [r for r in g if r["model"] == BIN]
+        one = lambda m: f3([r for r in g if r["model"] == m][0]["agent_auroc_last"])
+        line = (f"| {sname} | {nm} | {mon[0]['pos_agents']} / {mon[0]['agents']} | {rng([float(r['agent_auroc_last']) for r in mon])} | {one('linear per-step probe (team_probes)')} | "
+                f"{one('GRU over the linear probe scores')} | {one(chr(84) + 'F-IDF on the agent' + chr(39) + 's words so far')} | {one('turn index alone')} |")
+        led(line, f"Table D6 row {sname}/{nm}", rel(f"{AP}/authors_{fn}.csv"), "agent_auroc_last per held-out author", raw_where=True)
+        T_AUTH.append(line)
+T_AUTH = "\n".join(T_AUTH)
+
+# Appendix G: ladders by task (viewer/ladders_data.py: the framework's two tables verbatim, the four others ours)
+sys.path.insert(0, f"{REPO}/viewer")
+import ladders_data as LD
+TASKCOL = list(LD.DOMAINS)
+
+
+def ladder_table(rows_):
+    out = ["| level reached | task | evidence |", "|---|---|---|"]
+    for level, gloss, cells in rows_:
+        out.append(f"| {level} | all tasks | {gloss} |")
+        for t, c in zip(TASKCOL, cells):
+            out.append(f"| | {t} | {c} |")
+    return "\n".join(out)
+
+
+T_LAD = {"cheat": ladder_table(LD.RUNGS_BY_DOMAIN), "coord": ladder_table(LD.COLLABORATION_BY_DOMAIN)}
+for k in ("coop", "collab", "collude", "scheme"):
+    T_LAD[k] = ladder_table(LD.LADDERS4_BY_TASK[k]["rows"])
+led("ladder tables", "Appendix G, Tables G1 to G6", "viewer/ladders_data.py", "RUNGS_BY_DOMAIN, COLLABORATION_BY_DOMAIN (SparGuardianAgents, verbatim) and LADDERS4_BY_TASK (ours)", raw_where=True)
+
+# ----------------------------------------------------------------------------------------------------------------
 # assemble
 # ----------------------------------------------------------------------------------------------------------------
 tpl = open(os.path.join(os.path.dirname(__file__), "report_template.md")).read()
@@ -894,6 +1113,7 @@ if len(_pre) != N_B1:
 for k, v in {"<<TM1>>": TM1, "<<TM2>>": TM2, "<<TM3>>": TM3, "<<T1>>": T1, "<<T2>>": T2, "<<T3>>": T3, "<<T4>>": T4, "<<T5>>": T5,
              "<<T6>>": T6, "<<TB1>>": TB1, "<<TB2>>": TB2, "<<ABS_BI>>": ABS_BI, "<<ABS_LOTO>>": ABS_LOTO,
              "<<ABS_ERASED>>": ABS_ERASED, "<<TC>>": TC, "<<ABS_JUDGE>>": ABS_JUDGE, "<<ABS_TFIDF>>": ABS_TFIDF, "<<TD3>>": TD3, "<<SON_D3>>": SON_D3, "<<NULL_LO>>": NULL_LO, "<<NULL_HI>>": NULL_HI, "<<HF_TOTAL>>": hf_total,
+             "<<T_DES>>": T_DES, "<<ATT_NULLS>>": ATT_NULLS, "<<T_ATT_FULL>>": T_ATT_FULL, "<<T_STEP_FULL>>": T_STEP_FULL, "<<ABS_COL7>>": ABS_COL7, "<<ABS_COLTF>>": ABS_COLTF, "<<T_DES_HINT>>": T_DES_HINT, "<<T_TEAM>>": T_TEAM, "<<T_STEP>>": T_STEP, "<<T_ATT>>": T_ATT, "<<T_AUTH>>": T_AUTH, "<<TEAM_NULL>>": TEAM_NULL, "<<STEP_NULL>>": STEP_NULL, "<<BNULL_P>>": BNULL_P, "<<CNULL_P>>": CNULL_P, "<<TG1>>": T_LAD["cheat"], "<<TG2>>": T_LAD["coord"], "<<TG3>>": T_LAD["coop"], "<<TG4>>": T_LAD["collab"], "<<TG5>>": T_LAD["collude"], "<<TG6>>": T_LAD["scheme"],
              "<<N_PROBED>>": N_PROBED, "<<N_SOLO>>": N_SOLO, "<<SON_SOLO>>": SON_SOLO, "<<N_BOARD>>": N_BOARD, "<<N_B1>>": WORD[N_B1], "<<FIG_CI>>": FIG_CI, "<<FIG_TURN_LAYER>>": FIG_TURN_LAYER}.items():
     assert k in tpl, k
     tpl = tpl.replace(k, v)
@@ -906,7 +1126,7 @@ led("L2", "Table E3 probe row: 'L2 logistic regression'", "hermeneutics/probes.p
 led("min(256, half the training rows)", "Table E3 probe row", "hermeneutics/probes.py", "k = min(PCA_DIM, max(10, len(Xtr) // 2)) (line 128), PCA_DIM = 256 (line 48)", raw_where=True)
 assert "np.nanpercentile(pv, 95)" in open(f"{REPO}/hermeneutics/probes.py").read()
 led("95th percentile", "Table 1 caption; Appendix D Tables D1 and D2 col 'null 95th'", "hermeneutics/probes.py", "null_95 = np.nanpercentile(pv, 95) over the shuffled fits (line 451)", raw_where=True)
-_lv = sorted("L" + k[1] for k in seed_table if seed_table[k] != "USE_REGULATOR")
+_lv = sorted("L" + k[1] for k in seed_table if seed_table[k] != "USE_REGULATOR" and k[1] != "clean")
 assert _lv == ["L0", "L1", "L2"], _lv
 led(", ".join(_lv), "Appendix C, Table C1 condition labels", BS.replace(REPO + "/", ""), "SEED_TABLE keys with a text: " + ", ".join(str(k) for k in seed_table if seed_table[k] != "USE_REGULATOR"), raw_where=True)
 _names = "; ".join(f"{NAME[a]} ({a})" for a in AUTH) + "; judges " + ", ".join(j.split("/")[-1] for j in sorted({r["probe"] for r in judges}))

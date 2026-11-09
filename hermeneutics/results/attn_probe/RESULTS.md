@@ -1,6 +1,6 @@
 # Attention monitor over the reader's think tokens
 
-Updated 2026-11-09 02:04 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
+Updated 2026-11-09 02:05 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
 
 ## Design
 
@@ -19,7 +19,7 @@ Updated 2026-11-09 02:04 PST. Every number below is read from the CSVs in this f
 
 Training is deterministic for a fixed seed and thread count (two runs gave identical scores). A different thread count changes the scores by about 2e-5 and can move the early-stopping epoch, so on the small sets a rerun of the same seed can differ: spar_mixed_41, seed 0, moved from step AUROC 0.815 to 0.750 between its first run and the rerun with corrected onsets (one agent's onset changed and the thread count went from 5 to 3). The two seeds therefore bound the spread only loosely on the small sets.
 
-Source step and activation turn: when a transcript has more agent steps than the activations have turns, the activations hold one turn per step that issued a tool call, and a step's turn is its rank among those steps; when neither count matches the activation turns, the agent's onsets are unknown and it leaves that cut's per-step and agent scoring (19 spar_screen_team, 1 spar_mixed_41 and 3 solo_design agents). board_seed and controls_600 have one turn per step.
+Source step and activation turn: when a transcript has more agent steps than the activations have turns, the activations hold one turn per step that issued a tool call, and a step's turn is its rank among those steps; when neither count matches the activation turns, the agent's onsets are unknown (19 spar_screen_team, 1 spar_mixed_41 and 3 solo_design agents); those that reach a cut leave that cut's scoring. board_seed and controls_600 have one turn per step.
 
 ## Labels
 
@@ -29,6 +29,8 @@ Source step and activation turn: when a transcript has more agent steps than the
 | collusion exploit crossed or above (board_seed) | level reached at that call >= exploit crossed | estimate (team_probes collude_onset_step proxy) |
 | coordination posted or above (board_seed) | level reached at that call >= posted | direct (first read, post, discussed or solicited call from the board events) |
 | cheating, the set's label (controls_600) | from the turn of the first tool call at or above the task's floor (tried for software engineering, chess and creative writing, opened otherwise) | direct (labels.csv onset_turn; equal to the step of onset_call for all 336 agents with an onset) |
+| cheating, the set's label (spar_mixed_41, spar_screen_team) | team_probes' joined label (transfer_other_sets_scores.csv, y: rung at or above the task's floor), positive from the turn of the floor rung's call | direct (the floor rung's call in the spar-swarm signals.jsonl, mapped to the activation turn) |
+| six ladders (solo_design; spar_mixed_41 with the ladders tag) | as board_seed, from team_probes' labels/<set>_agents.csv (viewer/levels.py) | as board_seed, source steps mapped to activation turns |
 
 Levels with no call in viewer/levels.py (cheating tampered, checked, shipped; coordination crossed and assembled without a joined call; cooperation received and used; collaboration; collusion assembled and shipped; scheming) enter only through the trajectory label at the final step. A positive per-step level of an inner ladder raises the outer ladder to its gate level at the same step when the agent's final outer level allows it (closure under nesting). Agents that reach a cut with no known onset are left out of that cut's per-step and agent-level scoring of that cut, as in team_probes (9 coordination agents on board_seed, all at coordination crossed with no post; the baselines leave out the same agents).
 
@@ -383,13 +385,13 @@ Seed-to-seed spread of the binary head (max minus min over seeds): step 0.001, a
 
 Seed-to-seed spread of the binary head (max minus min over seeds): step 0.001, agent last 0.003, agent max 0.002.
 
-Permutation null (42 draws), attention monitor seed 0:
+Permutation null (43 draws), attention monitor seed 0:
 
 | Metric | Real | Null mean | Null 95th percentile | p |
 |---|---|---|---|---|
 | step AUROC | 0.983 | 0.679 | 0.699 | 0.023 |
-| agent AUROC (last) | 0.985 | 0.506 | 0.553 | 0.023 |
-| agent AUROC (max) | 0.989 | 0.506 | 0.553 | 0.023 |
+| agent AUROC (last) | 0.985 | 0.507 | 0.553 | 0.023 |
+| agent AUROC (max) | 0.989 | 0.507 | 0.553 | 0.023 |
 
 ### Level accuracy
 

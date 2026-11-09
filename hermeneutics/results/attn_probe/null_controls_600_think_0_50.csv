@@ -41,3 +41,4 @@ draw,cut,step_auroc,agent_auroc_last,agent_auroc_max
 39,cheating (the set's label: from tried or opened by task),0.6790707050851774,0.49988419492310543,0.5040647581989994
 40,cheating (the set's label: from tried or opened by task),0.719410558448527,0.5600333518621456,0.5588058180470632
 41,cheating (the set's label: from tried or opened by task),0.6979139738168638,0.5223619603483417,0.5225704094867519
+42,cheating (the set's label: from tried or opened by task),0.6883791259144812,0.5479548823420419,0.52794376505466

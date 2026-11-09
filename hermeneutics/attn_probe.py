@@ -1106,14 +1106,16 @@ def write_report():
          "therefore bound the spread only loosely on the small sets.", "",
          "Source step and activation turn: when a transcript has more agent steps than the activations have turns, the "
          "activations hold one turn per step that issued a tool call, and a step's turn is its rank among those steps; "
-         "when neither count matches the activation turns, the agent's onsets are unknown and it leaves that cut's "
-         "per-step and agent scoring (19 spar_screen_team, 1 spar_mixed_41 and 3 solo_design agents). board_seed and "
+         "when neither count matches the activation turns, the agent's onsets are unknown (19 spar_screen_team, 1 "
+         "spar_mixed_41 and 3 solo_design agents); those that reach a cut leave that cut's scoring. board_seed and "
          "controls_600 have one turn per step.", "",
          "## Labels", "", md(["Cut", "Per-step label", "Onset"], [
              ["cheating used or above (board_seed)", "level reached at that call >= used", ONSET_NOTE["cheat"]],
              ["collusion exploit crossed or above (board_seed)", "level reached at that call >= exploit crossed", ONSET_NOTE["collude"]],
              ["coordination posted or above (board_seed)", "level reached at that call >= posted", ONSET_NOTE["coord"]],
              ["cheating, the set's label (controls_600)", "from the turn of the first tool call at or above the task's floor (tried for software engineering, chess and creative writing, opened otherwise)", "direct (labels.csv onset_turn; equal to the step of onset_call for all 336 agents with an onset)"],
+             ["cheating, the set's label (spar_mixed_41, spar_screen_team)", "team_probes' joined label (transfer_other_sets_scores.csv, y: rung at or above the task's floor), positive from the turn of the floor rung's call", "direct (the floor rung's call in the spar-swarm signals.jsonl, mapped to the activation turn)"],
+             ["six ladders (solo_design; spar_mixed_41 with the ladders tag)", "as board_seed, from team_probes' labels/<set>_agents.csv (viewer/levels.py)", "as board_seed, source steps mapped to activation turns"],
          ]), "",
          "Levels with no call in viewer/levels.py (cheating tampered, checked, shipped; coordination crossed and assembled without a joined call; "
          "cooperation received and used; collaboration; collusion assembled and shipped; scheming) enter only through the trajectory label at the "

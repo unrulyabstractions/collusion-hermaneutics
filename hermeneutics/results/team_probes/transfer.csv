@@ -1,0 +1,37 @@
+train,features,target,n,pos,neg,auroc,ci_lo,ci_hi,C
+controls solo,probe Lall think-open+close,"controls, cross-validated (reference)",373,193,180,0.9573978123200921,0.9347603422043599,0.9762910233828068,
+controls solo,probe Lall think-open+close,"team workers, cheating used or above",129,56,73,0.6213307240704501,0.5201930014430014,0.7142446344585851,0.1
+controls solo,probe Lall think-open+close,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.6456692913385826,0.39790666410601117,0.8810461192350956,0.1
+controls solo,probe Lall think-open+close,"team workers, cheating opened or above",129,126,3,0.5343915343915344,0.2698412698412698,0.8582677165354331,0.1
+controls solo,probe Lall think-open+close,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.5019601680941356,0.47166772171138555,0.5282548169801538,0.1
+controls solo,probe Lall think-open,"controls, cross-validated (reference)",373,193,180,0.9510938399539436,0.9289033375001962,0.9699967060929556,
+controls solo,probe Lall think-open,"team workers, cheating used or above",129,56,73,0.6259784735812133,0.5271553069242043,0.7132173710792131,0.1
+controls solo,probe Lall think-open,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.5354330708661418,0.3228346456692913,0.7480314960629921,0.1
+controls solo,probe Lall think-open,"team workers, cheating opened or above",129,126,3,0.4074074074074074,0.11811023622047244,0.7088321235236219,0.1
+controls solo,probe Lall think-open,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.5178368453033791,0.49131473243590595,0.5444114202129919,0.1
+controls solo,probe Lall think-close,"controls, cross-validated (reference)",373,193,180,0.9509211283822683,0.9286930098629441,0.9697651665676204,
+controls solo,probe Lall think-close,"team workers, cheating used or above",129,56,73,0.62206457925636,0.5079271445241962,0.732146164021164,0.1
+controls solo,probe Lall think-close,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.5236220472440944,0.1953125,0.8515625,0.1
+controls solo,probe Lall think-close,"team workers, cheating opened or above",129,126,3,0.5264550264550265,0.2283464566929134,0.828125,0.1
+controls solo,probe Lall think-close,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.5010514106324304,0.46736960956841395,0.5318833187298942,0.1
+controls solo,TF-IDF agent's words,"team workers, cheating used or above",129,56,73,0.7363013698630136,0.6476989426141968,0.8196723358608605,100.0
+controls solo,TF-IDF agent's words,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.8937007874015748,0.7887276785714286,0.96875,100.0
+controls solo,TF-IDF agent's words,"team workers, cheating opened or above",129,126,3,0.8677248677248677,0.7612057435090479,0.953125,100.0
+controls solo + cheat,probe Lall think-open+close,"controls, cross-validated (reference)",600,343,257,0.9554854737892934,0.9392705762701724,0.9694710684545029,
+controls solo + cheat,probe Lall think-open+close,"team workers, cheating used or above",129,56,73,0.6088551859099804,0.5131180373633935,0.6960025197852329,0.1
+controls solo + cheat,probe Lall think-open+close,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.3937007874015748,0.0625,0.7560962106299213,0.1
+controls solo + cheat,probe Lall think-open+close,"team workers, cheating opened or above",129,126,3,0.3333333333333333,0.078125,0.7265625,0.1
+controls solo + cheat,probe Lall think-open+close,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.4986949012075068,0.47331837563441803,0.5226433476456176,0.1
+controls solo + cheat,probe Lall think-open,"controls, cross-validated (reference)",600,343,257,0.9456614218783678,0.92559834837195,0.9616614084773586,
+controls solo + cheat,probe Lall think-open,"team workers, cheating used or above",129,56,73,0.4728473581213307,0.3891696566696567,0.5557979528276201,0.1
+controls solo + cheat,probe Lall think-open,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.39763779527559057,0.07874015748031496,0.7442031746031746,0.1
+controls solo + cheat,probe Lall think-open,"team workers, cheating opened or above",129,126,3,0.37566137566137564,0.1015625,0.7035402312992122,0.1
+controls solo + cheat,probe Lall think-open,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.46536976242968536,0.44388237908246214,0.48652016796808795,0.1
+controls solo + cheat,probe Lall think-close,"controls, cross-validated (reference)",600,343,257,0.9581626980975826,0.9428570733311015,0.9725731690554206,
+controls solo + cheat,probe Lall think-close,"team workers, cheating used or above",129,56,73,0.7093933463796478,0.5927313949412933,0.8028327916320451,0.01
+controls solo + cheat,probe Lall think-close,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.3858267716535433,0.1790415846456693,0.6171875,0.01
+controls solo + cheat,probe Lall think-close,"team workers, cheating opened or above",129,126,3,0.38095238095238093,0.20336495031616983,0.6001171874999999,0.01
+controls solo + cheat,probe Lall think-close,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.5442193529371009,0.5090672263893209,0.5757747622992179,0.01
+controls solo + cheat,TF-IDF agent's words,"team workers, cheating used or above",129,56,73,0.7032778864970646,0.6142415017415017,0.787898392060353,100.0
+controls solo + cheat,TF-IDF agent's words,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.9212598425196851,0.8649714285714286,0.96875,100.0
+controls solo + cheat,TF-IDF agent's words,"team workers, cheating opened or above",129,126,3,0.9206349206349206,0.8671875,0.9674993443482822,100.0

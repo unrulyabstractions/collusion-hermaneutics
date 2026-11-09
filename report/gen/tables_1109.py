@@ -79,13 +79,13 @@ def build(led, ctx):
             pr = ctx["controls_solo_pca"]
             probe, readout = f3(pr["auroc"]), "mean"
             assert (pr["cheat"], pr["no_cheat"]) == (pos, neg), (pr["cheat"], pr["no_cheat"], pos, neg)
-            led(probe, f"Table 3 row {st}/{cut} col linear probe", "hermeneutics/results/pca_agent/auroc.csv",
+            led(probe, f"Table 2 row {st}/{cut} col linear probe", "hermeneutics/results/pca_agent/auroc.csv",
                 "arm=solo,probe=pca,layer=all,position=both,pooling=agent,features=raw,scope=pooled -> auroc (the agents of the judges' solo cut)", raw_where=True)
         else:
             name, readout = PROBE[st]
             pr = jrow(st, cut, name)
             probe = f3(pr["auroc"])
-            led(probe, f"Table 3 row {st}/{cut} col linear probe", src_j, f"set={st},cut={cut},scorer={name} -> auroc", raw_where=True)
+            led(probe, f"Table 2 row {st}/{cut} col linear probe", src_j, f"set={st},cut={cut},scorer={name} -> auroc", raw_where=True)
         mon = jrow(st, cut, "attention monitor, last step")
         tf = jrow(st, cut, "TF-IDF agent's words") or jrow(st, cut, "TF-IDF agent's words so far, last step")
         js = [(float(jrow(st, cut, k)["auroc"]), lab) for k, lab in JUDGES]
@@ -93,7 +93,7 @@ def build(led, ctx):
         rd = jrow(st, cut, READER)
         cells = [probe, readout, f3(mon["auroc"]) if mon else "not run", f3(tf["auroc"]), f"{best[0]:.3f} ({SHORT[best[1]]})", f3(rd["auroc"])]
         for v, what in [(cells[2], "attention monitor"), (cells[3], "TF-IDF"), (cells[4], "best judge"), (cells[5], "reader interrogation")]:
-            led(v, f"Table 3 row {st}/{cut} col {what}", src_j, f"set={st},cut={cut} -> auroc; best judge = max over the three judges", raw_where=True)
+            led(v, f"Table 2 row {st}/{cut} col {what}", src_j, f"set={st},cut={cut} -> auroc; best judge = max over the three judges", raw_where=True)
         T.append(f"| {SETNAME[st]} | {CUTNAME[cut]} | {pos} / {neg} | " + " | ".join(cells) + " |")
         internals = max(float(probe), float(mon["auroc"]) if mon else 0.0)
         beats.append((st, cut, internals > float(tf["auroc"]), internals > best[0], internals > float(rd["auroc"])))
@@ -172,7 +172,7 @@ def build(led, ctx):
         m = _re.search(r"(\d+) agents scored per step \((\d+) reach the cut\)", sec)
         n_ag = m.group(2) + " / " + m.group(1)
         line = f"| {set_name} | {label} | {n_ag} | {a(lin)} | {a(m0)}, {a(m1)} | {a(tfr)} |"
-        led(line, f"Table 4 row {set_name}/{label}", f"{AP}@{P.TEAM} section {tag} > {cut_head}", "agent AUROC (last) of the linear per-step probe, the monitor seeds 0 and 1, and TF-IDF on the agent's words so far; counts from the section's 'agents scored per step' line", raw_where=True)
+        led(line, f"Table 3 row {set_name}/{label}", f"{AP}@{P.TEAM} section {tag} > {cut_head}", "agent AUROC (last) of the linear per-step probe, the monitor seeds 0 and 1, and TF-IDF on the agent's words so far; counts from the section's 'agents scored per step' line", raw_where=True)
         return line
 
     # controls: matrix B.II (author table) against the whole-text TF-IDF B.II (lexical table)
@@ -181,7 +181,7 @@ def build(led, ctx):
     ra = P.row(ta, Label="cheating", Scheme="alone: controls")
     rl = P.row(tl, Label="cheating", Scheme="alone: controls", **{"Probe type": "B.II"})
     line = f"| Controls | leave one author out, mean over five | {ra['Positive']} / {ra['Agents']} | {ra['B.II mean raw'].split(' [')[0]} | not run | {rl['Whole-text TF-IDF'].split(' [')[0]} |"
-    led(line, "Table 4 row Controls B.II", f"{CP}@{P.CN}", "author table 'alone: controls' B.II mean raw; lexical table B.II whole-text TF-IDF", raw_where=True)
+    led(line, "Table 3 row Controls B.II", f"{CP}@{P.CN}", "author table 'alone: controls' B.II mean raw; lexical table B.II whole-text TF-IDF", raw_where=True)
     U.append(line)
     U.append(attn_heldout("controls_600_think_heldout_author", "cheating (the set's label: from tried or opened by task)", "held-out author, pooled", "Controls"))
     U.append(attn_heldout("solo_design_think_heldout_author", "cheating used or above", "held-out author, pooled", "Design runs"))
@@ -195,24 +195,24 @@ def build(led, ctx):
         pr = P.row(tb, Features="think pair, layers 26+38+51")
         tf = P.row(tb, Features="TF-IDF agent's words (rendered text)")
         line = f"| {set_name} | held-out author, {tcol_note} | {pr['Positive']} / {pr['Rollouts']} | {pr[wcol].split(' [')[0]} | not run | {tf[wcol].split(' [')[0]} |"
-        led(line, f"Table 4 row {set_name} held-out author", f"{EP}@{P.EXT} > {head}", f"column {wcol}", raw_where=True)
+        led(line, f"Table 3 row {set_name} held-out author", f"{EP}@{P.EXT} > {head}", f"column {wcol}", raw_where=True)
         U.append(line)
     # transfer both ways (external_probes Question 3) and controls to the team workers (team_probes probe 6)
     tq = P.table(P.EXT, EP, "Trained on controls solo (373 agents, 193 cheat)", first_col="Target")
     r = P.row(tq, Target="Goodfire judge sets (verdict yes vs no)", Group="all")
     line = f"| Controls to Goodfire | train on the controls' solo arm, score Goodfire | {r['Positive']} / {r['Rows']} | {r['probe layers 26+38+51'].split(' [')[0]} | not run | {r['TF-IDF'].split(' [')[0]} |"
-    led(line, "Table 4 row transfer controls to Goodfire", f"{EP}@{P.EXT} > Question 3, trained on controls solo", "Goodfire judge sets, all", raw_where=True)
+    led(line, "Table 3 row transfer controls to Goodfire", f"{EP}@{P.EXT} > Question 3, trained on controls solo", "Goodfire judge sets, all", raw_where=True)
     U.append(line)
     tq = P.table(P.EXT, EP, "Trained on Goodfire judge sets (2833 rollouts, 2083 yes)", first_col="Target")
     r = P.row(tq, Target="controls solo", Group="all")
     line = f"| Goodfire to controls | train on Goodfire, score the controls' solo arm | {r['Positive']} / {r['Rows']} | {r['probe layers 26+38+51'].split(' [')[0]} | not run | {r['TF-IDF'].split(' [')[0]} |"
-    led(line, "Table 4 row transfer Goodfire to controls", f"{EP}@{P.EXT} > Question 3, trained on Goodfire", "controls solo, all", raw_where=True)
+    led(line, "Table 3 row transfer Goodfire to controls", f"{EP}@{P.EXT} > Question 3, trained on Goodfire", "controls solo, all", raw_where=True)
     U.append(line)
     tq = P.table(P.TEAM, TP, "Probe 6", first_col="Features", last="Trained on controls solo")
     pr = P.row(tq, Features="probe Lall think-open+close", **{"Scored on": "team workers, cheating used or above"})
     tf = P.row(tq, Features="TF-IDF agent's words", **{"Scored on": "team workers, cheating used or above"})
     line = f"| Controls to board-seed teams | train on the controls' solo arm, score the workers | {pr['Positive']} / {pr['Rows']} | {pr['AUROC [95% CI]'].split(' [')[0]} | not run | {tf['AUROC [95% CI]'].split(' [')[0]} |"
-    led(line, "Table 4 row transfer controls to board-seed workers", f"{TP}@{P.TEAM} > Probe 6 > Trained on controls solo", "team workers, cheating used or above", raw_where=True)
+    led(line, "Table 3 row transfer controls to board-seed workers", f"{TP}@{P.TEAM} > Probe 6 > Trained on controls solo", "team workers, cheating used or above", raw_where=True)
     U.append(line)
     out["<<T_UNSEEN>>"] = "\n".join(U)
 
@@ -259,7 +259,7 @@ def build(led, ctx):
         d = dict(zip(tp["header"], r))
         line = (f"| {LN[d['Label']]} | {SN[d['Set']]} | {d['Positive']} / {d['Agents']} | {d['Prompt-only AUROC [95% CI]'].split(' [')[0]} | "
                 f"{d['Null mean / 95th'].split(' / ')[1]} | {d['Task + arm identity']} | {d['Full probe (think pair)'].split(' [')[0]} | {d['TF-IDF rendered text']} | {d['Share of full margin']} |")
-        led(line, f"Table 7 row {d['Label']}/{d['Set']}", P.where(tp, r), "Prompt-only AUROC, null 95th, task+arm identity, full probe (think pair), TF-IDF, share", raw_where=True)
+        led(line, f"Table 6 row {d['Label']}/{d['Set']}", P.where(tp, r), "Prompt-only AUROC, null 95th, task+arm identity, full probe (think pair), TF-IDF, share", raw_where=True)
         PR.append(line)
     out["<<T_PROMPT>>"] = "\n".join(PR)
     shares = {(dict(zip(tp["header"], r))["Set"], dict(zip(tp["header"], r))["Label"]): float(dict(zip(tp["header"], r))["Share of full margin"]) for r in tp["rows"]}
@@ -288,7 +288,7 @@ def build(led, ctx):
         s0 = lambda k: d[k].split(" [")[0]
         line = (f"| {LN[d['Label']]} | {SCH[d['Scheme']]} | {d['Authors']} | {d['Positive']} / {d['Agents']} | {d['Author probe: raw']} | {d['Author: after author erasure']} ({d['Chance']}) | "
                 f"{s0('B.I raw')}, {s0('B.I author-erased')}, {s0('B.I author+task+condition-erased')} | {s0('B.II mean raw')}, {s0('B.II mean author-erased')}, {s0('B.II mean author+task+condition-erased')} |")
-        led(line, f"Table 8 row {d['Label']}/{d['Scheme']}", P.where(ta, r), "author probe and B.I / B.II columns", raw_where=True)
+        led(line, f"Table H4 row {d['Label']}/{d['Scheme']}", P.where(ta, r), "author probe and B.I / B.II columns", raw_where=True)
         AU.append(line)
     out["<<T_AUTHOR>>"] = "\n".join(AU)
     ctx["author_rows"] = {(dict(zip(ta["header"], r))["Label"], dict(zip(ta["header"], r))["Scheme"]): dict(zip(ta["header"], r)) for r in ta["rows"]}
@@ -424,14 +424,14 @@ def build(led, ctx):
             "cheatbench": ("external", "three agent harnesses", "human label"),
             "evilgenie": ("external", "matched hack and legitimate pairs", "dataset label")}
     SN = dict(SETNAME, spar_exploration_single="SPAR exploration", spar_screen_solo="SPAR screen solo")
-    TS = ["| set | made by | design | authors | agents | runs or source directories | labels |", "|---|---|---|---|---|---|---|"]
+    TS = ["| set | made by | design | agents | runs or source directories | labels | authors |", "|---|---|---|---|---|---|---|"]
     for k in ["controls_600", "board_seed", "solo_design", "spar_screen_team", "spar_mixed_41", "spar_exploration_single", "spar_screen_solo",
               "goodfire_reward_hack", "cheatbench", "evilgenie"]:
         d = P.row(td, Set=k)
         made, design, labels = INFO[k]
         n_auth = len(auth[KEY[k]])
-        line = f"| {SN[k]} | {made} | {design} | {n_auth} | {d['Agents on the Hub']} | {d['Runs on the Hub']} | {labels} |"
-        led(line, f"Table 1 row {k}", P.where(td, None) + "; authors: distinct units of controls_nulls/lexical_rows.csv@" + P.CN, "Agents on the Hub, Runs on the Hub; authors counted", raw_where=True)
+        line = f"| {SN[k]} | {made} | {design} | {d['Agents on the Hub']} | {d['Runs on the Hub']} | {labels} | {', '.join(sorted(auth[KEY[k]]))} |"
+        led(line, f"Table I4 row {k}", P.where(td, None) + "; authors: distinct units of controls_nulls/lexical_rows.csv@" + P.CN, "Agents on the Hub, Runs on the Hub; authors counted", raw_where=True)
         TS.append(line)
     out["<<T_SETS>>"] = "\n".join(TS)
     AN = ["| set | authors |", "|---|---|"]

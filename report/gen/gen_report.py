@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import subprocess
 import pinned
 import tables_1109
+import tables_matrix
 # The team-probe and attention-monitor CSVs are read from the working tree; they must equal the pinned commit
 # (195493d, gaps closed), or the report would mix results from two states.
 for _d in ("hermeneutics/results/team_probes", "hermeneutics/results/attn_probe"):
@@ -1031,6 +1032,7 @@ def null95(tab, cut_pre):
 
 CTX = {"controls_solo_pca": pick(pca, **base, features="raw", scope="pooled")}
 TABLES_1109 = tables_1109.build(led, CTX)
+TABLES_1109.update(tables_matrix.build(led, CTX))   # the probe matrix (d38598d)
 
 
 def _attn_null(run, cut):
@@ -1185,11 +1187,11 @@ for _sch in ("alone: solo_design", "alone: spar_team"):                         
 for _sch, _row in _ar.items():                                                     # "LEACE erases it to chance"
     assert abs(float(_row["Author: after author erasure"]) - float(_row["Chance"])) <= 0.02, _sch
 led("LEACE: author probe at chance after erasure on every scheme; B.I drop <= 0.05 on controls, Goodfire, SPAR mixed; >= 0.10 on design and SPAR screen, where the all-erased B.II keeps under half its margin",
-    "Results, prompt and author identity", f"hermeneutics/results/controls_nulls/RESULTS.md@{pinned.CN}", "Table 8 rows; assertions in gen_report.py", raw_where=True)
+    "Results, prompt and author identity", f"hermeneutics/results/controls_nulls/RESULTS.md@{pinned.CN}", "Table H4 rows; assertions in gen_report.py", raw_where=True)
 led("prompt-only shares: <= 0.25 on the sets called clean; >= 0.45 on the sets named as prompt-readable", "Results, prompt and author identity; Discussion; Conclusion",
-    f"hermeneutics/results/controls_nulls/RESULTS.md@{pinned.CN}", "Share of full margin, Table 7 rows; assertions in gen_report.py", raw_where=True)
+    f"hermeneutics/results/controls_nulls/RESULTS.md@{pinned.CN}", "Share of full margin, Table 6 rows; assertions in gen_report.py", raw_where=True)
 led("internals beat TF-IDF on 4 rows; beat the best judge outside SPAR mixed; beat the reader interrogation everywhere", "Results, text baselines; Discussion; Abstract",
-    f"hermeneutics/results/judges_all/auroc.csv@{pinned.JA}", "assertions over Table 3 rows in gen_report.py", raw_where=True)
+    f"hermeneutics/results/judges_all/auroc.csv@{pinned.JA}", "assertions over Table 2 rows in gen_report.py", raw_where=True)
 # the per-set judge tables: numbered in the order the appendix prints them
 _jl = re.search(r"<<T_JUDGE_SETS:([A-Z])(\d+)>>", tpl)
 assert _jl, "template lacks <<T_JUDGE_SETS:Xn>>"

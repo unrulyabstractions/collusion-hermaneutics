@@ -734,6 +734,8 @@ PREAMBLE = r"""\documentclass{article}
 \makeatletter
 % a page of floats starts at the top of the page, not in its middle
 \setlength{\@fptop}{0pt}\setlength{\@fpsep}{14pt plus 2fil}\setlength{\@fpbot}{0pt plus 1fil}
+% wide floats stacked on one page may shrink their gaps a little instead of overflowing the page
+\setlength{\dblfloatsep}{12pt plus 2pt minus 4pt}\setlength{\dbltextfloatsep}{16pt plus 2pt minus 6pt}
 % heading position marks: \mdtexpos{n}{page}{y in sp}, written at shipout
 \newcommand{\mdtexmark}[1]{\pdfsavepos\protected@write\@auxout{}{\string\mdtexpos{#1}{\thepage}{\noexpand\the\pdflastypos}}}
 \providecommand{\mdtexpos}[3]{}

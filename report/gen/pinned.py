@@ -15,6 +15,7 @@ TEAM = "195493d"     # team_probes and attn_probe RESULTS.md (gaps closed)
 EXT = "5ecc85b"      # external_probes
 CN = "fe5f66c"       # controls_nulls
 JA = "4504c63"       # judges_all
+MX = "d38598d"       # matrix_probes
 
 _cache = {}
 

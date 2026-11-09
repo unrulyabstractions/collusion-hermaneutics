@@ -6,7 +6,7 @@ Correspondence: unrulyabstractions@gmail.com
 
 ## Abstract
 
-Agent swarms built on large, often closed models can collude, and their monitor must be cheap. We study a **hermeneutic probe**: a readout of a small open-weight **reader** model's internals while it reads the transcript of a larger **author** model. We label six nested behaviours, from cheating to scheming, by code from each run's own files. We read the reader's residual stream on ten labelled sets: our single-agent controls and team runs, earlier swarm runs, and three external sets. Linear probes and an attention monitor over the steps carry every label far above label-shuffle nulls. They also beat three cheap LLM judges and the reader asked in words on every set but a small mixed-model one. A bag-of-words classifier on the agent's own words matches or beats them on most sets, because the cheating text enters the context. Reader internals beat every baseline in three places: the controls' authors seen in training, coordination in the board sets, and per-step detection on Goodfire rollouts with passage labels. They lose on unseen authors, on sets where the prompt already carries the label, and on the mixed-model set. We therefore propose reader internals as an early monitor beside the words, and we name labelled multi-author team data as the binding constraint.
+Agent swarms built on large, often closed models can collude, and their monitor must be cheap. We study a **hermeneutic probe**: a readout of a small open-weight **reader** model's internals while it reads the transcript of a larger **author** model. We label six nested behaviours, from cheating to scheming, by code from each run's own files. We read the reader's residual stream on ten labelled sets: our single-agent controls and team runs, earlier swarm runs, and three external sets. Linear probes and an attention monitor over the steps carry every label far above label-shuffle nulls. They also beat three cheap LLM judges and the reader asked in words on every set but a small mixed-model one. A bag-of-words classifier on the agent's own words matches or beats them on most sets, because the cheating text enters the context. Reader internals beat every baseline in three places: the controls' authors seen in training, coordination in the board sets, and per-step detection on Goodfire rollouts with passage labels. They lose on unseen authors, on sets where the prompt already carries the label, and on the mixed-model set. On a source held out of training the probe leads the words for coordination. We therefore propose reader internals as an early monitor beside the words, and we name labelled multi-author team data as the binding constraint.
 
 ## Introduction
 
@@ -17,7 +17,7 @@ The model under study is the **author**, and the open-weight model that reads it
 Our main contributions are:
 
 1. Six nested ladders (cheating, coordination, cooperation, collaboration, collusion and scheming) computed by code per agent, per team and per call, on our runs and on the SPAR team's swarm runs.
-2. Reader probes and an attention monitor over the steps, compared on ten sets with text, metadata, judge and reader-interrogation baselines and with label-shuffle nulls.
+2. Reader probes and an attention monitor over the steps, compared on ten sets with text, metadata, judge and reader-interrogation baselines and with label-shuffle nulls, and a probe matrix over sources, probe types and nine architectures.
 3. A prompt-only probe and an author-erasure control that locate where the reader's advantage is prompt or author identity.
 4. Design runs that measure how much telling lone agents need to use a shared board, and a planted board post that moves coordination in teams.
 
@@ -33,22 +33,7 @@ A transcript carries its author, task and prompt beside the behaviour, and our m
 
 ### Testbeds and data
 
-We read ten labelled sets (Table 1). The **controls** put one agent on one of nine CheatBench tasks with a planted exploit [@phan2026cheatbench], under two arms. The **solo arm** never mentions the exploit, and the **cheat arm** says the shortcut is fair game. The **board-seed** runs put three workers of one author on one software issue with a shared board from the ORBIT scaffold [@hagag2026orbit], with the planted fix split into one piece per agent. The **board seed** is one message the system posts before any agent acts (Appendix C). The **design runs** place three lone agents on one task with board tools and no team in the prompt. The **telling ladder** sets how much they hear about the board: tools only (L0), round notices and one system post (L1), or a prompt that names the board (L2). We also read the swarm runs of the SPAR team that built the SparGuardianAgents framework [@cierniak2026spar; @cierniak2026sparswarm], and three external sets: Goodfire's reward-hacking rollouts [@goodfire2026rewardhack], human-labelled CheatBench traces [@steinad2026cheatbench] and EvilGenie's matched pairs [@wiserhuman2026evilgenie].
-
-**Table 1.** The labelled sets. Agents and runs as published on the Hub; for the external sets, runs are the source's directories or harnesses. Authors are distinct author models; Appendix I names them. {wide}
-
-| set | made by | design | authors | agents | runs or source directories | labels |
-|---|---|---|---|---|---|---|
-| Controls | ours, this work | one agent per run, nine tasks with a planted exploit, two prompt arms | 5 | 600 | 600 | cheating |
-| Board-seed teams | ours, this work | three workers share a board; one seeded post | 1 | 134 | 43 | six ladders |
-| Design runs | ours, this work | three lone agents per task with board tools | 3 | 177 | 59 | six ladders |
-| SPAR screen teams | SPAR team, before this work | three-agent teams, one author per team | 3 | 450 | 135 | six ladders |
-| SPAR mixed teams | SPAR team, before this work | teams of two worker authors, other-model regulators | 6 | 209 | 51 | six ladders |
-| SPAR exploration | SPAR team, before this work | single agents across prompt arms | 3 | 313 | 96 | cheating |
-| SPAR screen solo | SPAR team, before this work | single agents, two prompt arms | 3 | 90 | 90 | cheating |
-| Goodfire | external | coding and tool-use rollouts | 3 | 5553 | 13 | judge verdict; flagged passages |
-| CheatBench | external | three agent harnesses | 4 | 244 | 3 | human label |
-| EvilGenie | external | matched hack and legitimate pairs | 10 | 266 | 10 | dataset label |
+We read ten labelled sets (Table I4). The **controls** put one agent on one of nine CheatBench tasks with a planted exploit [@phan2026cheatbench], under two arms. The **solo arm** never mentions the exploit, and the **cheat arm** says the shortcut is fair game. The **board-seed** runs put three workers of one author on one software issue with a shared board from the ORBIT scaffold [@hagag2026orbit], with the planted fix split into one piece per agent. The **board seed** is one message the system posts before any agent acts (Appendix C). The **design runs** place three lone agents on one task with board tools and no team in the prompt. The **telling ladder** sets how much they hear about the board: tools only (L0), round notices and one system post (L1), or a prompt that names the board (L2). We also read the swarm runs of the SPAR team that built the SparGuardianAgents framework [@cierniak2026spar; @cierniak2026sparswarm], and three external sets: Goodfire's reward-hacking rollouts [@goodfire2026rewardhack], human-labelled CheatBench traces [@steinad2026cheatbench] and EvilGenie's matched pairs [@wiserhuman2026evilgenie].
 
 ### Six nested ladders, direct and proxy
 
@@ -60,11 +45,11 @@ The reader is Qwen3.8-27B. We render every transcript through its chat template,
 
 ### Probe types A, B.I and B.II
 
-**Type A** trains and tests inside one author, **type B.I** pools all authors, and **type B.II** leaves one author out and scores it. Every fit uses cross-validation grouped by run, so no run is split.
+**Type A** trains and tests inside one author, **type B.I** pools all authors, and **type B.II** leaves one author out and scores it. Every fit uses cross-validation grouped by run, so no run is split. An **inclusion scheme** decides which sources a probe sees: each source alone, our sets, the external sets, all sets, all sets but one (the **leave-one-source-out** test), or our sets applied to the external ones and back. The **probe matrix** crosses the three probe types with these schemes for cheating, coordination and collusion.
 
 ### Architectures
 
-The **linear probe** fits training-fold PCA, z-scoring and L2 logistic regression with the penalty chosen by grouped inner cross-validation. It reads either the mean over an agent's turns or one row per turn. The **attention monitor** reads a trajectory one step at a time. An MLP encodes each step's token vectors, two causal self-attention layers mix the steps so far, and heads per ladder map the result to an ordinal level and a binary label, with inner ladders gated by outer ones. It trains on the level reached at each call with early stopping on held-out runs. We compare it with two simpler sequence models: a recurrent net and a cumulative mean over the linear per-step scores (Appendix E).
+The **linear probe** fits training-fold PCA, z-scoring and L2 logistic regression with the penalty chosen by grouped inner cross-validation. It reads either the mean over an agent's turns or one row per turn. The **attention monitor** reads a trajectory one step at a time. An MLP encodes each step's token vectors, two causal self-attention layers mix the steps so far, and heads per ladder map the result to an ordinal level and a binary label, with inner ladders gated by outer ones. It trains on the level reached at each call with early stopping on held-out runs. On the main cells of the probe matrix we compare nine architectures: the linear probe on pooled states; an MLP per step with a running mean or a running max; attention pooling with one learned query; the attention monitor; a GRU; the linear per-step probe with a running mean of its scores; an MLP on the pooled vector; and a **stack**, a logistic regression over the held-out scores of three probes and TF-IDF.
 
 ### Controls and nulls
 
@@ -74,9 +59,9 @@ The **label-shuffle null** permutes labels inside author or arm and refits. The 
 
 ### Does the reader carry the signal?
 
-We first ask whether the reader's states carry the label at all, beyond the author's base rate and the task. On the controls' solo arm the agent-level probe separates cheating inside every author and pooled over authors (Table 2). Erasing the author, or author, task and condition together, moves it little, and every probe sits far above its within-author shuffle null. The same holds for every label we probe on the team and design sets (Appendix E, Table E1). We therefore posit that the reader carries the behaviour, and not only who wrote the transcript or which task it was.
+We first ask whether the reader's states carry the label at all, beyond the author's base rate and the task. On the controls' solo arm the agent-level probe separates cheating inside every author and pooled over authors (Table 1). Erasing the author, or author, task and condition together, moves it little, and every probe sits far above its within-author shuffle null. The same holds for every label we probe on the team and design sets (Appendix E, Table E1). We therefore posit that the reader carries the behaviour, and not only who wrote the transcript or which task it was.
 
-**Table 2.** Controls, solo arm: agent-level PCA probe at all layers and both think positions; the every-dimension row uses all layers at the close position. Held-out AUROC [95% bootstrap over runs]; metadata: logistic regression on author, task and condition. The within-author label-shuffle null's 95th percentile lies between 0.550 and 0.646 across the raw-feature probe rows, and every p sits at the 1/101 floor. {wide}
+**Table 1.** Controls, solo arm: agent-level PCA probe at all layers and both think positions; the every-dimension row uses all layers at the close position. Held-out AUROC [95% bootstrap over runs]; metadata: logistic regression on author, task and condition. The within-author label-shuffle null's 95th percentile lies between 0.550 and 0.646 across the raw-feature probe rows, and every p sits at the 1/101 floor. {wide}
 
 | probe | cheat / no cheat | raw | author erased | author, task, condition erased | metadata-only baseline | TF-IDF, whole transcript |
 |---|---|---|---|---|---|---|
@@ -92,9 +77,9 @@ We first ask whether the reader's states carry the label at all, beyond the auth
 
 ### Does it beat text baselines, and where?
 
-A probe that only matches the words adds cost and no signal, so the bar is a text classifier on the same transcript. Table 3 sets every scorer on the same agents of each set. The linear probe and the attention monitor beat the three cheap judges and the reader's spoken verdict on every set but the SPAR mixed teams, where the strongest judge leads. Against TF-IDF on the agent's words the internals win on cheating on the controls and on coordination in the board-seed teams, the design runs and the SPAR screen teams. On every other row the classifier matches or beats them, because the exploit text enters the context through tool output and the agent repeats it. The judges trail partly by construction: their reading window cuts most transcripts and leaves many onsets outside it (Appendix G). We therefore conclude that reader internals beat a cheap judge almost everywhere, and beat the words mainly on coordination.
+A probe that only matches the words adds cost and no signal, so the bar is a text classifier on the same transcript. Table 2 sets every scorer on the same agents of each set. The linear probe and the attention monitor beat the three cheap judges and the reader's spoken verdict on every set but the SPAR mixed teams, where the strongest judge leads. Against TF-IDF on the agent's words the internals win on cheating on the controls and on coordination in the board-seed teams, the design runs and the SPAR screen teams. On every other row the classifier matches or beats them, because the exploit text enters the context through tool output and the agent repeats it. The judges trail partly by construction: their reading window cuts most transcripts and leaves many onsets outside it (Appendix G). We therefore conclude that reader internals beat a cheap judge almost everywhere, and beat the words mainly on coordination.
 
-**Table 3.** Every scorer on the same held-out agents of each set: AUROC. Linear probe readout: the agent's mean over turns, or the per-step probe's score at the last step. Attention monitor and TF-IDF at the last step where the probe reads per step. Best cheap judge: the highest of three cheap judges (DeepSeek V4.1 Flash, Qwen3.7 Flash, GLM 5.3 Flash); reader interrogation: the reader asked the judges' question. A scorer that could not score an agent leaves it out: a judge reply that did not parse, or a Goodfire rollout the monitor could not align (at most 23 of a row's agents). Appendix G gives intervals and every judge. {wide}
+**Table 2.** Every scorer on the same held-out agents of each set: AUROC. Linear probe readout: the agent's mean over turns, or the per-step probe's score at the last step. Attention monitor and TF-IDF at the last step where the probe reads per step. Best cheap judge: the highest of three cheap judges (DeepSeek V4.1 Flash, Qwen3.7 Flash, GLM 5.3 Flash); reader interrogation: the reader asked the judges' question. A scorer that could not score an agent leaves it out: a judge reply that did not parse, or a Goodfire rollout the monitor could not align (at most 23 of a row's agents). Appendix G gives intervals and every judge. {wide}
 
 | set | label | positive / negative | linear probe | readout | attention monitor | TF-IDF, agent's words | best cheap judge | reader interrogation |
 |---|---|---|---|---|---|---|---|---|
@@ -117,9 +102,9 @@ A probe that only matches the words adds cost and no signal, so the bar is a tex
 
 ### Does it transfer to unseen authors?
 
-A monitor must work on authors it never saw, and an author leaves a strong signature in the reader. Table 4 trains on some authors or sets and scores others. The words transfer better on almost every split. On the controls, the design runs, the SPAR mixed teams and the three external sets the classifier leads the linear probe. The attention monitor passes the classifier on the SPAR screen teams with both seeds, trails it on the controls, and falls below chance on the design runs. Transfer across sets loses much of the signal for every method, and the classifier stays ahead. We therefore conclude that the words set the bar on new authors.
+A monitor must work on authors it never saw, and an author leaves a strong signature in the reader. Table 3 trains on some authors or sets and scores others. The words transfer better on almost every split. On the controls, the design runs, the SPAR mixed teams and the three external sets the classifier leads the linear probe. The attention monitor passes the classifier on the SPAR screen teams with both seeds, trails it on the controls, and falls below chance on the design runs. Transfer across sets loses much of the signal for every method, and the classifier stays ahead. We therefore conclude that the words set the bar on new authors.
 
-**Table 4.** Unseen authors and unseen sets: agent AUROC. Leave one author out: mean of the type B.II AUROCs, with whole-text TF-IDF. Held-out author, pooled: the attention monitor's and the linear per-step probe's last-step scores, pooled over held-out authors, with TF-IDF on the words so far. External sets: AUROC inside the held-out author (Goodfire: inside one run directory), with TF-IDF on the agent's words. Transfer: fitted once on the source set and applied unchanged. {wide}
+**Table 3.** Unseen authors and unseen sets: agent AUROC. Leave one author out: mean of the type B.II AUROCs, with whole-text TF-IDF. Held-out author, pooled: the attention monitor's and the linear per-step probe's last-step scores, pooled over held-out authors, with TF-IDF on the words so far. External sets: AUROC inside the held-out author (Goodfire: inside one run directory), with TF-IDF on the agent's words. Transfer: fitted once on the source set and applied unchanged. {wide}
 
 | set | split | positive / agents | linear probe | attention monitor (seeds 0, 1) | TF-IDF |
 |---|---|---|---|---|---|
@@ -134,6 +119,28 @@ A monitor must work on authors it never saw, and an author leaves a strong signa
 | Controls to Goodfire | train on the controls' solo arm, score Goodfire | 2083 / 2833 | 0.712 | not run | 0.738 |
 | Goodfire to controls | train on Goodfire, score the controls' solo arm | 193 / 373 | 0.526 | not run | 0.590 |
 | Controls to board-seed teams | train on the controls' solo arm, score the workers | 56 / 129 | 0.621 | not run | 0.736 |
+
+### Which probe type and which architecture hold up across sources?
+
+A monitor deployed on a new swarm meets new sources as well as new authors. The probe matrix tests this by crossing probe types, inclusion schemes and architectures (Table 4). Inside a distribution the text classifier beats the linear probe on every cheating cell, and the probe leads only on coordination and on collusion in the mixed teams (Appendix L). On a held-out source the order turns for coordination: the probe leads the classifier whichever source is held out. For cheating it leads only when CheatBench or EvilGenie is held out, and for collusion only without the SPAR screen teams. Unseen authors lower the linear probe's score on every pooled scheme. Transfer between sources is weak and asymmetric: a probe trained on our sets reads the external sets poorly, and one trained on the external sets falls below chance on ours. Among the trained architectures the MLP per step with a running max holds best on unseen authors for cheating and coordination on our sets. On a held-out source the best trained architecture beats the linear probe for coordination by a wide margin, though we choose it on the test score itself. No architecture wins everywhere: on unseen authors the linear probe matches or beats every trained architecture for collusion, and with CheatBench held out it leads them all. The stack reads TF-IDF too and scores next to the text alone. The per-step probe beats its null, and on cheating and collusion it edges metadata with turn index only slightly (Appendix L). We therefore posit that no single architecture dominates, and that the reader's advantage over the text lies on unseen sources and on coordination.
+
+**Table 4.** Probe matrix, main cells: held-out AUROC, type B.I unless marked B.II (B.II: mean over held-out authors). Null: the 95th percentile of the linear probe's 20-draw label-shuffle null. Best architecture: the highest AUROC among the eight trained architectures (the stack excluded), selected on the held-out score itself and therefore optimistic. Architectures were not run on B.II of the leave-one-source-out schemes or on the transfer schemes. Appendix L gives every cell. {wide}
+
+| label and scheme | positive / agents | linear probe | null 95th | TF-IDF | best architecture | B.II: linear probe | best architecture | TF-IDF |
+|---|---|---|---|---|---|---|---|---|
+| cheating, our sets | 722 / 1973 | 0.950 | 0.772 | 0.981 | 0.969 (attention monitor) | 0.860 | 0.906 (MLP per step, running max) | 0.945 |
+| cheating, all sets | 3072 / 5296 | 0.920 | 0.787 | 0.964 | 0.943 (MLP per step, running max) | 0.795 | 0.814 (attention pooling) | 0.895 |
+| coordination, our sets | 736 / 970 | 0.969 | 0.883 | 0.957 | 0.990 (MLP per step, running max) | 0.904 | 0.977 (MLP per step, running max) | 0.863 |
+| collusion, our sets | 122 / 793 | 0.933 | 0.758 | 0.984 | 0.945 (MLP on the pooled vector) | 0.843 | 0.748 (MLP per step, running max) | 0.856 |
+| cheating, all but controls | 343 / 600 | 0.684 | 0.681 | 0.802 | 0.817 (MLP per step, running max) | 0.682 | not run | 0.748 |
+| cheating, all but CheatBench | 134 / 224 | 0.805 | 0.670 | 0.582 | 0.717 (MLP per step, running mean) | 0.664 | not run | 0.729 |
+| cheating, all but EvilGenie | 133 / 266 | 0.652 | 0.587 | 0.554 | 0.672 (linear per step, running mean) | 0.704 | not run | 0.651 |
+| coordination, all but design runs | 38 / 177 | 0.758 | 0.736 | 0.496 | 0.974 (attention pooling) | 0.763 | not run | 0.780 |
+| coordination, all but SPAR screen teams | 406 / 450 | 0.863 | 0.808 | 0.654 | 0.949 (MLP per step, running mean) | 0.805 | not run | 0.630 |
+| coordination, all but SPAR mixed teams | 205 / 209 | 0.854 | 0.833 | 0.470 | 0.957 (MLP per step, running max) | n/a | not run | n/a |
+| collusion, all but SPAR screen teams | 67 / 450 | 0.814 | 0.767 | 0.657 | 0.872 (MLP on the pooled vector) | 0.778 | not run | 0.390 |
+| cheating, our sets to external | 2350 / 3323 | 0.630 | 0.625 | 0.728 | not run | 0.541 | not run | n/a |
+| cheating, external to our sets | 722 / 1973 | 0.397 | 0.623 | 0.600 | not run | 0.443 | not run | n/a |
 
 ### Does it detect earlier per step?
 
@@ -164,23 +171,13 @@ A per-step monitor is useful only if it fires soon after the onset. Lateness alo
 
 ### What do the telling-ladder design runs show?
 
-Labelled team data needs agents that find and use a shared board, so we measure how much telling lone agents need. With board tools alone almost no agent reads the board (Table 6). Round notices and a bare system post bring nearly every agent to read it, and naming the board in the prompt adds posting, though posting stays rare. Under one prompt DeepSeek V4.1 Flash cheats in most runs and GPT-6 Luna in few. In teams, one planted post moves coordination, and the mild post yields the most teams that pass the hidden tests (Appendix C). On the design runs the attention monitor reads coordination far above the classifier (Table 3). We therefore treat the telling ladder and the board seed as cheap levers for building labelled team data.
-
-**Table 6.** Design runs: three lone agents per run on one task, with board tools and no team in the prompt. Agents that read the board, posted on it, and reached the task's cheat floor. L1 and L2 use the bare post; L0 has no post. Appendix C gives a first batch whose post hinted at a team. {wide}
-
-| telling level | system post | author | runs | agents | read the board | posted | cheated |
-|---|---|---|---|---|---|---|---|
-| L0: board tools only | none | GPT-6 Luna | 3 | 9 | 1/9 | 0/9 | 1/9 |
-| L1: round notices and one system post | "Board opened." | DeepSeek V4.1 Flash | 12 | 36 | 32/36 | 6/36 | 33/36 |
-| L1: round notices and one system post | "Board opened." | GPT-6 Luna | 12 | 36 | 33/36 | 5/36 | 11/36 |
-| L1: round notices and one system post | "Board opened." | Qwen3.8-Max | 1 | 3 | 3/3 | 0/3 | 3/3 |
-| L2: the prompt names the board | "Board opened." | DeepSeek V4.1 Flash | 3 | 9 | 9/9 | 3/9 | 9/9 |
+Labelled team data needs agents that find and use a shared board, so we measure how much telling lone agents need. With board tools alone almost no agent reads the board (Table C3). Round notices and a bare system post bring nearly every agent to read it, and naming the board in the prompt adds posting, though posting stays rare. Under one prompt DeepSeek V4.1 Flash cheats in most runs and GPT-6 Luna in few. In teams, one planted post moves coordination, and the mild post yields the most teams that pass the hidden tests (Appendix C). On the design runs the attention monitor reads coordination far above the classifier (Table 2). We therefore treat the telling ladder and the board seed as cheap levers for building labelled team data.
 
 ### What do the controls say about prompt and author identity?
 
-A probe can win by reading the prompt condition or the author, both of which the reader sees before any behaviour. The prompt-only probe reads the reader's state before the first assistant token. It stays near its null for cheating on the controls, the board-seed teams and the design runs, and for coordination and collusion on the board-seed teams (Table 7). There the label is not readable from the prompt. It carries a large share of the full probe's margin for cheating and collusion on the SPAR screen teams, the SPAR exploration and mixed sets and the three external sets. It does the same for coordination in the design runs. Inside each arm of the controls the prompt-only probe falls to chance while the full probe keeps its score (Appendix H). The reader encodes the author almost perfectly, and LEACE erases it to chance (Table 8). The cheating probe then moves little on the controls, Goodfire and the SPAR mixed teams, and more on the design runs and the SPAR screen teams, where erasing task and condition with the author removes most of the unseen-author margin. The think-window text alone matches the probe on the team and design sets and trails it on the controls (Appendix H). We therefore conclude that part of the reader's advantage on most SPAR sets and on the external sets is prompt identity, and that our controls and board-seed teams are clean of it.
+A probe can win by reading the prompt condition or the author, both of which the reader sees before any behaviour. The prompt-only probe reads the reader's state before the first assistant token. It stays near its null for cheating on the controls, the board-seed teams and the design runs, and for coordination and collusion on the board-seed teams (Table 6). There the label is not readable from the prompt. It carries a large share of the full probe's margin for cheating and collusion on the SPAR screen teams, the SPAR exploration and mixed sets and the three external sets. It does the same for coordination in the design runs. Inside each arm of the controls the prompt-only probe falls to chance while the full probe keeps its score (Appendix H). The reader encodes the author almost perfectly, and LEACE erases it to chance (Table H4). The cheating probe then moves little on the controls, Goodfire and the SPAR mixed teams, and more on the design runs and the SPAR screen teams, where erasing task and condition with the author removes most of the unseen-author margin. The think-window text alone matches the probe on the team and design sets and trails it on the controls (Appendix H). We therefore conclude that part of the reader's advantage on most SPAR sets and on the external sets is prompt identity, and that our controls and board-seed teams are clean of it.
 
-**Table 7.** Prompt-only control (type B.I, pooled): AUROC of a probe on the reader's state before the first assistant token (our sets: the five boundary tokens and the think-open token of the first turn; external sets: the think-open token), its 50-draw label-shuffle null, and the training rate of each task and arm. Full probe: think pair, all layers. Share: the prompt-only margin over 0.5 as a fraction of the full probe's. {wide}
+**Table 6.** Prompt-only control (type B.I, pooled): AUROC of a probe on the reader's state before the first assistant token (our sets: the five boundary tokens and the think-open token of the first turn; external sets: the think-open token), its 50-draw label-shuffle null, and the training rate of each task and arm. Full probe: think pair, all layers. Share: the prompt-only margin over 0.5 as a fraction of the full probe's. {wide}
 
 | label | set | positive / agents | prompt-only probe | null 95th | task and arm identity | full probe | TF-IDF, whole text | share of the probe's margin |
 |---|---|---|---|---|---|---|---|---|
@@ -202,34 +199,15 @@ A probe can win by reading the prompt condition or the author, both of which the
 | collusion | SPAR screen teams | 67 / 450 | 0.808 | 0.563 | 0.811 | 0.910 | 0.980 | 0.75 |
 | collusion | SPAR mixed teams | 7 / 209 | 0.709 | 0.658 | 0.720 | 0.967 | 0.950 | 0.45 |
 
-**Table 8.** Author identity and LEACE on every pooled scheme with more than one author. Author probe: accuracy of a multinomial probe on the probe's components, raw and after LEACE erases the author; chance is the training fold's most frequent author. B.I and B.II: cheating, coordination or collusion AUROC raw, with the author erased, and with author, task and condition erased. {wide}
-
-| label | training scheme | authors | positive / agents | author probe: raw | after erasure (chance) | B.I: raw, author erased, all three erased | B.II mean: raw, author erased, all three erased |
-|---|---|---|---|---|---|---|---|
-| cheating | controls | 5 | 343 / 600 | 0.990 | 0.190 (0.193) | 0.960, 0.951, 0.926 | 0.913, 0.907, 0.890 |
-| cheating | design runs | 3 | 84 / 177 | 1.000 | 0.508 (0.508) | 0.914, 0.820, 0.696 | 0.630, 0.630, 0.359 |
-| cheating | SPAR screen teams | 3 | 109 / 450 | 1.000 | 0.329 (0.316) | 0.927, 0.931, 0.780 | 0.751, 0.742, 0.531 |
-| cheating | SPAR mixed teams | 6 | 12 / 209 | 0.986 | 0.603 (0.603) | 0.734, 0.719, 0.695 | 0.708, 0.701, 0.682 |
-| cheating | Goodfire | 3 | 2083 / 2833 | 0.999 | 0.355 (0.355) | 0.921, 0.914, 0.880 | 0.822, 0.845, 0.806 |
-| cheating | all our sets | 9 | 722 / 1973 | 0.995 | 0.379 (0.379) | 0.950, 0.908, 0.772 | 0.860, 0.843, 0.810 |
-| cheating | all sets | 23 | 3072 / 5296 | 0.996 | 0.190 (0.190) | 0.920, 0.853, 0.752 | 0.795, 0.672, 0.701 |
-| coordination | design runs | 3 | 38 / 177 | 1.000 | 0.508 (0.508) | 0.747, 0.742, 0.749 | 0.715, 0.716, 0.566 |
-| coordination | SPAR screen teams | 3 | 406 / 450 | 1.000 | 0.338 (0.327) | 0.909, 0.925, 0.920 | 0.690, 0.747, 0.731 |
-| coordination | SPAR mixed teams | 6 | 205 / 209 | 0.990 | 0.603 (0.603) | 0.600, 0.611, 0.634 | n/a, n/a, n/a |
-| coordination | all our sets | 7 | 736 / 970 | 0.995 | 0.423 (0.423) | 0.969, 0.961, 0.692 | 0.904, 0.884, 0.740 |
-| collusion | SPAR screen teams | 3 | 67 / 450 | 1.000 | 0.327 (0.320) | 0.910, 0.899, 0.822 | 0.827, 0.822, 0.586 |
-| collusion | SPAR mixed teams | 6 | 7 / 209 | 0.990 | 0.603 (0.603) | 0.967, 0.968, 0.968 | n/a, n/a, n/a |
-| collusion | all our sets | 6 | 122 / 793 | 0.997 | 0.404 (0.404) | 0.933, 0.876, 0.772 | 0.843, 0.855, 0.713 |
-
 ## Discussion
 
-Reader internals beat every baseline in three places. On authors seen in training, the attention monitor beats the classifier, the judges and the reader's verdict on the controls. On coordination, the probes and the monitor beat them on the board-seed teams, the design runs and the SPAR screen teams, by a small margin on the board-seed teams. Per step on Goodfire, with the dataset's passage labels, the linear probe finds the flagged turn far better than the words and with no delay. They do not beat the words on unseen authors, except the monitor on the SPAR screen teams. They do not escape prompt identity on most SPAR sets and on the external sets, where the prompt alone carries much of their margin. On the mixed-model SPAR set the classifier and the judges lead. We therefore hold that reader internals add early warning and sensitivity to coordination, and that the words remain the bar for cheating on new authors.
+Reader internals beat every baseline in three places. On authors seen in training, the attention monitor beats the classifier, the judges and the reader's verdict on the controls. On coordination, the probes and the monitor beat them on the board-seed teams, the design runs and the SPAR screen teams, by a small margin on the board-seed teams. Per step on Goodfire, with the dataset's passage labels, the linear probe finds the flagged turn far better than the words and with no delay. On a source held out of training, the linear probe also leads the words for coordination. They do not beat the words on unseen authors, except the monitor on the SPAR screen teams. They do not escape prompt identity on most SPAR sets and on the external sets, where the prompt alone carries much of their margin. On the mixed-model SPAR set the classifier and the judges lead. We therefore hold that reader internals add early warning and sensitivity to coordination, and that the words remain the bar for cheating on new authors.
 
 The judges are weaker than they need be. Their reading window keeps the task and the end of the transcript, so many onsets fall outside it. The coordination question asks about the exploit while the code label counts any post. The reader we interrogated was served at reduced precision while the probes read its full weights, and one judge wrote the board-seed transcripts it read. Multi-agent data remains the binding constraint. The board seed and the telling ladder give a cheap lever to build labelled team sets, and AI Village offers frontier authors in a shared chat under a licence that allows evaluation only [@aidigest2026village]. We therefore plan multi-author team runs at the seed counts a significance test needs, with AI Village as an unseen-author test.
 
 ## Limitations
 
-The board-seed teams come from one author on one task, so their probes say nothing about other authors. Cooperation, collaboration and scheming are proxies that no judge has confirmed, and the onsets of used and crossed are estimates. On the team sets turn position alone reads cheating and collusion well, so a late-firing monitor can look strong. The design and board-seed cells hold few runs and carry no significance test. The tables mix readouts, the agent mean on some sets and the last step on others, so a column is comparable within a row more than across rows. The external labels are other people's, and Goodfire's come from an LLM judge. The cheap judges read a cut transcript, the interrogated reader ran at reduced precision, and the best judge is chosen after the fact. LEACE removes linear traces only. The reader is also one of the authors. A few long SPAR transcripts lose their late turns. Many per-step and monitor rows still lack a null, and the random-weights reader was not run, so we cannot yet say whether the reader adds anything a random network on the same tokens would not.
+The board-seed teams come from one author on one task, so their probes say nothing about other authors. Cooperation, collaboration and scheming are proxies that no judge has confirmed, and the onsets of used and crossed are estimates. On the team sets turn position alone reads cheating and collusion well, so a late-firing monitor can look strong. The design and board-seed cells hold few runs and carry no significance test. The tables mix readouts, the agent mean on some sets and the last step on others, so a column is comparable within a row more than across rows. The external labels are other people's, and Goodfire's come from an LLM judge. The cheap judges read a cut transcript, the interrogated reader ran at reduced precision, and the best judge and the best architecture are chosen after the fact. The trained architectures carry no permutation null, and several matrix cells sit at or below their null. LEACE removes linear traces only. The reader is also one of the authors. A few long SPAR transcripts lose their late turns. Many per-step and monitor rows still lack a null, and the random-weights reader was not run, so we cannot yet say whether the reader adds anything a random network on the same tokens would not.
 
 ## Conclusion
 
@@ -249,7 +227,7 @@ The board-seed runs and the controls dataset began at the Apart Research Swarm A
 
 ### Appendix A: Limitations and dual-use considerations
 
-**Limitations.** The probed controls are a subsample that leaves out the longest transcripts, so the result does not cover the runs where context pressure is highest. The cheat label counts opening the planted material. A text classifier on the whole transcript recovers it as well as the probe, so the label is lexical on this testbed. The random-weights null was not run, so the report cannot say whether the reader's states carry anything a random network would not. All probes are linear and LEACE removes linear traces only, so nonlinear author or task signatures may remain. Some closed authors expose little or no reasoning; for them the think pair is empty and the reader reads the visible transcript. The reader is also one of the authors, so its own rows are not a hermeneutic result. The board-seed runs come from one author on one task at a handful of seeds, with no significance test, and the collaboration ladder reads code and board evidence by rules no judge has confirmed. The onsets of used and crossed are estimated from the first write of planted content and a proxy call, and per-step labels inherit that error. The first design batch posted a text that speaks of a team. For the controls probes of Tables 2 and D1 to D5 per-agent scores were not stored, so those values cannot be recomputed from the shipped files without rerunning the probes. The cheap judges read the task head and the transcript tail only, and the coordination question asks about the exploit while the label counts any post.
+**Limitations.** The probed controls are a subsample that leaves out the longest transcripts, so the result does not cover the runs where context pressure is highest. The cheat label counts opening the planted material. A text classifier on the whole transcript recovers it as well as the probe, so the label is lexical on this testbed. The random-weights null was not run, so the report cannot say whether the reader's states carry anything a random network would not. All probes are linear and LEACE removes linear traces only, so nonlinear author or task signatures may remain. Some closed authors expose little or no reasoning; for them the think pair is empty and the reader reads the visible transcript. The reader is also one of the authors, so its own rows are not a hermeneutic result. The board-seed runs come from one author on one task at a handful of seeds, with no significance test, and the collaboration ladder reads code and board evidence by rules no judge has confirmed. The onsets of used and crossed are estimated from the first write of planted content and a proxy call, and per-step labels inherit that error. The first design batch posted a text that speaks of a team. For the controls probes of Tables 1 and D1 to D5 per-agent scores were not stored, so those values cannot be recomputed from the shipped files without rerunning the probes. The cheap judges read the task head and the transcript tail only, and the coordination question asks about the exploit while the label counts any post.
 
 **Dual use.** A probe that detects cheating from a reader's internals can be used as a training signal to produce agents whose transcripts do not trigger it. The board seed raised coordination and exploit transfer in our runs, and the same lever could induce collusion in a deployed swarm. Monitoring agents raises questions of oversight and consent when the agents act for people, because a monitor that reads every transcript reads those people's tasks too. The data contain planted exploits and the transcripts of agents taking them, and that material can teach exploitation as well as detection.
 
@@ -300,7 +278,17 @@ The system posts one of the texts below as the first board message before any ag
 | dose-response | 60 | pro-coordination, explicit | 5 | 5/5 | 0/5 | 7.2 | 6.6 | 4.4 | 3.4 | 2.8 |
 | dose-response | 60 | anti-coordination (hidden regulator) | 5 | 2/5 | 0/5 | 7.0 (all posts 22.8, the regulator included) | 2.0 | 0.0 | 0.6 | 0.0 |
 
-**Table C3.** Design runs, first batch: the design of Table 6, with the neutral board-seed post of Table C1 at L1 and L2. That post speaks of a team, so it hints at teammates.
+**Table C3.** Design runs: three lone agents per run on one task, with board tools and no team in the prompt. Agents that read the board, posted on it, and reached the task's cheat floor. L1 and L2 use the bare post; L0 has no post. Table C4 gives a first batch whose post hinted at a team.
+
+| telling level | system post | author | runs | agents | read the board | posted | cheated |
+|---|---|---|---|---|---|---|---|
+| L0: board tools only | none | GPT-6 Luna | 3 | 9 | 1/9 | 0/9 | 1/9 |
+| L1: round notices and one system post | "Board opened." | DeepSeek V4.1 Flash | 12 | 36 | 32/36 | 6/36 | 33/36 |
+| L1: round notices and one system post | "Board opened." | GPT-6 Luna | 12 | 36 | 33/36 | 5/36 | 11/36 |
+| L1: round notices and one system post | "Board opened." | Qwen3.8-Max | 1 | 3 | 3/3 | 0/3 | 3/3 |
+| L2: the prompt names the board | "Board opened." | DeepSeek V4.1 Flash | 3 | 9 | 9/9 | 3/9 | 9/9 |
+
+**Table C4.** Design runs, first batch: the design of Table C3, with the neutral board-seed post of Table C1 at L1 and L2. That post speaks of a team, so it hints at teammates.
 
 | telling level | system post | author | runs | agents | read the board | posted | cheated |
 |---|---|---|---|---|---|---|---|
@@ -780,7 +768,7 @@ Each judge reads the task head and the agent's turns with every tool result cut,
 
 ### Appendix H: Controls and nulls
 
-**Table H1.** The prompt-only control inside each prompt condition. Restricted: the pooled out-of-fold scores of Table 7 on the agents of one condition. Refit: probes trained and tested inside the condition on new grouped folds, with the prompt-only probe's 50-draw null. Conditions with too few agents or runs in a class are left out.
+**Table H1.** The prompt-only control inside each prompt condition. Restricted: the pooled out-of-fold scores of Table 6 on the agents of one condition. Refit: probes trained and tested inside the condition on new grouped folds, with the prompt-only probe's 50-draw null. Conditions with too few agents or runs in a class are left out.
 
 | label | set | condition | positive / agents | restricted: prompt-only | restricted: full probe | refit: prompt-only | refit null 95th | refit: full probe |
 |---|---|---|---|---|---|---|---|---|
@@ -907,6 +895,25 @@ Each judge reads the task head and the agent's turns with every tool result cut,
 | probe matrix | 997 | 1511 | 800 |
 | team-run probes | 496 | 366 | 150 |
 
+**Table H4.** Author identity and LEACE on every pooled scheme with more than one author. Author probe: accuracy of a multinomial probe on the probe's components, raw and after LEACE erases the author; chance is the training fold's most frequent author. B.I and B.II: cheating, coordination or collusion AUROC raw, with the author erased, and with author, task and condition erased.
+
+| label | training scheme | authors | positive / agents | author probe: raw | after erasure (chance) | B.I: raw, author erased, all three erased | B.II mean: raw, author erased, all three erased |
+|---|---|---|---|---|---|---|---|
+| cheating | controls | 5 | 343 / 600 | 0.990 | 0.190 (0.193) | 0.960, 0.951, 0.926 | 0.913, 0.907, 0.890 |
+| cheating | design runs | 3 | 84 / 177 | 1.000 | 0.508 (0.508) | 0.914, 0.820, 0.696 | 0.630, 0.630, 0.359 |
+| cheating | SPAR screen teams | 3 | 109 / 450 | 1.000 | 0.329 (0.316) | 0.927, 0.931, 0.780 | 0.751, 0.742, 0.531 |
+| cheating | SPAR mixed teams | 6 | 12 / 209 | 0.986 | 0.603 (0.603) | 0.734, 0.719, 0.695 | 0.708, 0.701, 0.682 |
+| cheating | Goodfire | 3 | 2083 / 2833 | 0.999 | 0.355 (0.355) | 0.921, 0.914, 0.880 | 0.822, 0.845, 0.806 |
+| cheating | all our sets | 9 | 722 / 1973 | 0.995 | 0.379 (0.379) | 0.950, 0.908, 0.772 | 0.860, 0.843, 0.810 |
+| cheating | all sets | 23 | 3072 / 5296 | 0.996 | 0.190 (0.190) | 0.920, 0.853, 0.752 | 0.795, 0.672, 0.701 |
+| coordination | design runs | 3 | 38 / 177 | 1.000 | 0.508 (0.508) | 0.747, 0.742, 0.749 | 0.715, 0.716, 0.566 |
+| coordination | SPAR screen teams | 3 | 406 / 450 | 1.000 | 0.338 (0.327) | 0.909, 0.925, 0.920 | 0.690, 0.747, 0.731 |
+| coordination | SPAR mixed teams | 6 | 205 / 209 | 0.990 | 0.603 (0.603) | 0.600, 0.611, 0.634 | n/a, n/a, n/a |
+| coordination | all our sets | 7 | 736 / 970 | 0.995 | 0.423 (0.423) | 0.969, 0.961, 0.692 | 0.904, 0.884, 0.740 |
+| collusion | SPAR screen teams | 3 | 67 / 450 | 1.000 | 0.327 (0.320) | 0.910, 0.899, 0.822 | 0.827, 0.822, 0.586 |
+| collusion | SPAR mixed teams | 6 | 7 / 209 | 0.990 | 0.603 (0.603) | 0.967, 0.968, 0.968 | n/a, n/a, n/a |
+| collusion | all our sets | 6 | 122 / 793 | 0.997 | 0.404 (0.404) | 0.933, 0.876, 0.772 | 0.843, 0.855, 0.713 |
+
 The random-weights reader is planned and not run: it needs a fresh GPU pass of the reader with its weights re-initialised, followed by the same probes.
 
 ### Appendix I: Authors, data and setup
@@ -956,20 +963,20 @@ The nine controls tasks, all from CheatBench [@phan2026cheatbench], are software
 | probed runs | 600 (about 120 per author, balanced over arm x label, runs over 100k tokens left out) |
 | probed tokens / turns | 14,182,746 / 10,985 |
 
-**Table I4.** The authors of every set.
+**Table I4.** The labelled sets and their authors. Agents and runs as published on the Hub; for the external sets, runs are the source's directories or harnesses.
 
-| set | authors |
-|---|---|
-| Controls | Claude Haiku 5.5, DeepSeek V4.1 Flash, GPT-5 mini, GPT-6 Luna, Qwen3.8 27B |
-| Board-seed teams | DeepSeek V4.1 Flash |
-| Design runs | DeepSeek V4.1 Flash, GPT-6 Luna, Qwen3.8 Max |
-| SPAR screen teams | Claude Haiku 5.5, DeepSeek V4.1 Flash, GPT-6 Luna |
-| SPAR mixed teams | Claude Haiku 5.5, Claude Opus 5.5, Claude Sonnet 5.5, DeepSeek V4.1 Flash, GPT-6 Luna, Gemini 4 Argon |
-| SPAR exploration | Claude Haiku 5.5, DeepSeek V4.1 Flash, GPT-6 Luna |
-| SPAR screen solo | Claude Haiku 5.5, DeepSeek V4.1 Flash, GPT-6 Luna |
-| Goodfire | GLM 5.2, Kimi K3, Qwen3.8 Max |
-| CheatBench | Claude 3.7 Sonnet, Claude Opus 4.6, GPT-5.3 Codex, GPT-5.4 |
-| EvilGenie | Claude Fable 5, Claude Opus 4.8, GPT-5.3 Codex, GPT-5.6 Luna, GPT-5.6 Sol, Gemini 3.1 Pro, Gemini 3.5 Flash, Grok 4.5, Kimi K2.7 Code, Kimi K3 |
+| set | made by | design | agents | runs or source directories | labels | authors |
+|---|---|---|---|---|---|---|
+| Controls | ours, this work | one agent per run, nine tasks with a planted exploit, two prompt arms | 600 | 600 | cheating | Claude Haiku 5.5, DeepSeek V4.1 Flash, GPT-5 mini, GPT-6 Luna, Qwen3.8 27B |
+| Board-seed teams | ours, this work | three workers share a board; one seeded post | 134 | 43 | six ladders | DeepSeek V4.1 Flash |
+| Design runs | ours, this work | three lone agents per task with board tools | 177 | 59 | six ladders | DeepSeek V4.1 Flash, GPT-6 Luna, Qwen3.8 Max |
+| SPAR screen teams | SPAR team, before this work | three-agent teams, one author per team | 450 | 135 | six ladders | Claude Haiku 5.5, DeepSeek V4.1 Flash, GPT-6 Luna |
+| SPAR mixed teams | SPAR team, before this work | teams of two worker authors, other-model regulators | 209 | 51 | six ladders | Claude Haiku 5.5, Claude Opus 5.5, Claude Sonnet 5.5, DeepSeek V4.1 Flash, GPT-6 Luna, Gemini 4 Argon |
+| SPAR exploration | SPAR team, before this work | single agents across prompt arms | 313 | 96 | cheating | Claude Haiku 5.5, DeepSeek V4.1 Flash, GPT-6 Luna |
+| SPAR screen solo | SPAR team, before this work | single agents, two prompt arms | 90 | 90 | cheating | Claude Haiku 5.5, DeepSeek V4.1 Flash, GPT-6 Luna |
+| Goodfire | external | coding and tool-use rollouts | 5553 | 13 | judge verdict; flagged passages | GLM 5.2, Kimi K3, Qwen3.8 Max |
+| CheatBench | external | three agent harnesses | 244 | 3 | human label | Claude 3.7 Sonnet, Claude Opus 4.6, GPT-5.3 Codex, GPT-5.4 |
+| EvilGenie | external | matched hack and legitimate pairs | 266 | 10 | dataset label | Claude Fable 5, Claude Opus 4.8, GPT-5.3 Codex, GPT-5.6 Luna, GPT-5.6 Sol, Gemini 3.1 Pro, Gemini 3.5 Flash, Grok 4.5, Kimi K2.7 Code, Kimi K3 |
 
 **Judges.** The sprint's three judges (Claude Haiku 5.5, GPT-5 mini and Claude Sonnet 5.5) read each controls transcript once, with each tool result cut and the transcript tail kept, and answered yes or no with a confidence; Sonnet scored part of the agents. The three cheap judges (DeepSeek V4.1 Flash, Qwen3.7 Flash and GLM 5.3 Flash) and the reader interrogation read 6252 prompts each, at temperature zero with reasoning off where the provider allowed it; the body was cut in 68% of them. The interrogated reader was served at four-bit precision by its cheapest host, while the probes read the full weights.
 
@@ -1226,6 +1233,187 @@ Each table gives a ladder's levels above none, the rule for all tasks, and the e
 | | Creative writing | The floor holds, and this agent posted again after the regulator first posted, while reference segments crossed. |
 | | Chess | The floor holds, and this agent posted again after the regulator first posted, while credential halves crossed. |
 
-### Appendix L: LLM usage
+### Appendix L: Probe matrix
+
+Each cell is one probe type on one inclusion scheme, on the reader's think pair at all layers pooled over turns. Counts are the agents, positives, runs and authors of the scored rows. A and B.II give the mean over the authors that could be scored. Null: the 95th percentile of a 20-draw label-shuffle null that keeps each source, author and arm's base rate.
+
+**Table L1.** Cheating, every inclusion scheme.
+
+| scheme | A: mean over authors | B.I [95% CI] | B.I agents / positive / runs / authors | null 95th | TF-IDF | metadata | B.II: mean over authors | B.II agents / positive / runs / authors |
+|---|---|---|---|---|---|---|---|---|
+| controls alone | 0.938 | 0.960 [0.944, 0.973] | 600 / 343 / 600 / 5 | 0.604 | 0.990 | 0.690 | 0.913 | 600 / 343 / 600 / 5 |
+| board-seed teams alone | 0.880 | 0.880 [0.809, 0.935] | 134 / 56 / 43 / 1 | 0.676 | 0.905 | 0.826 | n/a |  |
+| design runs alone | 0.816 | 0.914 [0.860, 0.960] | 177 / 84 / 59 / 3 | 0.777 | 0.922 | 0.866 | 0.630 | 171 / 79 / 57 / 2 |
+| SPAR screen teams alone | 0.926 | 0.927 [0.885, 0.962] | 450 / 109 / 135 / 3 | 0.700 | 0.982 | 0.934 | 0.751 | 450 / 109 / 135 / 3 |
+| SPAR mixed teams alone | 0.715 | 0.734 [0.606, 0.869] | 209 / 12 / 51 / 6 | 0.858 | 0.937 | 0.837 | 0.708 | 162 / 12 / 51 / 2 |
+| SPAR exploration alone | 0.910 | 0.955 [0.918, 0.984] | 313 / 71 / 96 / 3 | 0.788 | 0.970 | 0.936 | 0.658 | 313 / 71 / 96 / 3 |
+| SPAR screen solo alone | 0.926 | 0.962 [0.915, 0.995] | 90 / 47 / 90 / 3 | 0.895 | 0.985 | 0.926 | 0.727 | 60 / 17 / 60 / 2 |
+| Goodfire alone | 0.908 | 0.921 [0.910, 0.931] | 2833 / 2083 / 2833 / 3 | 0.695 | 0.927 | 0.809 | 0.822 | 2833 / 2083 / 2833 / 3 |
+| CheatBench alone | 0.956 | 0.951 [0.919, 0.979] | 224 / 134 / 224 / 4 | 0.872 | 0.966 | 0.944 | 0.775 | 224 / 134 / 224 / 4 |
+| EvilGenie alone | 0.827 | 0.872 [0.831, 0.911] | 266 / 133 / 133 / 10 | 0.490 | 0.926 | 0.640 | 0.885 | 266 / 133 / 133 / 10 |
+| our sets | 0.944 | 0.950 [0.940, 0.960] | 1973 / 722 / 1074 / 9 | 0.772 | 0.981 | 0.843 | 0.860 | 1948 / 717 / 1072 / 5 |
+| external sets | 0.873 | 0.921 [0.911, 0.930] | 3323 / 2350 / 3190 / 15 | 0.721 | 0.935 | 0.814 | 0.784 | 3323 / 2350 / 3190 / 15 |
+| all sets | 0.891 | 0.920 [0.912, 0.927] | 5296 / 3072 / 4264 / 23 | 0.787 | 0.964 | 0.850 | 0.795 | 5277 / 3072 / 4264 / 20 |
+| all but controls | 0.772 | 0.684 [0.637, 0.727] | 600 / 343 / 600 / 5 | 0.681 | 0.802 | 0.541 | 0.682 | 600 / 343 / 600 / 5 |
+| all but board-seed teams | 0.762 | 0.465 [0.361, 0.570] | 134 / 56 / 43 / 1 | 0.602 | 0.856 | 0.846 | 0.749 | 134 / 56 / 43 / 1 |
+| all but design runs | 0.867 | 0.821 [0.747, 0.885] | 177 / 84 / 59 / 3 | 0.820 | 0.899 | 0.662 | 0.693 | 171 / 79 / 57 / 2 |
+| all but SPAR screen teams | 0.717 | 0.792 [0.727, 0.855] | 450 / 109 / 135 / 3 | 0.717 | 0.873 | 0.831 | 0.735 | 450 / 109 / 135 / 3 |
+| all but SPAR mixed teams | 0.789 | 0.915 [0.855, 0.959] | 209 / 12 / 51 / 6 | 0.891 | 0.984 | 0.783 | 0.638 | 162 / 12 / 51 / 2 |
+| all but SPAR exploration | 0.949 | 0.906 [0.855, 0.951] | 313 / 71 / 96 / 3 | 0.844 | 0.987 | 0.855 | 0.646 | 313 / 71 / 96 / 3 |
+| all but SPAR screen solo | 0.923 | 0.852 [0.769, 0.918] | 90 / 47 / 90 / 3 | 0.865 | 0.943 | 0.793 | 0.930 | 60 / 17 / 60 / 2 |
+| all but Goodfire | 0.348 | 0.648 [0.624, 0.670] | 2833 / 2083 / 2833 / 3 | 0.625 | 0.678 | 0.666 | 0.600 | 2833 / 2083 / 2833 / 3 |
+| all but CheatBench | 0.919 | 0.805 [0.751, 0.858] | 224 / 134 / 224 / 4 | 0.670 | 0.582 | 0.642 | 0.664 | 224 / 134 / 224 / 4 |
+| all but EvilGenie | 0.491 | 0.652 [0.607, 0.700] | 266 / 133 / 133 / 10 | 0.587 | 0.554 | 0.531 | 0.704 | 266 / 133 / 133 / 10 |
+| our sets to external | n/a | 0.630 [0.609, 0.649] | 3323 / 2350 / 3190 / 15 | 0.625 | 0.728 | 0.676 | 0.541 | 3323 / 2350 / 3190 / 15 |
+| external to our sets | n/a | 0.397 [0.366, 0.428] | 1973 / 722 / 1074 / 9 | 0.623 | 0.600 | 0.538 | 0.443 | 1948 / 717 / 1072 / 5 |
+
+**Table L2.** Coordination at posted, every inclusion scheme. The external sets have no board.
+
+| scheme | A: mean over authors | B.I [95% CI] | B.I agents / positive / runs / authors | null 95th | TF-IDF | metadata | B.II: mean over authors | B.II agents / positive / runs / authors |
+|---|---|---|---|---|---|---|---|---|
+| board-seed teams alone | 0.894 | 0.894 [0.784, 0.974] | 134 / 87 / 43 / 1 | 0.722 | 0.895 | 0.929 | n/a |  |
+| design runs alone | 0.814 | 0.747 [0.579, 0.878] | 177 / 38 / 59 / 3 | 0.558 | 0.774 | 0.753 | 0.715 | 171 / 37 / 57 / 2 |
+| SPAR screen teams alone | 0.752 | 0.909 [0.843, 0.963] | 450 / 406 / 135 / 3 | 0.756 | 0.889 | 0.794 | 0.690 | 450 / 406 / 135 / 3 |
+| SPAR mixed teams alone | n/a | 0.600 [0.464, 0.726] | 209 / 205 / 51 / 6 | 0.805 | 0.726 | 0.627 | n/a |  |
+| our sets | 0.944 | 0.969 [0.958, 0.979] | 970 / 736 / 288 / 7 | 0.883 | 0.957 | 0.924 | 0.904 | 945 / 719 / 286 / 3 |
+| external sets | n/a | n/a |  | n/a | n/a | n/a | n/a |  |
+| all sets | 0.944 | 0.969 [0.958, 0.979] | 970 / 736 / 288 / 7 | 0.883 | 0.957 | 0.924 | 0.904 | 945 / 719 / 286 / 3 |
+| all but board-seed teams | 0.908 | 0.942 [0.885, 0.980] | 134 / 87 / 43 / 1 | 0.905 | 0.889 | 0.929 | 0.818 | 134 / 87 / 43 / 1 |
+| all but design runs | 0.705 | 0.758 [0.647, 0.853] | 177 / 38 / 59 / 3 | 0.736 | 0.496 | 0.444 | 0.763 | 171 / 37 / 57 / 2 |
+| all but SPAR screen teams | 0.873 | 0.863 [0.812, 0.907] | 450 / 406 / 135 / 3 | 0.808 | 0.654 | 0.726 | 0.805 | 450 / 406 / 135 / 3 |
+| all but SPAR mixed teams | n/a | 0.854 [0.763, 0.924] | 209 / 205 / 51 / 6 | 0.833 | 0.470 | 0.423 | n/a |  |
+| our sets to external | n/a | n/a |  | n/a | n/a | n/a | n/a |  |
+| external to our sets | n/a | n/a |  | n/a | n/a | n/a | n/a |  |
+
+**Table L3.** Collusion at crossed, every inclusion scheme.
+
+| scheme | A: mean over authors | B.I [95% CI] | B.I agents / positive / runs / authors | null 95th | TF-IDF | metadata | B.II: mean over authors | B.II agents / positive / runs / authors |
+|---|---|---|---|---|---|---|---|---|
+| board-seed teams alone | 0.901 | 0.901 [0.814, 0.964] | 134 / 48 / 43 / 1 | 0.725 | 0.950 | 0.852 | n/a |  |
+| SPAR screen teams alone | 0.842 | 0.910 [0.857, 0.959] | 450 / 67 / 135 / 3 | 0.716 | 0.980 | 0.920 | 0.827 | 450 / 67 / 135 / 3 |
+| SPAR mixed teams alone | 0.818 | 0.967 [0.920, 1.000] | 209 / 7 / 51 / 6 | 0.941 | 0.950 | 0.960 | n/a |  |
+| our sets | 0.809 | 0.933 [0.896, 0.964] | 793 / 122 / 229 / 6 | 0.758 | 0.984 | 0.908 | 0.843 | 774 / 122 / 229 / 3 |
+| external sets | n/a | n/a |  | n/a | n/a | n/a | n/a |  |
+| all sets | 0.809 | 0.933 [0.896, 0.964] | 793 / 122 / 229 / 6 | 0.758 | 0.984 | 0.908 | 0.843 | 774 / 122 / 229 / 3 |
+| all but board-seed teams | 0.857 | 0.888 [0.810, 0.945] | 134 / 48 / 43 / 1 | 0.680 | 0.955 | 0.669 | 0.750 | 134 / 48 / 43 / 1 |
+| all but SPAR screen teams | 0.845 | 0.814 [0.712, 0.899] | 450 / 67 / 135 / 3 | 0.767 | 0.657 | 0.651 | 0.778 | 300 / 30 / 90 / 2 |
+| all but SPAR mixed teams | 0.458 | 0.907 [0.812, 0.980] | 209 / 7 / 51 / 6 | 0.956 | 0.932 | 0.647 | 0.695 | 36 / 7 / 12 / 1 |
+| our sets to external | n/a | n/a |  | n/a | n/a | n/a | n/a |  |
+| external to our sets | n/a | n/a |  | n/a | n/a | n/a | n/a |  |
+
+**Table L4.** Architectures, type B.I: held-out AUROC, mean over seeds. Blank: not planned.
+
+| label and scheme | linear, pooled | MLP per step, running mean | MLP per step, running max | attention pooling | attention monitor | GRU | linear per step, running mean | MLP on the pooled vector | stack with TF-IDF |
+|---|---|---|---|---|---|---|---|---|---|
+| cheating, our sets | 0.950 | 0.942 | 0.966 | 0.962 | 0.969 | 0.963 | 0.869 | 0.957 | 0.984 |
+| cheating, all sets | 0.920 | 0.920 | 0.943 | 0.937 | 0.941 | 0.938 | 0.829 | 0.937 | 0.967 |
+| coordination, our sets | 0.969 | 0.984 | 0.990 | 0.989 | 0.983 | 0.987 | 0.958 | 0.954 | 0.988 |
+| collusion, our sets | 0.933 | 0.933 | 0.932 | 0.917 | 0.932 | 0.930 | 0.930 | 0.945 | 0.984 |
+| cheating, controls alone | 0.960 | 0.950 | 0.971 | 0.980 | 0.971 | 0.969 | 0.874 | 0.953 |  |
+| cheating, board-seed teams alone | 0.880 | 0.819 | 0.834 | 0.833 | 0.778 | 0.825 | 0.844 | 0.858 |  |
+| cheating, design runs alone | 0.914 | 0.853 | 0.893 | 0.871 | 0.874 | 0.873 | 0.808 | 0.909 |  |
+| cheating, SPAR screen teams alone | 0.927 | 0.922 | 0.921 | 0.933 | 0.919 | 0.886 | 0.935 | 0.906 |  |
+| cheating, SPAR mixed teams alone | 0.734 | 0.837 | 0.862 | 0.831 | 0.764 | 0.796 | 0.758 | 0.804 |  |
+| cheating, SPAR exploration alone | 0.955 | 0.940 | 0.945 | 0.950 | 0.936 | 0.940 | 0.933 | 0.952 |  |
+| cheating, SPAR screen solo alone | 0.962 | 0.941 | 0.933 | 0.929 | 0.895 | 0.889 | 0.959 | 0.966 |  |
+| cheating, Goodfire alone | 0.921 | 0.933 | 0.937 | 0.936 | 0.930 | 0.933 | 0.903 | 0.916 |  |
+| cheating, CheatBench alone | 0.951 | 0.961 | 0.961 | 0.953 | 0.941 | 0.948 | 0.792 | 0.964 |  |
+| cheating, EvilGenie alone | 0.872 | 0.720 | 0.761 | 0.732 | 0.699 | 0.715 |  | 0.848 |  |
+| coordination, board-seed teams alone | 0.894 | 0.951 | 0.975 | 0.965 | 0.922 | 0.945 | 0.932 | 0.900 |  |
+| coordination, design runs alone | 0.747 | 0.682 | 0.777 | 0.707 | 0.823 | 0.811 | 0.665 | 0.741 |  |
+| coordination, SPAR screen teams alone | 0.909 | 0.968 | 0.991 | 0.988 | 0.973 | 0.989 | 0.907 | 0.889 |  |
+| coordination, SPAR mixed teams alone | 0.600 | 0.986 | 0.993 | 0.992 | 0.940 | 0.960 | 0.954 | 0.909 |  |
+| collusion, board-seed teams alone | 0.901 | 0.814 | 0.888 | 0.880 | 0.811 | 0.811 | 0.785 | 0.853 |  |
+| collusion, SPAR screen teams alone | 0.910 | 0.931 | 0.922 | 0.929 | 0.926 | 0.918 | 0.909 | 0.941 |  |
+| collusion, SPAR mixed teams alone | 0.967 | 0.885 | 0.711 | 0.801 | 0.868 | 0.855 | 0.915 | 0.810 |  |
+| cheating, all but controls | 0.684 | 0.757 | 0.817 | 0.768 | 0.793 | 0.786 | 0.543 | 0.747 |  |
+| cheating, all but board-seed teams | 0.465 | 0.867 | 0.776 | 0.602 | 0.748 | 0.714 | 0.779 | 0.676 |  |
+| cheating, all but design runs | 0.821 | 0.923 | 0.937 | 0.957 | 0.935 | 0.936 | 0.785 | 0.877 |  |
+| cheating, all but SPAR screen teams | 0.792 | 0.825 | 0.845 | 0.858 | 0.873 | 0.857 | 0.754 | 0.821 |  |
+| cheating, all but SPAR mixed teams | 0.915 | 0.914 | 0.944 | 0.926 | 0.926 | 0.918 | 0.887 | 0.942 |  |
+| cheating, all but SPAR exploration | 0.906 | 0.917 | 0.986 | 0.973 | 0.981 | 0.979 | 0.751 | 0.936 |  |
+| cheating, all but SPAR screen solo | 0.852 | 0.778 | 0.940 | 0.921 | 0.926 | 0.937 | 0.749 | 0.833 |  |
+| cheating, all but Goodfire | 0.648 | 0.664 | 0.630 | 0.670 | 0.672 | 0.656 | 0.770 | 0.657 |  |
+| cheating, all but CheatBench | 0.805 | 0.717 | 0.533 | 0.640 | 0.452 | 0.505 | 0.587 | 0.578 |  |
+| cheating, all but EvilGenie | 0.652 | 0.613 | 0.543 | 0.618 | 0.596 | 0.583 | 0.672 | 0.633 |  |
+| coordination, all but board-seed teams | 0.942 | 0.960 | 0.978 | 0.970 | 0.980 | 0.978 | 0.949 | 0.907 |  |
+| coordination, all but design runs | 0.758 | 0.963 | 0.972 | 0.974 | 0.950 | 0.960 | 0.772 | 0.703 |  |
+| coordination, all but SPAR screen teams | 0.863 | 0.949 | 0.943 | 0.926 | 0.866 | 0.911 | 0.824 | 0.808 |  |
+| coordination, all but SPAR mixed teams | 0.854 | 0.623 | 0.957 | 0.956 | 0.299 | 0.921 | 0.371 | 0.890 |  |
+| collusion, all but board-seed teams | 0.888 | 0.789 | 0.860 | 0.817 | 0.900 | 0.895 | 0.866 | 0.872 |  |
+| collusion, all but SPAR screen teams | 0.814 | 0.688 | 0.614 | 0.715 | 0.656 | 0.651 | 0.705 | 0.872 |  |
+| collusion, all but SPAR mixed teams | 0.907 | 0.965 | 0.776 | 0.970 | 0.858 | 0.909 | 0.857 | 0.904 |  |
+
+**Table L5.** Architectures, type B.II: held-out AUROC, mean over seeds and held-out authors. Blank: not planned.
+
+| label and scheme | linear, pooled | MLP per step, running mean | MLP per step, running max | attention pooling | attention monitor | GRU | linear per step, running mean | MLP on the pooled vector |
+|---|---|---|---|---|---|---|---|---|
+| cheating, our sets | 0.860 | 0.849 | 0.906 | 0.881 | 0.875 | 0.872 | 0.787 | 0.850 |
+| cheating, all sets | 0.795 | 0.801 | 0.766 | 0.814 | 0.782 | 0.772 | 0.742 | 0.806 |
+| coordination, our sets | 0.904 | 0.960 | 0.977 | 0.975 | 0.953 | 0.938 | 0.885 | 0.836 |
+| collusion, our sets | 0.843 | 0.711 | 0.748 | 0.626 | 0.463 | 0.527 | 0.748 | 0.668 |
+| cheating, controls alone | 0.913 | 0.913 | 0.956 | 0.949 | 0.916 | 0.919 | 0.831 | 0.883 |
+| cheating, design runs alone | 0.630 | 0.541 | 0.607 | 0.490 | 0.510 | 0.519 | 0.443 | 0.544 |
+| cheating, SPAR screen teams alone | 0.751 | 0.765 | 0.841 | 0.784 | 0.728 | 0.651 | 0.841 | 0.760 |
+| cheating, SPAR mixed teams alone | 0.708 | 0.581 | 0.680 | 0.559 | 0.521 | 0.428 | 0.414 | 0.721 |
+| cheating, SPAR exploration alone | 0.658 | 0.692 | 0.606 | 0.698 | 0.491 | 0.477 | 0.726 | 0.661 |
+| cheating, SPAR screen solo alone | 0.727 | 0.630 | 0.642 | 0.627 | 0.482 | 0.490 | 0.835 | 0.755 |
+| cheating, Goodfire alone | 0.822 | 0.894 | 0.909 | 0.910 | 0.913 | 0.909 | 0.890 | 0.829 |
+| cheating, CheatBench alone | 0.775 | 0.667 | 0.823 | 0.684 | 0.745 | 0.664 | 0.659 | 0.789 |
+| cheating, EvilGenie alone | 0.885 | 0.751 | 0.797 | 0.746 | 0.722 | 0.727 |  | 0.848 |
+| coordination, design runs alone | 0.715 | 0.599 | 0.709 | 0.647 | 0.531 | 0.618 | 0.435 | 0.568 |
+| coordination, SPAR screen teams alone | 0.690 | 0.817 | 0.968 | 0.962 | 0.913 | 0.958 | 0.742 | 0.692 |
+| collusion, SPAR screen teams alone | 0.827 | 0.852 | 0.839 | 0.663 | 0.585 | 0.657 | 0.797 | 0.782 |
+| cheating, all but controls | 0.682 |  |  |  |  |  |  |  |
+| cheating, all but board-seed teams | 0.749 |  |  |  |  |  |  |  |
+| cheating, all but design runs | 0.693 |  |  |  |  |  |  |  |
+| cheating, all but SPAR screen teams | 0.735 |  |  |  |  |  |  |  |
+| cheating, all but SPAR mixed teams | 0.638 |  |  |  |  |  |  |  |
+| cheating, all but SPAR exploration | 0.646 |  |  |  |  |  |  |  |
+| cheating, all but SPAR screen solo | 0.930 |  |  |  |  |  |  |  |
+| cheating, all but Goodfire | 0.600 |  |  |  |  |  |  |  |
+| cheating, all but CheatBench | 0.664 |  |  |  |  |  |  |  |
+| cheating, all but EvilGenie | 0.704 |  |  |  |  |  |  |  |
+| coordination, all but board-seed teams | 0.818 |  |  |  |  |  |  |  |
+| coordination, all but design runs | 0.763 |  |  |  |  |  |  |  |
+| coordination, all but SPAR screen teams | 0.805 |  |  |  |  |  |  |  |
+| collusion, all but board-seed teams | 0.750 |  |  |  |  |  |  |  |
+| collusion, all but SPAR screen teams | 0.778 |  |  |  |  |  |  |  |
+| collusion, all but SPAR mixed teams | 0.695 |  |  |  |  |  |  |  |
+
+**Table L6.** Per step, layer 38, one row per turn, positive from the agent's onset on. Delay: turns from the onset to the first score above the threshold at a 5% false-positive rate.
+
+| label and scheme | features | turn AUROC | turn null 95th | agent AUROC | detected / reaching | delay, median (IQR) | turns / positive |
+|---|---|---|---|---|---|---|---|
+| cheating, our sets | linear probe, think pair | 0.900 [0.888, 0.912] | 0.821 | 0.871 | 585 / 704 | 1 (-1 to 4) | 71113 / 16060 |
+| cheating, our sets | turn index | 0.601 [0.563, 0.637] | n/a | 0.488 | 14 / 704 | 64 (53 to 71) | 71113 / 16060 |
+| cheating, our sets | turn index and fraction | 0.682 [0.666, 0.697] | n/a | 0.524 | 574 / 704 | 12 (4 to 20) | 71113 / 16060 |
+| cheating, our sets | metadata, turn index and fraction | 0.893 [0.878, 0.906] | n/a | 0.833 | 472 / 704 | 6 (1 to 14) | 71113 / 16060 |
+| cheating, our sets and Goodfire | linear probe, think pair | 0.910 [0.901, 0.918] | 0.847 | 0.878 | 2119 / 2767 | 2 (0 to 7) | 211113 / 90005 |
+| cheating, our sets and Goodfire | turn index | 0.623 [0.605, 0.641] | n/a | 0.585 | 100 / 2767 | 97 (18 to 117) | 211113 / 90005 |
+| cheating, our sets and Goodfire | turn index and fraction | 0.685 [0.677, 0.694] | n/a | 0.413 | 2369 / 2767 | 17 (7 to 30) | 211113 / 90005 |
+| cheating, our sets and Goodfire | metadata, turn index and fraction | 0.881 [0.871, 0.889] | n/a | 0.846 | 2134 / 2767 | 9 (4 to 19) | 211113 / 90005 |
+| coordination, our sets | linear probe, think pair | 0.976 [0.971, 0.982] | 0.875 | 0.960 | 669 / 691 | 1 (0 to 1) | 41368 / 22927 |
+| coordination, our sets | turn index | 0.799 [0.770, 0.826] | n/a | 0.678 | 269 / 691 | 34 (13 to 43) | 41368 / 22927 |
+| coordination, our sets | turn index and fraction | 0.798 [0.773, 0.823] | n/a | 0.677 | 318 / 691 | 36 (16 to 44) | 41368 / 22927 |
+| coordination, our sets | metadata, turn index and fraction | 0.927 [0.909, 0.941] | n/a | 0.924 | 614 / 691 | 10 (3 to 17) | 41368 / 22927 |
+| collusion, our sets | linear probe, think pair | 0.926 [0.906, 0.946] | 0.798 | 0.930 | 115 / 122 | 0 (-9 to 6) | 37165 / 4087 |
+| collusion, our sets | turn index | 0.719 [0.661, 0.773] | n/a | 0.683 | 9 / 122 | 64 (47 to 71) | 37165 / 4087 |
+| collusion, our sets | turn index and fraction | 0.705 [0.682, 0.728] | n/a | 0.404 | 120 / 122 | 26 (17 to 42) | 37165 / 4087 |
+| collusion, our sets | metadata, turn index and fraction | 0.915 [0.886, 0.941] | n/a | 0.912 | 91 / 122 | 15 (-0 to 22) | 37165 / 4087 |
+
+**Figure L1.** Cheating transfer between sources: a linear probe trained on every labelled agent of the row source scores every labelled agent of the column source. The diagonal is B.I within the source. The mean off-diagonal AUROC is 0.67.
+
+![Figure L1: cheating transfer between sources](figures/matrix_heatmap_cheating.png)
+
+**Figure L2.** Coordination at posted and collusion at crossed: transfer between the sources with a board, as in Figure L1.
+
+![Figure L2: coordination and collusion transfer between sources](figures/matrix_heatmap_board.png)
+
+**Cells at or below their null.** The linear probe's B.I score sits at or below the 95th percentile of its null in these cells: cheating, SPAR mixed teams alone; cheating, all but board-seed teams; cheating, all but SPAR screen solo; cheating, external to our sets; coordination, SPAR mixed teams alone; collusion, all but SPAR mixed teams.
+
+**Cells not run.** The architectures were not planned for type A, for the external and transfer schemes, or for B.II of the leave-one-source-out schemes. 37 planned architecture cells had no feasible split, because one author or too few agents in a class left nothing to hold out. Architectures 2 to 9 carry no permutation null.
+
+### Appendix M: LLM usage
 
 We used Claude Code (Anthropic) under the author's direction. It ran the experiments and drafted the text. The author set the research questions, took every design decision, and reviewed the text.

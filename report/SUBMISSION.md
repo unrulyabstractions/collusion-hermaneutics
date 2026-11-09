@@ -5,7 +5,7 @@ Source: the sprint page https://apartresearch.com/sprints/swarm-alignment-2026, 
 | form field | value | status |
 |---|---|---|
 | Project title * | Hermeneutics for swarm collusion monitoring | set (rename if you wish) |
-| Project summary * | the text of `report/ABSTRACT.txt` (208 words; 217 with hyphenated words split) | ready |
+| Project summary * | the text of `report/ABSTRACT.txt` (222 words; 231 with hyphenated words split) | ready |
 | PDF report * (up to 25 MB) | `report/tex/report.pdf` (18 pages; body 7.69 pages, title through Code and Data (everything before References); references from page 8, appendices from page 10; `report/build_pdf.sh` prints these figures after each build) | built; your edit pass pending |
 | Are you interested in publishing this project? * | Yes / No | your call |
 | Tracks (choose every track that fits) | Track 4: Multi-Agent Oversight and Control; Track 2: The Science of Agent Networks | ready |

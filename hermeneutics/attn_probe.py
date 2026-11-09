@@ -446,10 +446,51 @@ def other_set_records(sname):
                          "binary_name": {"cheat": "cheating (the set's label: from tried or opened by task)"},
                          "onset_call_step": onset_chk, "na": [x for x in LADDERS if x != "cheat"]})
         return recs
+    if sname.startswith("spar"):
+        return spar_records(sname)
     cands = sorted((tp.OUT / "labels").glob(f"*{sname}*.csv")) + sorted(tp.OUT.glob(f"*{sname}*labels*.csv"))
     if not cands:
         raise FileNotFoundError(f"no label CSV for {sname} under {tp.OUT} yet")
     return records_from_agents_csv(sname, cands[0])
+
+
+def spar_records(sname):
+    """SPAR sets: the agent's cheating label is team_probes' joined label (transfer_other_sets_scores.csv, column y: the
+    code ladder's rung from the spar-swarm run's signals.jsonl at or above the task's floor, tried or opened); its onset
+    is the step holding the floor rung's call in the same signals row (direct), read from team_probes' cached
+    signals; the exposed, tried and opened calls give the per-step cheating levels. Other ladders do not apply."""
+    import pandas as pd
+    Y = pd.read_csv(tp.OUT / "transfer_other_sets_scores.csv")
+    Y = Y[(Y.set == sname) & (Y.features == tp.fname(("all", "think")))].dropna(subset=["y"])
+    rungs = {}
+    recs = []
+    for r in Y.itertuples():
+        d = HUB / "activations" / sname / r.run / r.agent
+        m = json.load(open(d / "meta.json"))
+        f = HUB / "spar_signals" / m["source_path"] / "signals.jsonl"
+        if f not in rungs:
+            rungs[f] = {x.get("agent"): x for x in map(json.loads, open(f)) if x.get("row") == "agent"} if f.is_file() else {}
+        sg = rungs[f].get(m.get("agent_id") or r.agent) or {}
+        calls, _ = tp.agent_calls(d / "source.json")
+        ok_calls = sg.get("calls") == len(calls)
+
+        def k2s(k):
+            return calls[int(k)][0] if ok_calls and k is not None and 0 <= int(k) < len(calls) else None
+        ri = tp.RUNGS.index(sg["rung"]) if sg.get("rung") in tp.RUNGS else 0
+        on = {x: {} for x in LADDERS}
+        for lev, col in ((1, "exposed_call"), (2, "tried_call"), (3, "opened_call")):
+            st = k2s(sg.get(col))
+            if st is not None and lev <= ri:
+                on["cheat"][str(lev)] = st
+        floor = "tried" if (sg.get("task") or m.get("task_name")) in tp.TRIED_FLOOR else "opened"
+        onset = k2s(sg.get(f"{floor}_call")) if int(r.y) == 1 else None
+        recs.append({"set": sname, "run": r.run, "agent": r.agent, "arm": m.get("condition") or "all",
+                     "author": m.get("author") or "unknown", "task": m.get("task_name"), "budget": None,
+                     "n_turns": int(m["n_turns"]), "final": {x: (ri if x == "cheat" else 0) for x in LADDERS}, "onset": on,
+                     "binary": {"cheat": {"final": int(r.y), "onset": onset}},
+                     "binary_name": {"cheat": "cheating (the set's label: from tried or opened by task)"},
+                     "calls_match_signals": bool(ok_calls), "na": [x for x in LADDERS if x != "cheat"]})
+    return recs
 
 
 def records_from_agents_csv(sname, path):
@@ -489,7 +530,7 @@ def folds_of(recs, split="folds"):
     if split == "author":
         au = sorted({r["author"] for r in recs})
         return np.array([au.index(r["author"]) for r in recs]), runs
-    if recs[0]["set"] == "controls_600":
+    if recs[0]["set"] == "controls_600" or recs[0]["set"].startswith("spar"):
         strat = np.array([f"{r['author']}|{r['binary']['cheat']['final']}" for r in recs])
     else:
         strat = np.array([f"{r['final']['cheat'] >= tp.USED}|{r['final']['collude'] >= tp.CROSSED}" for r in recs])
@@ -1027,7 +1068,7 @@ def write_report():
          "## Design", "", md(["Part", "Choice"], [
              ["step input", "the token vectors of the step at layer 38, concatenated: the think pair (think-open, think-close; 2 x 5120) or, when the boundary file exists, the seven tokens (7 x 5120); each dimension standardised with the training fold's mean and standard deviation"],
              ["step encoder", "one MLP: linear to 128, GELU, dropout 0.3, linear to 128"],
-             ["position", "a standard learned positional encoding (step index) added before the attention layers"],
+             ["position", "a standard learned positional encoding (step index, 160 positions) added before the attention layers; steps past 159 share the last position (7 agents of spar_mixed_41, up to 397 steps)"],
              ["attention", "2 pre-norm causal self-attention layers, 4 heads, d 128, dropout 0.3, over the steps so far"],
              ["heads", "a 2-layer MLP to six ordinal heads (cumulative logits with ordered thresholds, one per ladder) and one binary head per ladder"],
              ["nesting", "each inner ladder's P(level >= j) is multiplied by the outer ladder's P(level >= 1): coordination > cooperation > collaboration > collusion; scheming gated by P(collusion >= exploit crossed); cheating separate"],

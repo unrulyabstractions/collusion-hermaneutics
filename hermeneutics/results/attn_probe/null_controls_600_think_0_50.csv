@@ -2,3 +2,16 @@ draw,cut,step_auroc,agent_auroc_last,agent_auroc_max
 0,cheating (the set's label: from tried or opened by task),0.6832248595497747,0.5053501945525292,0.49615527144710025
 1,cheating (the set's label: from tried or opened by task),0.6636838602475892,0.4794098573281453,0.4825134333889198
 2,cheating (the set's label: from tried or opened by task),0.6920713700937856,0.5196057995182509,0.5067166944598851
+3,cheating (the set's label: from tried or opened by task),0.6795930733521237,0.5046322030757828,0.5020960718917917
+4,cheating (the set's label: from tried or opened by task),0.6733699358505669,0.5309199555308505,0.5229409857328146
+5,cheating (the set's label: from tried or opened by task),0.6671210044245461,0.5131670372429127,0.5220261256253474
+6,cheating (the set's label: from tried or opened by task),0.6761878352155251,0.48853529738743745,0.506890402075227
+7,cheating (the set's label: from tried or opened by task),0.6971841055252551,0.5147651473040578,0.5135955160274226
+8,cheating (the set's label: from tried or opened by task),0.686346208124163,0.5162706133036873,0.526044561793589
+9,cheating (the set's label: from tried or opened by task),0.6745343213225851,0.5267046507318881,0.5104571984435797
+10,cheating (the set's label: from tried or opened by task),0.6488599223764069,0.42573420418751157,0.43495228830831945
+11,cheating (the set's label: from tried or opened by task),0.6572027301322947,0.48454002223457476,0.48478321289605336
+12,cheating (the set's label: from tried or opened by task),0.6828910465238832,0.49243792847878454,0.5076894571057995
+13,cheating (the set's label: from tried or opened by task),0.6932517237820075,0.5104224569205114,0.5062997961830646
+14,cheating (the set's label: from tried or opened by task),0.687423162726814,0.545754585881045,0.5517996108949417
+15,cheating (the set's label: from tried or opened by task),0.6842296704562533,0.5036246989068001,0.5036131183991106

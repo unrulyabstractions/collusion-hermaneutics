@@ -21,3 +21,9 @@
 ## 2026-11-09, controls_600 held-out author
 
 - Each fold holds exactly one author and each author one fold (step_scores_controls_600_think_heldout_author.csv.gz). Per-author step AUROC of the binary head, seed 1, Luna held out, recomputed with sklearn: 0.91446, equal to authors_controls_600_think_heldout_author.csv. VERIFIED.
+
+## 2026-11-09, SPAR sets (spar_mixed_41, spar_screen_team)
+
+- Labels: team_probes' joined cheating label (transfer_other_sets_scores.csv, y); onsets from the floor rung's call in the cached spar-swarm signals.jsonl, used only where the signals' call count equals the transcript's tool-call count (209 of 209 and 226 of 226 agents). 4 spar_mixed_41 positives have no onset and are left out of that cut's scoring.
+- No run crosses folds in either set. Per-step AUROC of the binary head, seed 0, recomputed with sklearn from the saved scores: 0.963906 (spar_screen_team) and 0.814647 (spar_mixed_41), equal to the CSVs. VERIFIED.
+- spar_screen_team covers the 226 agents fetched locally of the 450 on the Hub (partial).

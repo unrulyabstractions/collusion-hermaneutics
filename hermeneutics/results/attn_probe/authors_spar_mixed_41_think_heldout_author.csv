@@ -1,0 +1,15 @@
+heldout_author,cut,model,seed,agents,pos_agents,step_auroc,agent_auroc_last
+deepseek-flash-openrouter,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",0.0,44,19,0.7816995892523578,0.5810526315789474
+deepseek-flash-openrouter,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",1.0,44,19,0.6285431437718544,0.5221052631578947
+deepseek-flash-openrouter,cheating (the set's label: from tried or opened by task),linear per-step probe (team_probes),,44,19,0.7746000682034498,0.5915789473684211
+deepseek-flash-openrouter,cheating (the set's label: from tried or opened by task),cumulative mean of the linear probe,,44,19,0.8006777081604919,0.5978947368421053
+deepseek-flash-openrouter,cheating (the set's label: from tried or opened by task),GRU over the linear probe scores,,44,19,0.7561937894142138,0.6
+deepseek-flash-openrouter,cheating (the set's label: from tried or opened by task),turn index alone,,44,19,0.4285575224842343,0.42210526315789476
+deepseek-flash-openrouter,cheating (the set's label: from tried or opened by task),TF-IDF on the agent's words so far,,44,19,0.7482575036519384,0.5894736842105263
+gpt-6-luna-openrouter,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",0.0,161,20,0.5060231194997548,0.5109929078014185
+gpt-6-luna-openrouter,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",1.0,161,20,0.4778254047057572,0.5063829787234042
+gpt-6-luna-openrouter,cheating (the set's label: from tried or opened by task),linear per-step probe (team_probes),,161,20,0.5650635797325012,0.526595744680851
+gpt-6-luna-openrouter,cheating (the set's label: from tried or opened by task),cumulative mean of the linear probe,,161,20,0.5709358026442549,0.597872340425532
+gpt-6-luna-openrouter,cheating (the set's label: from tried or opened by task),GRU over the linear probe scores,,161,20,0.552547104854105,0.6053191489361702
+gpt-6-luna-openrouter,cheating (the set's label: from tried or opened by task),turn index alone,,161,20,0.30770769428535966,0.5085106382978724
+gpt-6-luna-openrouter,cheating (the set's label: from tried or opened by task),TF-IDF on the agent's words so far,,161,20,0.7468452085438867,0.6283687943262412

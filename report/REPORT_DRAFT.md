@@ -76,7 +76,7 @@ The **label-shuffle null** permutes labels inside author or arm and refits. The 
 
 We first ask whether the reader's states carry the label at all, beyond the author's base rate and the task. On the controls' solo arm the agent-level probe separates cheating inside every author and pooled over authors (Table 2). Erasing the author, or author, task and condition together, moves it little, and every probe sits far above its within-author shuffle null. The same holds for every label we probe on the team and design sets (Appendix E, Table E1). We therefore posit that the reader carries the behaviour, and not only who wrote the transcript or which task it was.
 
-**Table 2.** Controls, solo arm: agent-level PCA probe at all layers and both think positions; the every-dimension row uses all layers at the close position. Held-out AUROC [95% bootstrap over runs]; metadata: logistic regression on author, task and condition. The within-author label-shuffle null's 95th percentile lies between 0.550 and 0.646 across the probe rows, and every p sits at the 1/101 floor. {wide}
+**Table 2.** Controls, solo arm: agent-level PCA probe at all layers and both think positions; the every-dimension row uses all layers at the close position. Held-out AUROC [95% bootstrap over runs]; metadata: logistic regression on author, task and condition. The within-author label-shuffle null's 95th percentile lies between 0.550 and 0.646 across the raw-feature probe rows, and every p sits at the 1/101 floor. {wide}
 
 | probe | cheat / no cheat | raw | author erased | author, task, condition erased | metadata-only baseline | TF-IDF, whole transcript |
 |---|---|---|---|---|---|---|

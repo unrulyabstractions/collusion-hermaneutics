@@ -10,6 +10,7 @@ import { COLLAB_MEANING, COLLAB_ORDER, COLLECTIONS, JUDGES, JUDGE_ORDER, RUNG_ME
 import { cheatLabelBadge, yesNo } from './view_index.js';
 import { renderTranscript } from './transcript.js';
 import { levelsPanel, stepTracker } from './levels.js';
+import { renderCase } from './case_view.js';
 
 const LADDER = ['exposed', 'tried', 'opened', 'used', 'tampered', 'checked', 'shipped'];
 const CALL_FIELDS = ['exposed', 'tried', 'opened', 'joined'];
@@ -108,6 +109,17 @@ export async function viewRun(id, q, view) {
     }
   }
 
+  // Calls that read a hidden regulator's post (a worker), or that posted as the regulator (the regulator).
+  function regulatorCalls(agent, role) {
+    const out = new Set();
+    for (const b of d.boards) for (const m of b.messages) {
+      if (m.role !== 'regulator') continue;
+      if (role === 'regulator' && m.sent && m.sent.agent === agent) out.add(m.sent.call_id);
+      if (role !== 'regulator') for (const rd of m.reads) if (rd.agent === agent) out.add(rd.call_id);
+    }
+    return out;
+  }
+
   // ---- agent cards with lazy transcripts.
   const cards = new Map();
   function agentCard(a) {
@@ -128,7 +140,8 @@ export async function viewRun(id, q, view) {
             if (a.spar_ladder) {
               for (const [k, ms] of ladderMarks(a.spar_ladder, 'judge')) marks.set(k, [...(marks.get(k) || []), ...ms]);
             }
-            state.tr = renderTranscript(t, { agent: a.agent, marks, boardCalls: boardCalls.get(a.agent) || new Map(), tracker: d.levels ? stepTracker(d.levels, a.agent) : null });
+            state.tr = renderCase(t, { agent: a.agent, levels: d.levels, boardCalls: boardCalls.get(a.agent) || new Map(),
+              isRegulator: a.role === 'regulator', regulatorCalls: regulatorCalls(a.agent, a.role) });
             holder.replaceChildren(
               h('div', { class: 'tr-head' }, h('h3', null, `Transcript of ${a.agent}`), muted(t.model || '', 'small'),
                 h('span', { class: 'spacer' }),

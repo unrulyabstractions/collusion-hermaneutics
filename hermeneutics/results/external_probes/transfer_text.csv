@@ -1,0 +1,39 @@
+n,pos,neg,auroc,ci_lo,ci_hi,train,features,target,group
+2833.0,2083.0,750.0,0.7384183069291087,0.717036578363313,0.7586457075488451,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),all
+1006.0,609.0,397.0,0.6813539973446167,0.6485638634453446,0.7150389511755207,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),author GLM 5.2
+935.0,733.0,202.0,0.731680466818851,0.6869645877940243,0.7708297557142196,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),author Kimi K3
+892.0,741.0,151.0,0.8254640677087522,0.7834340648615336,0.8693025307545956,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),author Qwen 3.8 Max
+1382.0,1159.0,223.0,0.7774794259780157,0.743057881171758,0.807677251366131,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire judge verdict,environment swebench-verified
+622.0,424.0,198.0,0.7284638841242614,0.688054294059172,0.7708602620938166,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire judge verdict,environment deepswe
+829.0,500.0,329.0,0.88180547112462,0.857494361435475,0.9041177279677477,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire judge verdict,environment impossiblebench
+967.0,106.0,861.0,0.564240790655885,0.5064318934203919,0.6261962795659685,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire monitor verdict,environment tau3bench
+928.0,69.0,859.0,0.7878726527306777,0.7258613594101215,0.8462841431588825,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire monitor verdict,environment shoppingbench
+,,,0.7744315964090555,,,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),within run dir (pairs inside one run dir)
+224.0,134.0,90.0,0.7346600331674958,0.6703552845969725,0.8001366280782782,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),cheatbench (its own label),all
+,,,0.5988405797101449,,,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),cheatbench (its own label),within harness
+266.0,133.0,133.0,0.5386963649725818,0.4818813952173667,0.5954039233421901,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),evilgenie (its own label),all
+,,,0.5459119496855346,,,"controls solo (373 agents, 193 cheat)",TF-IDF agent's words (rendered text),evilgenie (its own label),within author
+2833.0,2083.0,750.0,0.7397753240518483,0.7182314128122597,0.7605814548035431,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),all
+1006.0,609.0,397.0,0.6970298585863599,0.6645950805898845,0.7301930191532107,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),author GLM 5.2
+935.0,733.0,202.0,0.7386098091391676,0.6954609897366357,0.7778990827864742,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),author Kimi K3
+892.0,741.0,151.0,0.8294143407423296,0.7891568632110578,0.8730634159599323,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),author Qwen 3.8 Max
+1382.0,1159.0,223.0,0.7752392080694274,0.7418983681548952,0.8064462082859017,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire judge verdict,environment swebench-verified
+622.0,424.0,198.0,0.7255336382694874,0.6847427910159326,0.7659327298466085,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire judge verdict,environment deepswe
+829.0,500.0,329.0,0.8988753799392097,0.8758744909457855,0.9195208956874789,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire judge verdict,environment impossiblebench
+967.0,106.0,861.0,0.6333793526614512,0.5762029043860326,0.696917066670299,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire monitor verdict,environment tau3bench
+928.0,69.0,859.0,0.8081692564660626,0.7483113079644914,0.862974011970667,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire monitor verdict,environment shoppingbench
+,,,0.7901663739266198,,,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),Goodfire judge sets (verdict yes vs no),within run dir (pairs inside one run dir)
+224.0,134.0,90.0,0.7261194029850746,0.6593585069544475,0.7887238277613905,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),cheatbench (its own label),all
+,,,0.5692753623188406,,,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),cheatbench (its own label),within harness
+266.0,133.0,133.0,0.529368534117248,0.4668353213861722,0.5888080162813047,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),evilgenie (its own label),all
+,,,0.549266247379455,,,"controls solo + cheat (600 agents, 343 cheat)",TF-IDF agent's words (rendered text),evilgenie (its own label),within author
+373.0,193.0,180.0,0.5902993667242372,0.5319093278157093,0.6488963823276843,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),controls solo,all
+,,,0.6019991552864986,,,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),controls solo,within author
+600.0,343.0,257.0,0.5612982269061043,0.5139717044212981,0.6046287910257481,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),controls solo + cheat,all
+,,,0.5360013880053207,,,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),controls solo + cheat,within author
+129.0,56.0,73.0,0.7262720156555773,0.6164579694184957,0.8183870263663349,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),"team workers (board seed), cheating used or above",all
+129.0,126.0,3.0,0.24603174603174602,0.0703125,0.5546875,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),"team workers (board seed), cheating opened or above",all
+224.0,134.0,90.0,0.8149253731343283,0.7609778280832146,0.8678903388881459,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),cheatbench (its own label),all
+,,,0.8510144927536232,,,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),cheatbench (its own label),within harness
+266.0,133.0,133.0,0.6802532647407994,0.6277898694103681,0.7292144835773644,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),evilgenie (its own label),all
+,,,0.6926624737945493,,,"Goodfire judge sets (2833 rollouts, 2083 yes)",TF-IDF agent's words (rendered text),evilgenie (its own label),within author

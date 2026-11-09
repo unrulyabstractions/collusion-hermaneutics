@@ -50,6 +50,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 
 from . import MODEL_DIR
 from .render import TEMPLATE_KWARGS, render as render_text
@@ -311,8 +312,10 @@ def render(rollout, tok=None, with_units=False):
     # Every assistant turn renders as "<think>\n{reasoning|trim}\n</think>\n\n{content}" (chat_template.jinja, preserve_thinking
     # defaults to true), so the tokens strictly between a turn's pair decode to its trimmed reasoning. A pair that does not
     # is misplaced (e.g. a literal "<|im_start|>assistant\n<think>" in a tool output fooling think_positions' guard).
+    # Compared under NFC: the tokenizer composes combining sequences ("a" + U+0304 decodes as one "ā").
+    nfc = lambda s: unicodedata.normalize("NFC", s).strip()  # noqa: E731
     mism = [k for k, ((a, b), m) in enumerate(zip(think, asst))
-            if tok.decode(ids[a + 1:b]).strip() != (m.get("reasoning") or "").strip()]
+            if nfc(tok.decode(ids[a + 1:b])) != nfc(m.get("reasoning") or "")]
     info["think_mismatch"] = len(mism) + abs(len(think) - len(asst))
     info["think_mismatch_first"] = mism[0] if mism else None
     return {"text": text, "ids": ids, "units": units, "think": think, "readable": readable, "messages": msgs, "tools": tools,

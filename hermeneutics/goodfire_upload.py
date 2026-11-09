@@ -14,6 +14,17 @@ REPO = "unrulyabstractions/apart-swarm-align"
 ROOT = "activations/goodfire_reward_hack"
 
 
+def enriched(f):
+    """goodfire_enrich.py has finished this folder: rendered.txt and source.json exist and meta.json (rewritten last)
+    names its source dataset. Unenriched folders wait for the next cycle."""
+    if not (os.path.exists(os.path.join(f, "rendered.txt")) and os.path.exists(os.path.join(f, "source.json"))):
+        return False
+    try:
+        return json.load(open(os.path.join(f, "meta.json"))).get("source_dataset") == "Goodfire/reward-hack-data"
+    except ValueError:
+        return False
+
+
 def pending(acts, done):
     """{run_dir: [rollout_id]} of finished folders not yet verified in the ledger."""
     out = {}
@@ -24,7 +35,7 @@ def pending(acts, done):
         for rid in sorted(os.listdir(d)):
             f = os.path.join(d, rid)
             if os.path.isdir(f) and os.path.exists(os.path.join(f, "meta.json")) and (rd, rid) not in done \
-                    and os.path.exists(os.path.join(f, "acts.safetensors")):
+                    and os.path.exists(os.path.join(f, "acts.safetensors")) and enriched(f):
                 out.setdefault(rd, []).append(rid)
     return out
 

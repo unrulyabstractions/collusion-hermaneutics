@@ -5,6 +5,7 @@
  * Every string goes in through h() text nodes. */
 import { h } from './dom.js';
 import { readableReasoning } from './transcript.js';
+import { colour, lensLabel, scoreZ } from './lens.js';
 
 // Colour ramps per ladder, level 0 first. Cheating and collaboration are viz_common.js RUNG and COLLAB fills.
 export const RAMP = {
@@ -23,11 +24,19 @@ const WORDS = {
 };
 const STAGE = ['not seen yet', 'saw it', 'tried to reach it', 'opened it', 'used it', 'tampered with the game', 'checked it with the grader', 'shipped it'];
 
+/** Full colour legend: one row per ladder, every level as a swatch in ladder order. */
+export function fullLegend(ladders, order) {
+  return h('div', { class: 'cs-full-legend' }, order.map(L => h('div', { class: 'cfl-row' },
+    h('b', null, `${SHORT[L]} ${ladders[L].name}:`),
+    ladders[L].levels.map((v, i) => h('span', { class: 'cfl-item' }, h('i', { style: `background:${RAMP[L][i]}` }), v)))));
+}
+
 /** Sentences of a text, each in a span.sn (so a later reader pass can colour them one by one). */
 function sentences(text, call) {
   const box = h('div', { class: 'txt' });
-  const parts = String(text || '').split(/(?<=[.!?])\s+(?=[A-Z0-9"'(`])|\n{2,}/);
-  parts.forEach((p, i) => { if (!p) return; box.appendChild(h('span', { class: 'sn', dataset: { call: String(call) } }, p)); if (i < parts.length - 1) box.appendChild(document.createTextNode(' ')); });
+  // the lens file's sentence_split_regex, (?<=[.!?])\s+|\n+, with the separators kept as plain text
+  const parts = String(text || '').split(/((?<=[.!?])\s+|\n+)/);
+  parts.forEach((p, i) => { if (!p) return; box.appendChild(i % 2 ? document.createTextNode(p) : h('span', { class: 'sn', dataset: { call: String(call) } }, p)); });
   return box;
 }
 function asStr(v) {
@@ -149,7 +158,7 @@ export function renderCase(t, ctx) {
       h('div', { class: 'ch' }, h('span', { class: 'cn' }, `Call ${k}`), ' · ', h('span', { title: 'how far the agent had got toward the honeypot by this call' }, STAGE[level[0][k]] || ''),
         evNew.filter(e => e.ladder !== 'cheat').map(e => [' · ', h('span', { class: 'ev-w', title: e.evidence }, `${lv.ladders[e.ladder].name} ${e.level}`)]),
         evNew.filter(e => e.ladder === 'cheat' && WORDS.cheat[e.level] !== STAGE[level[0][k]]).map(e => [' · ', h('span', { class: 'ev-w', title: e.evidence }, WORDS.cheat[e.level] || e.level)]),
-        h('span', { class: 'mz' }, miniLanes(k), ' ', c.tc.function_name || '')),
+        h('span', { class: 'mz' }, h('span', { class: 'cs-lz' }), ' ', miniLanes(k), ' ', c.tc.function_name || '')),
       marks.length ? h('div', { class: 'cs-board' }, 'Board: ', marks.map((m, i) => [i ? ' · ' : '', h('span', { title: m.title || '' }, m.badge), m.text ? ` (${m.text})` : ''])) : null,
       c.reasoning ? blk('Reasoning', c.reasoning, k, false, 'reasoning') : null,
       c.text && c.text.trim() ? blk('Text', c.text, k, false, 'reasoning') : null,
@@ -162,7 +171,7 @@ export function renderCase(t, ctx) {
 
   // 4. left: the whole episode, one row per call, six lanes, milestones in the margin
   const NS = 'http://www.w3.org/2000/svg';
-  const LB = 140, LW = 13, GAP = 2, W = LB + order.length * (LW + GAP) + 10;
+  const LB = 138, LW = 10, GAP = 1, RW = 66, RX = LB + order.length * (LW + GAP) + 4, W = RX + RW + 2;
   const maxH = Math.max(320, Math.min(window.innerHeight - 220, 900));
   const rh = Math.max(2, Math.min(9, maxH / Math.max(n, 1)));
   const H = Math.ceil(n * rh) + 20 + 14;
@@ -215,7 +224,7 @@ export function renderCase(t, ctx) {
     el.classList.add('here');
     el.scrollIntoView({ block: 'start', behavior: 'smooth' });
     if (mark) mark.remove();
-    mark = mk('rect', { x: LB - 1, y: 14 + k * rh - 1, width: order.length * (LW + GAP) + 1, height: Math.max(3, rh + 2), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2 });
+    mark = mk('rect', { x: LB - 1, y: 14 + k * rh - 1, width: RX + RW - LB + 2, height: Math.max(3, rh + 2), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2 });
     svg.appendChild(mark);
     return el;
   }
@@ -229,19 +238,73 @@ export function renderCase(t, ctx) {
   const mine = lv && lv.agents[ctx.agent];
   const sixLine = mine ? h('div', { class: 'cs-six' }, order.map((L, i) => {
     const c = mine[L];
-    return [i ? ' · ' : '', h('span', { title: `${c.kind === 'proxy' ? 'Proxy' : 'Direct'} rule. ${c.rule}${c.evidence ? '\nEvidence: ' + c.evidence : ''}` },
+    return [h('div', { class: 'cs-six-row', title: `${c.kind === 'proxy' ? 'Proxy' : 'Direct'} rule. ${c.rule}${c.evidence ? '\nEvidence: ' + c.evidence : ''}` },
       h('i', { style: `background:${c.na || !c.index ? 'var(--line)' : RAMP[L][c.index]}` }), `${lv.ladders[L].name} `,
       c.na ? 'n/a' : h('b', null, c.level), c.na ? '' : ` ${c.index}/${c.of}`)];
   })) : null;
+  // ---- lens: tint every sentence span, draw the per-call sentence raster beside the lanes, put the mean in headers
+  const rasterG = document.createElementNS(NS, 'g');
+  svg.appendChild(rasterG);
+  const scale = h('div', { class: 'scale', hidden: true }, h('span', null, '−2 sd'), h('span', { class: 'grad' }), h('span', null, '+2 sd'));
+  const lensNote = h('p', { class: 'note', hidden: true });
+  const LENS_ABOUT = { 'lexical_cheat': 'Lexical cheat lens: word weights fitted on the controls; its strongest terms are names of the planted files, so it marks contact with the exploit more than cheating language (held-out AUROC 0.92).' };
+  function setLens(L) {
+    rasterG.replaceChildren();
+    const spans = right.querySelectorAll('.sn');
+    if (!L) {
+      for (const sp of spans) { sp.style.background = ''; sp.style.color = ''; sp.removeAttribute('title'); }
+      for (const b of blocks) b.querySelector('.cs-lz').textContent = '';
+      scale.hidden = true; lensNote.hidden = true;
+      return;
+    }
+    const name = /lens/i.test(L.name || '') ? L.name : lensLabel(L.name || 'lens');
+    const idx = new Map();
+    const perCall = new Map();
+    for (const sp of spans) {
+      const call = Number(sp.dataset.call);
+      const i = idx.get(call) || 0; idx.set(call, i + 1);
+      const z = scoreZ(L, sp.textContent, ctx.runId, ctx.agent, call, i);
+      const own = !sp.closest('.inp');
+      const al = own ? 0.85 : 0.6;
+      const t = Math.abs(Math.max(-1, Math.min(1, (z || 0) / 2)));
+      sp.style.background = colour(z, al);
+      sp.style.color = t * al > 0.55 ? '#fff' : '';
+      sp.title = `${name} ${Number.isFinite(z) ? (z >= 0 ? '+' : '−') + Math.abs(z).toFixed(2) + ' sd' : 'not scored'}`;
+      if (call >= 0) { if (!perCall.has(call)) perCall.set(call, []); perCall.get(call).push([sp.textContent.length, z, own]); }
+    }
+    for (const b of blocks) {
+      const k = Number(b.dataset.call);
+      const own = (perCall.get(k) || []).filter(x => x[2] && Number.isFinite(x[1]));
+      const mz = own.length ? own.reduce((a, x) => a + x[1], 0) / own.length : NaN;
+      b.querySelector('.cs-lz').textContent = Number.isFinite(mz) ? `${name} ${mz >= 0 ? '+' : '−'}${Math.abs(mz).toFixed(2)} sd` : '';
+    }
+    for (let k = 0; k < n; k++) {
+      const ss = perCall.get(k) || [];
+      const tot = ss.reduce((a, x) => a + Math.max(1, x[0]), 0) || 1;
+      let x = RX;
+      for (const [len, z, own] of ss) {
+        const w = RW * Math.max(1, len) / tot;
+        rasterG.appendChild(mk('rect', { x, y: 14 + k * rh, width: w + 0.3, height: rh + 0.2, fill: Number.isFinite(z) ? colour(z, own ? 1 : 0.55) : 'transparent', 'data-call': k }));
+        x += w;
+      }
+    }
+    lensNote.textContent = `${LENS_ABOUT[L._key] || name + '.'} Read left to right, top to bottom; each sentence is as wide as its length. One row per call; inputs (prompts, tool results) are drawn fainter. Red is above the lens's usual level, blue below.`;
+    scale.hidden = false; lensNote.hidden = false;
+  }
+  const rl = mk('text', { x: RX + RW / 2, y: 10, 'text-anchor': 'middle', class: 'cs-lane-h' });
+  rl.textContent = 'sentences';
+  svg.appendChild(rl);
+  svg.appendChild(mk('rect', { x: RX, y: 14, width: RW, height: n * rh, fill: 'none', stroke: 'var(--line)', 'stroke-width': 0.5 }));
+
   const left = h('div', { class: 'left' },
     h('h2', null, 'The whole episode ', h('span', { class: 'sub' }, `${n} calls, ${nSent} sentences`)),
     sixLine,
-    svg,
-    h('div', { class: 'cs-legend' }, order.map(L => h('span', null, h('b', null, SHORT[L]), ' ', lv ? lv.ladders[L].name : L))),
-    h('p', { class: 'note' }, 'No reader pass for this run; lanes show the six ladders. One row per tool call, call 0 at the top; the band below the last call is the level at the end of the run. Click a row or a label to open that call.'));
+    svg, scale, lensNote,
+    lv ? fullLegend(lv.ladders, order) : null,
+    h('p', { class: 'note' }, 'Lanes show the six ladders; the sentence column shows the selected lens (none: blank). One row per tool call, call 0 at the top; the band below the last call is the level at the end of the run. Click a row or a label to open that call.'));
   const el = h('div', { class: 'case' }, h('div', { class: 'main' }, left, right));
   return {
-    el, nCalls: n, showAll() {},
+    el, nCalls: n, showAll() {}, setLens,
     findCall: k => show(k),
     findToolCall: id => (idOf.has(id) ? show(idOf.get(id)) : null),
   };

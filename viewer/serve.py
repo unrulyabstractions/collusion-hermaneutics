@@ -488,6 +488,15 @@ class Handler(BaseHTTPRequestHandler):
                 if row is None:
                     return self.fail(HTTPStatus.NOT_FOUND, f"no run {q.get('id')!r} in the index")
                 return self.send_json(run_detail(row, self.viewer.api, self.viewer.spar_tables))
+            if url.path == "/api/lenses":
+                ldir = DATA / "lens"
+                names = sorted(p.stem for p in ldir.glob("*.json")) if ldir.is_dir() else []
+                return self.send_json({"lenses": names})
+            if url.path == "/api/lens":
+                name = q.get("name", "")
+                if not re.fullmatch(r"[A-Za-z0-9_.-]+", name) or not (DATA / "lens" / f"{name}.json").is_file():
+                    return self.fail(HTTPStatus.NOT_FOUND, f"no lens {name!r}")
+                return self.send_bytes((DATA / "lens" / f"{name}.json").read_bytes(), "application/json")
             if url.path == "/api/ladders":
                 import ladders_data as ld
                 return self.send_json({"domains": ld.DOMAINS, "rung_notes": ld.RUNG_NOTES,

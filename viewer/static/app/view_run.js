@@ -10,7 +10,8 @@ import { COLLAB_MEANING, COLLAB_ORDER, COLLECTIONS, JUDGES, JUDGE_ORDER, RUNG_ME
 import { cheatLabelBadge, yesNo } from './view_index.js';
 import { renderTranscript } from './transcript.js';
 import { levelsPanel, stepTracker } from './levels.js';
-import { renderCase } from './case_view.js';
+import { fullLegend, renderCase } from './case_view.js';
+import { lensLabel, listLenses, loadLens } from './lens.js';
 
 const LADDER = ['exposed', 'tried', 'opened', 'used', 'tampered', 'checked', 'shipped'];
 const CALL_FIELDS = ['exposed', 'tried', 'opened', 'joined'];
@@ -141,7 +142,8 @@ export async function viewRun(id, q, view) {
               for (const [k, ms] of ladderMarks(a.spar_ladder, 'judge')) marks.set(k, [...(marks.get(k) || []), ...ms]);
             }
             state.tr = renderCase(t, { agent: a.agent, levels: d.levels, boardCalls: boardCalls.get(a.agent) || new Map(),
-              isRegulator: a.role === 'regulator', regulatorCalls: regulatorCalls(a.agent, a.role) });
+              isRegulator: a.role === 'regulator', regulatorCalls: regulatorCalls(a.agent, a.role), runId: id });
+            if (lensState.L) state.tr.setLens(lensState.L);
             holder.replaceChildren(muted(`The transcript of ${a.agent} is shown at the top of the page, under its tab.`, 'small block'));
             btn.textContent = `Transcript at the top (${sizeTxt})`;
             return state.tr;
@@ -426,7 +428,8 @@ export async function viewRun(id, q, view) {
       a.agent, h('span', { class: 'rp-role' }, ' ' + (ROLE_WORD[a.role] || a.role))));
   }
   if (multi) tabs.set('team', h('button', { type: 'button', class: 'rp-tab', onclick: () => selectTab('team') }, 'Team'));
-  const teamView = h('div', { class: 'rp-team' }, d.levels ? levelsPanel(d.levels, roles, row.task) : null, boardCard);
+  const teamView = h('div', { class: 'rp-team' }, d.levels ? levelsPanel(d.levels, roles, row.task) : null,
+    d.levels ? h('section', { class: 'card' }, h('h2', null, 'Colour legend'), fullLegend(d.levels.ladders, d.levels.order)) : null, boardCard);
   async function selectTab(key) {
     current = key;
     for (const [k, b] of tabs) b.classList.toggle('on', k === key);
@@ -438,12 +441,28 @@ export async function viewRun(id, q, view) {
     if (current === key) stage.replaceChildren(tr.el);
     return tr;
   }
+  // Lens tabs, like the artifact's reading tabs: the lexical cheat lens by default when its file exists.
+  const lensState = { L: null };
+  const lensBox = h('span', { class: 'rp-tabs rp-lens' });
+  async function setLens(name) {
+    lensState.L = name ? await loadLens(name) : null;
+    for (const b of lensBox.children) b.classList.toggle('on', (b.dataset.lens || '') === (lensState.L ? name : ''));
+    for (const c of cards.values()) if (c.state.tr && c.state.tr.setLens) c.state.tr.setLens(lensState.L);
+  }
+  listLenses().then(names => {
+    const order = names.includes('lexical_cheat') ? ['lexical_cheat', ...names.filter(n => n !== 'lexical_cheat')] : names;
+    const TIP = { lexical_cheat: 'Lexical cheat lens: word weights fitted on the controls; its strongest terms are names of the planted files, so it marks contact with the exploit more than cheating language (held-out AUROC 0.92)' };
+    lensBox.replaceChildren(...order.map(nm => h('button', { type: 'button', class: 'rp-tab', title: TIP[nm] || '', dataset: { lens: nm }, onclick: () => setLens(nm) }, lensLabel(nm))),
+      h('button', { type: 'button', class: 'rp-tab', dataset: { lens: '' }, onclick: () => setLens(null) }, 'No lens'));
+    return setLens(order[0] || null);
+  });
   const showSel = h('select', { 'aria-label': 'Which text to show', onchange: e => { stage.dataset.show = e.target.value; } },
     [['all', 'All'], ['reasoning', 'Reasoning'], ['tools', 'Tool calls'], ['board', 'Board']].map(([v, t]) => h('option', { value: v }, t)));
   const bar = h('div', { class: 'rp-bar' },
     h('a', { class: 'rp-back', href: '#/', title: 'all runs' }, '←'),
     h('b', { class: 'rp-run' }, row.run), h('span', { class: 'rp-arm' }, armLabel(row)),
     h('span', { class: 'rp-tabs' }, [...tabs.values()]),
+    lensBox,
     h('label', { class: 'rp-show' }, 'Show ', showSel),
     h('button', { type: 'button', class: 'rp-dbtn', onclick: () => { details.open = !details.open; if (details.open) details.scrollIntoView({ block: 'start' }); } }, 'Details'));
 

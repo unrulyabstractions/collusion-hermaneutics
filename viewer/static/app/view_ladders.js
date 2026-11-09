@@ -3,8 +3,8 @@
 import { h } from './dom.js';
 import { glyph } from './levels.js';
 
-function byTask(title, label, notes, levels, d, hl) {
-  return h('section', { class: 'card' }, h('h2', null, title),
+function byTask(title, label, notes, levels, d, hl, about) {
+  return h('section', { class: 'card' }, h('h2', null, title), about || null,
     h('div', { class: 'table-wrap' }, h('table', { class: 'lv-ladder-table' },
       h('thead', null, h('tr', null, h('th', null, label),
         d.domains.map((dom, j) => h('th', { class: j === hl && 'lv-hl' }, dom, h('div', { class: 'small muted' }, notes[j]))))),
@@ -31,6 +31,14 @@ export async function viewLadders(q) {
     h('div', { class: 'page-head' }, h('h1', null, 'Ladders'),
       hl >= 0 ? h('p', { class: 'muted' }, `The column of this run's task (${d.domains[hl]}) is highlighted.`) : null),
     byTask('Cheating level by task', 'rung', d.rung_notes, d.rungs, d, hl),
-    byTask('Collaboration level by task', 'level', d.collab_notes, d.collab, d, hl),
+    byTask('Collaboration level by task (code ladder)', 'level', d.collab_notes, d.collab, d, hl),
+    ['coop', 'collab', 'collude', 'scheme'].filter(k => d.four[k]).map(k => {
+      const T = d.four[k];
+      const live = d.ladders[k] || T;
+      return byTask(`${T.name} level by task (${live.kind})`, 'level', d.split_notes, T.rows, d, hl,
+        h('div', { class: 'small lv-about' },
+          h('span', { class: 'lv-proxy' }, live.kind === 'proxy' ? 'proxy' : 'direct'), ' ', live.rule,
+          T.gate ? h('div', { class: 'muted' }, 'Gate: ', T.gate) : null));
+    }),
     six);
 }

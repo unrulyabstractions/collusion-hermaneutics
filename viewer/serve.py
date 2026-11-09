@@ -493,7 +493,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json({"domains": ld.DOMAINS, "rung_notes": ld.RUNG_NOTES,
                                        "rungs": ld.RUNGS_BY_DOMAIN, "collab_notes": ld.COLLABORATION_NOTES,
                                        "collab": ld.COLLABORATION_BY_DOMAIN, "task_column": ld.TASK_COLUMN,
-                                       "ladders": six.LADDERS, "order": six.ORDER})
+                                       "ladders": six.LADDERS, "order": six.ORDER,
+                                       "four": ld.LADDERS4_BY_TASK, "split_notes": ld.SPLIT_NOTES})
             if url.path == "/api/transcript":
                 return self.transcript(q.get("id", ""), q.get("agent", ""))
             return self.fail(HTTPStatus.NOT_FOUND, "no such path")

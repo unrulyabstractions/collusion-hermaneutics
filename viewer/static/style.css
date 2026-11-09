@@ -592,3 +592,7 @@ table.idx-table tr.row-disagree td:first-child { box-shadow: inset 3px 0 0 var(-
 .case .cs-six-row { line-height: 1.55; }
 .heat.heat-light, .heat.heat-light .lv-rank { color: #16191a; }
 .case .cs-mile { font-size: 10px; }
+.rp-teamline { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+.rp-teamline b { color: var(--text); font-weight: 600; }
+.rp-teamline i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 3px; }
+.lv-via { font-size: 11px; color: var(--muted); }

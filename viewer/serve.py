@@ -42,7 +42,7 @@ CACHE = HERE / ".cache" / "index.json"
 SPAR_DEFAULT = Path("/Users/unrulyabstractions/work/arena-capstone/data/hf/spar-swarm")
 OLD_CONTROLS = "/Users/unrulyabstractions/work/arena-capstone/data/apart_controls/"
 NEW_CONTROLS = str(DATA / "apart_controls") + "/"
-INDEX_VERSION = 6
+INDEX_VERSION = 7
 
 # The honeypot ladder (SGA src/measures/rungs.py RUNGS) and the levels data/labels.csv reads it by
 # (hermeneutics/labels.py): used and tampered sit on one level.

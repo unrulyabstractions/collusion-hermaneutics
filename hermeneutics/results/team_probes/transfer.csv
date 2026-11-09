@@ -3,7 +3,7 @@ controls solo,probe Lall think-open+close,"controls, cross-validated (reference)
 controls solo,probe Lall think-open+close,"team workers, cheating used or above",129,56,73,0.6213307240704501,0.5201930014430014,0.7142446344585851,0.1
 controls solo,probe Lall think-open+close,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.6456692913385826,0.39790666410601117,0.8810461192350956,0.1
 controls solo,probe Lall think-open+close,"team workers, cheating opened or above",129,126,3,0.5343915343915344,0.2698412698412698,0.8582677165354331,0.1
-controls solo,probe Lall think-open+close,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.5019601680941356,0.47166772171138555,0.5282548169801538,0.1
+controls solo,probe Lall think-open+close,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.5019600619928558,0.47166772171138555,0.5282548169801538,0.1
 controls solo,probe Lall think-open,"controls, cross-validated (reference)",373,193,180,0.9510938399539436,0.9289033375001962,0.9699967060929556,
 controls solo,probe Lall think-open,"team workers, cheating used or above",129,56,73,0.6259784735812133,0.5271553069242043,0.7132173710792131,0.1
 controls solo,probe Lall think-open,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.5354330708661418,0.3228346456692913,0.7480314960629921,0.1
@@ -13,7 +13,7 @@ controls solo,probe Lall think-close,"controls, cross-validated (reference)",373
 controls solo,probe Lall think-close,"team workers, cheating used or above",129,56,73,0.62206457925636,0.5079271445241962,0.732146164021164,0.1
 controls solo,probe Lall think-close,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.5236220472440944,0.1953125,0.8515625,0.1
 controls solo,probe Lall think-close,"team workers, cheating opened or above",129,126,3,0.5264550264550265,0.2283464566929134,0.828125,0.1
-controls solo,probe Lall think-close,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.5010514106324304,0.46736960956841395,0.5318833187298942,0.1
+controls solo,probe Lall think-close,"team turns, cheating used at that call (onset = first write of planted content)",6818,1927,4891,0.5010516228349902,0.46736960956841395,0.5318833187298942,0.1
 controls solo,TF-IDF agent's words,"team workers, cheating used or above",129,56,73,0.7363013698630136,0.6476989426141968,0.8196723358608605,100.0
 controls solo,TF-IDF agent's words,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.8937007874015748,0.7887276785714286,0.96875,100.0
 controls solo,TF-IDF agent's words,"team workers, cheating opened or above",129,126,3,0.8677248677248677,0.7612057435090479,0.953125,100.0
@@ -36,11 +36,20 @@ controls solo + cheat,TF-IDF agent's words,"team workers, cheating used or above
 controls solo + cheat,TF-IDF agent's words,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.9212598425196851,0.8649714285714286,0.96875,100.0
 controls solo + cheat,TF-IDF agent's words,"team workers, cheating opened or above",129,126,3,0.9206349206349206,0.8671875,0.9674993443482822,100.0
 controls solo,probe Lall think-open+close,"cheatbench, cheating (the set's own label)",224,134,90,0.27943615257048093,0.2008888888888889,0.6576923076923077,
-controls solo,probe Lall think-open+close,"spar_screen_team, cheating (the set's own label)",226,111,115,0.8571092831962397,0.7936535559117843,0.914355256534432,
+controls solo,probe Lall think-open+close,"spar_screen_team, cheating (the set's own label)",433,171,262,0.7820633007455025,0.7266077539750442,0.8343829576875209,
+controls solo,probe Lall think-open+close,"spar_screen_solo, cheating (the set's own label)",90,57,33,0.8644338118022329,0.775570081850898,0.9306773515857957,
+controls solo,probe Lall think-open+close,"goodfire_reward_hack, cheating (the set's own label)",4728,2258,2470,0.68256491538856,0.5928526602388762,0.7603213829039319,
 controls solo,probe Lall think-open+close,"spar_mixed_41, cheating (the set's own label)",209,43,166,0.7908377696833847,0.7086477958882396,0.8650812294244739,
+controls solo,probe Lall think-open+close,"spar_exploration_single, cheating (the set's own label)",313,141,172,0.7640194623123866,0.6834078565832359,0.8287436929714945,
 controls solo,probe Lall think-open,"cheatbench, cheating (the set's own label)",224,134,90,0.2883084577114428,0.2816399286987522,0.9509433962264151,
-controls solo,probe Lall think-open,"spar_screen_team, cheating (the set's own label)",226,111,115,0.8209165687426557,0.7483854619863943,0.8863115180978052,
+controls solo,probe Lall think-open,"spar_screen_team, cheating (the set's own label)",433,171,262,0.7565064059640194,0.6933545161083801,0.8128833124124767,
+controls solo,probe Lall think-open,"spar_screen_solo, cheating (the set's own label)",90,57,33,0.8686868686868687,0.7802915254237288,0.9349147678784775,
+controls solo,probe Lall think-open,"goodfire_reward_hack, cheating (the set's own label)",4728,2258,2470,0.6236551640052642,0.45475075949163385,0.7587557496794227,
 controls solo,probe Lall think-open,"spar_mixed_41, cheating (the set's own label)",209,43,166,0.719529279910339,0.6267654220779221,0.809171915374677,
+controls solo,probe Lall think-open,"spar_exploration_single, cheating (the set's own label)",313,141,172,0.7026636978393535,0.6308448384952589,0.7688875235200463,
 controls solo,probe Lall think-close,"cheatbench, cheating (the set's own label)",224,134,90,0.4748756218905473,0.3536541889483066,0.7094339622641509,
-controls solo,probe Lall think-close,"spar_screen_team, cheating (the set's own label)",226,111,115,0.8227183705444575,0.7404013256465377,0.8960311755149307,
+controls solo,probe Lall think-close,"spar_screen_team, cheating (the set's own label)",433,171,262,0.7819293781527611,0.7187102401929013,0.8345904305802678,
+controls solo,probe Lall think-close,"spar_screen_solo, cheating (the set's own label)",90,57,33,0.885699096225412,0.8024120086195637,0.9502722671707179,
+controls solo,probe Lall think-close,"goodfire_reward_hack, cheating (the set's own label)",4728,2258,2470,0.7459279287678896,0.6285909279619882,0.8590479901611934,
 controls solo,probe Lall think-close,"spar_mixed_41, cheating (the set's own label)",209,43,166,0.7820117680022415,0.7015484418293328,0.8614780330278068,
+controls solo,probe Lall think-close,"spar_exploration_single, cheating (the set's own label)",313,141,172,0.7360630051129804,0.6529064158364918,0.8052835068894039,

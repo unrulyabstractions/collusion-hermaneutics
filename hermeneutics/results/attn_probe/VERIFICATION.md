@@ -51,3 +51,25 @@
 ## 2026-11-09, spar_screen_team six ladders
 
 - Labels from team_probes' labels/spar_screen_team_agents.csv (405 workers, 135 runs, ds/haiku/luna 135 each), source steps mapped to activation turns. No run crosses folds. Agent AUROC (last step) of the collusion binary head, seed 1, recomputed with sklearn: 0.962952, equal to the CSV. VERIFIED.
+
+## 2026-11-09 10:40 PST, gaps closed
+
+Hand recomputes with sklearn from the saved held-out step scores, with the agent exclusion rebuilt from the label sources (transfer_other_sets_scores.csv y for the set's label, labels/<set>_agents.csv for the ladders, controls_600 subsample.csv) and checked against the saved step, positive-step, agent and positive-agent counts. Every value below equals its metrics CSV to 1e-9 with all four counts equal.
+
+| Table | Row recomputed | Result |
+|---|---|---|
+| spar_screen_team, the set's label, all agents | binary head seed 0: step 0.958467, agent (last) 0.954854; seed 1: step 0.949176; linear per-step probe: step 0.904964, agent (last) 0.851684; 15986 steps, 425 agents (163 positive) | VERIFIED |
+| seven tokens against the think pair | spar_screen_team_seven seed 0 set label 0.974473; spar_screen_team_seven_ladders collusion seed 1 0.954728; spar_mixed_41_seven seed 0 0.881019; spar_mixed_41_seven_ladders cheating seed 1 0.855010; solo_design_seven coordination seed 0 0.901967 | VERIFIED |
+| three seeds | board_seed_think_seed2 cheating 0.885220; board_seed_seven_seed2 collusion 0.893922; controls_600_think_seed2 0.976986; controls_600_seven_seed2 0.986708 (593 agents: 7 positives with no onset dropped) | VERIFIED |
+| gate sensitivity | board_seed_think_gatecoop collusion seed 1 0.897483; spar_screen_team_think_ladders_gatecoop coordination seed 0 0.973800 | VERIFIED |
+| permutation nulls, monitor | all 18 monitor rows recomputed from the null CSVs (mean, 95th percentile, p = (1 + draws at or above real) / (1 + draws)); 50 draws for every tag, no draw index repeated; the three runs in flight finished all draws (spar_screen_team 0-24 and 25-49, spar_mixed_41 0-49) before their 3 h limit | VERIFIED |
+| permutation nulls, linear | all 18 linear rows recomputed; 100 draws each; the stored real row equals the metrics CSV (difference 0) | VERIFIED |
+| label consistency | nesting rules counted directly from the four label CSVs, independent of levels.py: 0 violations in every set; collusion above none with collaboration none 3 / 0 / 1 / 17 (board_seed / solo_design / spar_mixed_41 / spar_screen_team), all with cooperation above none | VERIFIED |
+| truncation | truncated_at counted in every local meta.json: 1 / 24 / 3 / 6 (spar_mixed_41 / spar_screen_team / spar_exploration_single / spar_screen_solo), 34 in all; equal to truncation_counts.csv. The Hub blob comparison was not rerun | VERIFIED (local) |
+| unknown onsets | 30 of the 433 labelled spar_screen_team agents and 27 of its 405 workers are unmappable; 24 of the 30 and 21 of the 27 are truncated | VERIFIED |
+
+Fold checks: every new step-score file (5 seven-token tags, 4 seed-2 tags, 4 gate tags: gatecollab and gatecoop on board_seed_think and spar_screen_team_think_ladders) has each run in exactly one of 5 folds, equal to its meta fold_of_run and to the fold of the same run in the think-pair or seed-0/1 run it is compared with (43, 600, 135, 51 and 59 runs). The set's label and the six ladders on spar_screen_team are stratified on different labels, so their folds differ by design; each comparison stays within one labelling.
+
+Report: RESULTS.md regenerated at 10:37 PST; against the 09:47 copy only the null rows and draw counts, the timestamp and three design lines changed.
+
+Independent verifier agent (read-only, 10:42 PST): every cell of the gaps-closed tables recomputed from the CSVs (36 + 18 null rows, 18 seven-token rows, 8 seed rows, 12 gate rows, the before/after and probe 6 tables, the 9 per-set null blocks) matches; no run spans two folds in 15 step-score files; nesting and truncation counts equal. It found no BROKEN item and two wording slips in this entry and one ambiguous sentence in RESULTS.md (433 labelled agents are 388 workers and 45 regulators), all fixed. UNVERIFIED: the regenerated-label columns of the label table (need a levels.py rerun), the Hub-equality columns of the truncation table (need the Hub listing), and the floor-call source steps of truncated_agents.csv.

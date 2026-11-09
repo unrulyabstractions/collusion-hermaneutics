@@ -1695,6 +1695,9 @@ def write_report(hub_counts, transfer_counts=None):
          f"Updated {time.strftime('%Y-%m-%d %H:%M %Z')}. Every number below comes from the CSVs in this folder; "
          "held-out scores per agent, team and turn are saved beside them (transfer scores in transfer_scores.csv and "
          "transfer_turn_scores.csv.gz), so each AUROC can be recomputed.", ""]
+    if (OUT / "gaps").is_dir():
+        from hermeneutics import attn_probe  # the gaps-closed section, shared with the monitor's report
+        L += attn_probe.gaps_lines("linear")
     A = pd.read_csv(OUT / "labels" / "agents.csv")
     W = A[A.role != "regulator"]
     T = pd.read_csv(OUT / "labels" / "teams.csv")

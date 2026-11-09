@@ -1,4 +1,4 @@
 set,tokens,ladder,model,seed,final_level_acc,final_level_mae,step_level_acc
-spar_screen_team,think,cheat,attention monitor,0.0,0.42920353982300885,1.4557522123893805,0.847994682029692
-spar_screen_team,think,cheat,attention monitor,1.0,0.37168141592920356,1.5265486725663717,0.8125415466430312
-spar_screen_team,think,cheat,majority level of the training fold,,0.30973451327433627,2.4292035398230087,0.5587192554841569
+spar_screen_team,think,cheat,attention monitor,0.0,0.5080831408775982,1.136258660508083,0.8062285854136074
+spar_screen_team,think,cheat,attention monitor,1.0,0.45958429561200925,1.1986143187066975,0.7456558981889378
+spar_screen_team,think,cheat,majority level of the training fold,,0.418013856812933,1.7829099307159353,0.3927435144395497

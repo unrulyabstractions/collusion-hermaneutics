@@ -1,0 +1,13 @@
+set,tokens,ladder,model,seed,final_level_acc,final_level_mae,step_level_acc
+board_seed,seven,cheat,attention monitor,2.0,0.4108527131782946,1.1472868217054264,0.7091522440598416
+board_seed,seven,cheat,majority level of the training fold,,0.5426356589147286,1.2635658914728682,0.5841889117043121
+board_seed,seven,coord,attention monitor,2.0,0.14728682170542637,1.5116279069767442,0.40202405397477264
+board_seed,seven,coord,majority level of the training fold,,0.3178294573643411,2.364341085271318,0.4474919331182165
+board_seed,seven,coop,attention monitor,2.0,0.4573643410852713,0.875968992248062,0.7968612496333236
+board_seed,seven,coop,majority level of the training fold,,0.4806201550387597,1.2790697674418605,0.7430331475506013
+board_seed,seven,collab,attention monitor,2.0,0.627906976744186,0.5503875968992248,0.8109416251100029
+board_seed,seven,collab,majority level of the training fold,,0.6046511627906976,0.7751937984496124,0.7509533587562335
+board_seed,seven,collude,attention monitor,2.0,0.5891472868217055,1.0852713178294573,0.7437665004400117
+board_seed,seven,collude,majority level of the training fold,,0.6046511627906976,1.5116279069767442,0.7447931944851862
+board_seed,seven,scheme,attention monitor,2.0,0.9767441860465116,0.046511627906976744,1.0
+board_seed,seven,scheme,majority level of the training fold,,0.9767441860465116,0.046511627906976744,1.0

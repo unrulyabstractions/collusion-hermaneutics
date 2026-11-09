@@ -228,7 +228,8 @@ def run_batch(batch, layers, cfg, weights, dev, linear_chunk, random_seed=None):
                     _, _, ids, units, think, _, _ = j
                     pos = torch.tensor([p for pair in think for p in pair], dtype=torch.long, device=dev)
                     acts[k][f"think_L{i + 1}"] = hk[pos].view(len(think), 2, hk.shape[1]).half().cpu()
-                    acts[k][f"mean_L{i + 1}"] = pool(hk, [u["tokens"] for u in units], len(units)).cpu()
+                    if units is not None:  # extract_goodfire.py passes None: think positions only, no sentence means
+                        acts[k][f"mean_L{i + 1}"] = pool(hk, [u["tokens"] for u in units], len(units)).cpu()
                 hidden[k].copy_(h)
                 del h
         del layer

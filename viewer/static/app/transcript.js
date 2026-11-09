@@ -195,6 +195,11 @@ function renderStep(s, i, k0, ctx) {
   }
   for (const r of results) if (!used.has(r)) el.appendChild(resultView(r, true));
   if (cited) el.classList.add('is-cited');
+  if (ctx.tracker && src === 'agent') {
+    const bm = [];
+    for (const tc of calls) for (const m of (ctx.boardCalls.get(tc.tool_call_id) || [])) bm.push(m.badge);
+    head.after(ctx.tracker.strip(calls.map((tc, j) => [k0 + j, tc.tool_call_id]), bm));
+  }
 
   const hay = [srcLabel, msg, reasoning && reasoning.text,
     (s.tool_calls || []).map(tc => `${tc.function_name} ${asText(tc.arguments)}`).join('\n'),
@@ -264,7 +269,7 @@ export function renderTranscript(t, ctx) {
     h('span', { class: 'spacer' }),
     muted(`${plural(k, 'tool call')} · ${plural(counts.cited, 'cited step')} · ${plural(counts.notice, 'harness notice')} · ${plural(counts.error, 'step')} with tool errors` +
       (meta ? ` · tokens in ${fmtInt(meta.total_prompt_tokens)}, out ${fmtInt(meta.total_completion_tokens)}` : ''), 'small'));
-  const el = h('div', { class: 'transcript' }, bar,
+  const el = h('div', { class: 'transcript' }, bar, ctx.tracker ? ctx.tracker.looseView : null,
     h('div', { class: 'steps' }, entries.length ? entries.map(e => e.el) : muted('This transcript has no steps.')));
   const showAll = () => {
     if (find.value || kindVal) { find.value = ''; kindVal = ''; kindSel.value = ''; apply(); }

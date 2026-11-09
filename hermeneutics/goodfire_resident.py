@@ -32,7 +32,7 @@ def versions(dev):
     import importlib.metadata as md
     import transformers
     try:
-        fla = md.version("flash-linear-attention")
+        fla = md.version("fla-core")  # the package that ships the `fla` module (flash-linear-attention is a shell)
     except md.PackageNotFoundError:
         fla = None
     try:

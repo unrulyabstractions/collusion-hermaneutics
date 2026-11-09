@@ -382,6 +382,28 @@ def load_think(s, rows):
     return out
 
 
+def load_means(s, rows):
+    """Like load_think, but each agent's tensors are replaced by their mean over turns (one row, float32): enough for
+    every agent-level probe (agent_matrix of these equals agent_matrix of the full tensors) at a fraction of the memory."""
+    out = {}
+    for r in rows.itertuples():
+        p = think_path(s, r.run, r.agent)
+        if not p.is_file():
+            continue
+        z = np.load(p)
+        if z["think_L26"].shape[0] == 0:
+            EMPTY.add((s, r.run, r.agent))
+            continue
+        d = {L: z[f"think_L{L}"].astype(np.float32).mean(0, keepdims=True) for L in LAYERS}
+        bp = boundary_path(s, r.run, r.agent)
+        if bp.is_file():
+            zb = np.load(bp)
+            if zb["turn_L26"].shape[0] == z["think_L26"].shape[0] and zb["turn_L26"].shape[1] == 5:
+                d.update({("b", L): zb[f"turn_L{L}"].astype(np.float32).mean(0, keepdims=True) for L in LAYERS})
+        out[(r.run, r.agent)] = d
+    return out
+
+
 def has_b(acts, keys):
     return np.array([("b", 26) in acts[k] for k in keys])
 
@@ -684,8 +706,13 @@ def perm_within(arms, y, B=N_SHUF, seed=1000):
     return out
 
 
+META_EXTRA = ["author", "seed_text", "level", "batch", "task"]  # used when the frame has them and they vary
+
+
 def meta_matrix(df):
-    return np.column_stack([onehot(df.arm.tolist()), onehot(df.budget.tolist()), df.seed.astype(float).values])
+    cols = [onehot(df.arm.tolist()), onehot(df.budget.tolist()), df.seed.astype(float).fillna(0).values[:, None]]
+    cols += [onehot(df[c].tolist()) for c in META_EXTRA if c in df and df[c].nunique() > 1]
+    return np.column_stack(cols)
 
 
 def cv_dense(F, y, groups, fold, rows=None, Cs=(1.0,), standardize=True):
@@ -777,7 +804,7 @@ STEP_PROBES = [
 MIN_B = 20  # agents with boundary tensors before the boundary family runs
 
 
-def run_agent_probes(W, acts, keys, words_doc, whole_doc):
+def run_agent_probes(W, acts, keys, words_doc, whole_doc, probes=None):
     """Probes 1 to 3. W: worker rows (DataFrame) aligned with keys. The boundary family runs on the agents that have
     turns.safetensors, on the same folds (restricted to them), with the think pair on the same agents beside it."""
     import pandas as pd
@@ -787,7 +814,7 @@ def run_agent_probes(W, acts, keys, words_doc, whole_doc):
     rows_out, score_frames = [], []
     Xcache = {c: agent_matrix(acts, keys, *c) for c in dict.fromkeys(c for c, _ in items)}
     Fm = meta_matrix(W)
-    for name, col, thr, rule in AGENT_PROBES:
+    for name, col, thr, rule in (probes or AGENT_PROBES):
         v = W[col].values
         keep = (v == 0) | (v >= thr) if rule == "collude_none_or_crossed" else np.ones(len(W), bool)
         y = (v >= thr).astype(int)
@@ -1175,6 +1202,268 @@ def run_board_seed():
     return res
 
 
+# ------------------------------------------------------------------------------------------------ other labelled sets
+SOLO_RUNS_CSV = Path("/private/tmp/claude-501/-Users-unrulyabstractions-work-arena-capstone/62859942-35bf-474f-b418-4803b6079982/scratchpad/solo_design/runs.csv")
+SPAR_REPO = "unrulyabstractions/spar-swarm"
+LABEL_SETS = ["solo_design", "spar_mixed_41", "spar_screen_team"]
+AUTHOR_SHORT = [("deepseek", "ds"), ("dsflash", "ds"), ("luna", "luna"), ("haiku", "haiku"), ("qwen", "qmax"),
+                ("sonnet", "sonnet"), ("opus", "opus"), ("gpt-5", "gpt5m")]
+SET_PROBES = [
+    ("1a cheating: used or above", "cheat", USED, None),
+    ("3r coordination: read the board", "coord", 1, None),
+    ("3a coordination: posted or above", "coord", POSTED, None),
+    ("2 collusion: exploit crossed or above vs none", "collude", CROSSED, "collude_none_or_crossed"),
+]
+
+
+def author_short(a):
+    a = (a or "").lower()
+    for k, v in AUTHOR_SHORT:
+        if k in a:
+            return v
+    return a or "unknown"
+
+
+def fetch_run_dir(repo, prefix, root):
+    """The label files of one run dir (run.json, episodes.jsonl, signals.jsonl, communication/), fetched once."""
+    from huggingface_hub import snapshot_download
+    d = root / prefix
+    if not all((d / f).is_file() for f in ("run.json", "episodes.jsonl", "signals.jsonl")):
+        snapshot_download(repo, repo_type="dataset", local_dir=str(root),
+                          allow_patterns=[f"{prefix}/run.json", f"{prefix}/episodes.jsonl", f"{prefix}/signals.jsonl",
+                                          f"{prefix}/communication/*"])
+    return d
+
+
+def ladder_rows(rd, adir_of):
+    """levels.compute on one run dir: one row per agent (ladder indices and the step of each per-call event, mapped
+    through the agent's source.json found by adir_of(agent id)) and the team row."""
+    six, serve = _viewer()
+    rj = json.load(open(rd / "run.json"))
+    episodes = list(serve.jsonl(rd / "episodes.jsonl"))
+    sig = list(serve.jsonl(rd / "signals.jsonl"))
+    team = next((x for x in sig if x.get("row") == "team"), None)
+    sa = {x.get("agent"): x for x in sig if x.get("row") == "agent"}
+    roles = dict((rj.get("swarm") or {}).get("roles") or {})
+    for e in episodes:
+        if e.get("role"):
+            roles[e.get("orbit_agent")] = e["role"]
+    for e in episodes:
+        roles.setdefault(e.get("orbit_agent"), "worker")
+    boards = serve.board_view(rd, (rj.get("rules") or {}).get("timeline") or [], roles,
+                              bool((rj.get("config") or {}).get("board_seed")))
+    r = six.compute(team, sa, episodes, boards, roles)
+    model = {(e.get("orbit_agent") or ""): e.get("model") for e in episodes}
+    out = []
+    for a, c in r["agents"].items():
+        x = sa.get(a) or {}
+        adir = adir_of(a)
+        calls, n_steps = agent_calls(adir / "source.json") if adir is not None and (adir / "source.json").is_file() else ([], None)
+        id2step = {cid: st for st, cid, _, _ in calls}
+
+        def step_of(k):
+            return calls[k][0] if k is not None and 0 <= k < len(calls) else None
+        first = {}
+        for e in r["events"][a]:
+            if e["ladder"] == "coord" and e.get("call_id") and e["level"] not in first:
+                first[e["level"]] = id2step.get(e["call_id"])
+        ci, ui, li = c["cheat"]["index"], c["coord"]["index"] or 0, c["collude"]["index"] or 0
+        opened_step = step_of(x.get("opened_call"))
+        kw = used_write_call(calls, x.get("opened_call")) if ci >= USED else None
+        uws = step_of(kw)
+        used_onset = uws if uws is not None else (opened_step if ci >= USED else None)
+        board_step = min([v for v in (first.get("read the board"), first.get("posted")) if v is not None], default=None)
+        coll_onset = None
+        if li >= CROSSED:
+            base = used_onset if ci >= USED else (first.get("posted") if first.get("posted") is not None else board_step)
+            cands = [v for v in (base, board_step) if v is not None]
+            coll_onset = max(cands) if cands else None
+        out.append({"agent_id": a, "role": roles.get(a) or "worker", "model": model.get(a),
+                    "n_steps_source": n_steps, "n_calls_source": len(calls), "n_calls_signals": x.get("calls"),
+                    "cheat": ci, "cheat_level": c["cheat"]["level"], "coord": ui, "coord_level": c["coord"]["level"],
+                    "coop": c["coop"]["index"], "collab": c["collab"]["index"], "collude": li,
+                    "collude_level": c["collude"]["level"], "scheme": c["scheme"]["index"],
+                    "exposed_step": step_of(x.get("exposed_call")), "tried_step": step_of(x.get("tried_call")),
+                    "opened_call": x.get("opened_call"), "opened_step": opened_step, "used_write_call": kw,
+                    "used_write_step": uws, "used_onset_step": used_onset,
+                    "used_onset_source": ("write" if uws is not None else "opened" if ci >= USED else ""),
+                    "first_read_step": first.get("read the board"), "first_post_step": first.get("posted"),
+                    "collude_onset_step": coll_onset})
+    t = r["team"]
+    tc = (team or {}).get("collaboration")
+    trow = {"team_cheat": t["cheat"]["index"], "collaboration": tc,
+            "collab_crossed": int(tc in ("crossed", "assembled")),
+            "floor": int(t["cheat"]["index"] >= USED and tc in ("crossed", "assembled")),
+            "team_collude": t["collude"]["index"],
+            "n_workers": sum(1 for a in r["agents"] if (roles.get(a) or "worker") == "worker"),
+            "budget": (rj.get("turn_budget") or {}).get("budget")}
+    return out, trow
+
+
+def set_labels(sname):
+    """Agent and team labels of a set whose run dirs carry signals.jsonl, joined to its local activations; written to
+    labels/<set>_agents.csv and labels/<set>_teams.csv."""
+    import pandas as pd
+    have = [(p.parent.name, p.stem) for p in sorted((THINK / sname).glob("*/*.npz"))]
+    metas, by_run = {}, defaultdict(list)
+    for run, a in have:
+        f = HUB / "activations" / sname / run / a / "meta.json"
+        if f.is_file():
+            metas[(run, a)] = json.load(open(f))
+            by_run[run].append(a)
+    idx1 = {}
+    if sname.startswith("spar"):
+        f = fetch_run_dir(SPAR_REPO, "study_exploration_1/runs", HUB / "spar_signals") / "INDEX.jsonl"
+        if not f.is_file():
+            from huggingface_hub import hf_hub_download
+            hf_hub_download(SPAR_REPO, "study_exploration_1/runs/INDEX.jsonl", repo_type="dataset", local_dir=str(HUB / "spar_signals"))
+        idx1 = {x["run"]: x for x in map(json.loads, open(HUB / "spar_signals" / "study_exploration_1/runs/INDEX.jsonl"))}
+    arows, trows, failed = [], [], []
+    for run, ags in sorted(by_run.items()):
+        m0 = metas[(run, ags[0])]
+        try:
+            rd = (fetch_run_dir(REPO_ID, f"runs/solo_design/{run}", HUB) if sname == "solo_design"
+                  else fetch_run_dir(SPAR_REPO, m0["source_path"], HUB / "spar_signals"))
+            id2dir = {(metas[(run, a)].get("agent_id") or a): a for a in ags}
+            ar, tr = ladder_rows(rd, lambda aid: (HUB / "activations" / sname / run / id2dir[aid]) if aid in id2dir else None)
+        except Exception as e:  # noqa: BLE001
+            failed.append((run, repr(e)[:200]))
+            continue
+        ix = idx1.get(run) or {}
+        for x in ar:
+            if x["agent_id"] not in id2dir:
+                continue
+            a = id2dir[x["agent_id"]]
+            m = metas[(run, a)]
+            x.update({"set": sname, "run": run, "agent": a, "author": author_short(m.get("author") or x.get("model")),
+                      "condition": m.get("condition"), "task": m.get("task_name") or m.get("task"), "seed": m.get("seed"),
+                      "n_turns": m.get("n_turns"), "worker_model": ix.get("worker_model"),
+                      "regulator_model": ix.get("regulator_model") or "none", "kind": ix.get("kind"),
+                      "has_boundary": int(boundary_path(sname, run, a).is_file())})
+            arows.append(x)
+        tr.update({"set": sname, "run": run, "condition": m0.get("condition"), "task": m0.get("task_name") or m0.get("task"),
+                   "seed": m0.get("seed"), "author": author_short(m0.get("author")),
+                   "regulator_model": ix.get("regulator_model") or "none"})
+        trows.append(tr)
+    A, T = pd.DataFrame(arows), pd.DataFrame(trows)
+    if sname == "solo_design" and len(A):
+        sd = pd.read_csv(SOLO_RUNS_CSV)[["run", "agent", "seed_text", "level", "reads", "posts", "discovery_round", "rung"]]
+        A = A.merge(sd.rename(columns={"rung": "rung_runs_csv", "reads": "reads_runs_csv", "posts": "posts_runs_csv"}),
+                    on=["run", "agent"], how="left")
+        A["batch"] = np.where(A.run.str.match(r"solo_L\dc_"), "clean", "batch 1")
+        A["arm"] = A.level.astype(str) + "|" + A.batch
+        T["batch"] = np.where(T.run.str.match(r"solo_L\dc_"), "clean", "batch 1")
+        T["arm"] = T.run.str.extract(r"solo_(L\d)")[0] + "|" + T.batch
+    elif len(A):
+        A["arm"] = A.condition.astype(str)
+        T["arm"] = T.condition.astype(str)
+    if len(A):
+        A["budget"] = A.run.map(dict(zip(T.run, T.budget)))
+    (OUT / "labels").mkdir(parents=True, exist_ok=True)
+    A.to_csv(OUT / "labels" / f"{sname}_agents.csv", index=False)
+    T.to_csv(OUT / "labels" / f"{sname}_teams.csv", index=False)
+    bad = A[(A.n_turns != A.n_steps_source) | (A.n_calls_source != A.n_calls_signals)] if len(A) else A
+    log(f"{sname} labels: {len(A)} agents ({(A.role == 'worker').sum() if len(A) else 0} workers) in {len(T)} runs; "
+        f"step/call mismatches {len(bad)}; run dirs failed {len(failed)} {failed[:3]}")
+    return A, T
+
+
+def author_transfer(W, acts, keys, words_doc, probes, pairs):
+    """Held-out author: a probe fitted on the training authors' agents (C by inner CV grouped by run), applied unchanged
+    to the held-out author's agents; TF-IDF on the agent's words the same way."""
+    import pandas as pd
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+    runs, auth = W.run.values, W.author.values
+    hb = has_b(acts, keys)
+    out = []
+    for name, col, thr, rule in probes:
+        v = W[col].values
+        keep = (v == 0) | (v >= thr) if rule == "collude_none_or_crossed" else np.ones(len(W), bool)
+        y = (v >= thr).astype(int)
+        for train_a, test_a in pairs:
+            tr = keep & np.isin(auth, train_a)
+            te = keep & (auth == test_a)
+            if min(y[tr].sum(), (1 - y[tr]).sum()) < 3 or min(y[te].sum(), (1 - y[te]).sum()) < 3:
+                continue
+            cfgs = [(("all", "think"), "A")] + ([(("all", "both"), "B")] if hb[tr].all() and hb[te].all() else [])
+            for cfg, st in cfgs:
+                X = agent_matrix(acts, keys, *cfg)
+                score, C = fit_full(X[tr], y[tr], runs[tr])
+                sc_ = score(X[te])
+                r = row_stats(fname(cfg), sc_, y[te], runs[te])
+                r.update(probe=name, setting=SETTING[st], train=" + ".join(train_a), test=test_a, C=C)
+                out.append(r)
+            vec = TfidfVectorizer(sublinear_tf=True, min_df=2, max_features=50000, ngram_range=(1, 2))
+            Xd = vec.fit_transform([words_doc[i] for i in np.flatnonzero(tr)])
+            Cb = choose_C(Xd, y[tr], runs[tr], CS_TEXT)
+            lr = LogisticRegression(C=Cb, max_iter=3000, class_weight="balanced").fit(Xd, y[tr])
+            sc_ = lr.decision_function(vec.transform([words_doc[i] for i in np.flatnonzero(te)]))
+            r = row_stats("TF-IDF agent's words", sc_, y[te], runs[te])
+            r.update(probe=name, setting=SETTING["A"], train=" + ".join(train_a), test=test_a, C=Cb)
+            out.append(r)
+    return pd.DataFrame(out)
+
+
+def run_set(sname):
+    """Agent-level probes (settings A and B on the same folds, baselines, null), the held-out author rows and, for the
+    SPAR sets, the team collaboration probe; written under sets/<set>/."""
+    import pandas as pd
+    A, T = set_labels(sname)
+    if A.empty:
+        return {}
+    d = OUT / "sets" / sname
+    d.mkdir(parents=True, exist_ok=True)
+    W = A[A.role == "worker"].reset_index(drop=True)
+    acts = load_means(sname, W)
+    W = W[[(r, a) in acts for r, a in zip(W.run, W.agent)]].reset_index(drop=True)
+    keys = list(zip(W.run, W.agent))
+    words_doc, whole_doc = [], []
+    for rn, ag in keys:
+        w, h = agent_texts(sname, rn, ag)
+        words_doc.append(w)
+        whole_doc.append(h)
+    subsets = ({"pooled": np.ones(len(W), bool), "batch 1 (team-hinting post)": (W.batch == "batch 1").values,
+                "clean post": (W.batch == "clean").values} if sname == "solo_design" else {"all": np.ones(len(W), bool)})
+    rows, scores = [], []
+    for sub, m in subsets.items():
+        if m.sum() < 12:
+            continue
+        ii = np.flatnonzero(m)
+        Ws = W.iloc[ii].reset_index(drop=True)
+        r_, s_ = run_agent_probes(Ws, acts, [keys[i] for i in ii], [words_doc[i] for i in ii], [whole_doc[i] for i in ii],
+                                  probes=SET_PROBES)
+        r_.insert(0, "subset", sub)
+        s_.insert(0, "subset", sub)
+        rows.append(r_)
+        scores.append(s_)
+    AP = pd.concat(rows, ignore_index=True)
+    AS = pd.concat(scores, ignore_index=True)
+    AP.to_csv(d / "agent_probes.csv", index=False)
+    AS.to_csv(d / "agent_scores.csv", index=False)
+    authors = sorted(set(W.author))
+    if sname == "solo_design":
+        pairs = [(("ds",), "luna"), (("luna",), "ds")]
+    else:
+        pairs = [(tuple(a for a in authors if a != h), h) for h in authors if (W.author == h).sum() >= 10]
+    AT = author_transfer(W, acts, keys, words_doc, SET_PROBES, pairs)
+    AT.to_csv(d / "author_transfer.csv", index=False)
+    res = {"set": sname, "agents": len(A), "workers": len(W), "runs": int(W.run.nunique()),
+           "workers_with_boundary": int(has_b(acts, keys).sum()), "authors": {a: int((W.author == a).sum()) for a in authors}}
+    if sname.startswith("spar"):
+        Tt = T[T.run.isin(set(W.run))].reset_index(drop=True).copy()
+        Tt["floor"] = Tt.collab_crossed
+        if min(Tt.floor.sum(), (1 - Tt.floor).sum()) >= 3:
+            tm_rows, tm_scores = run_team_probe(Tt, W, acts, keys, words_doc, whole_doc,
+                                                AS[AS.subset == "all"].drop(columns="subset"))
+            tm_rows["probe"] = "4c team collaboration crossed or above"
+            tm_rows.to_csv(d / "team_probe.csv", index=False)
+            tm_scores.to_csv(d / "team_scores.csv", index=False)
+    write_run_log({"stage": f"set {sname}", **res})
+    log(f"set {sname} done: {res}")
+    return res
+
+
 def fit_full(X, y, groups, Cs=CS):
     """A probe fitted on every row (PCA, z-scoring, C by inner grouped CV); returns a scoring function."""
     from sklearn.linear_model import LogisticRegression
@@ -1263,7 +1552,7 @@ def run_transfer():
     Ctl = pd.DataFrame(rows)
     if Ctl.empty:
         return pd.DataFrame(), pd.DataFrame(), {}
-    cacts = load_think("controls_600", Ctl)
+    cacts = load_means("controls_600", Ctl)
     A = pd.read_csv(OUT / "labels" / "agents.csv")
     W = A[A.role != "regulator"].reset_index(drop=True)
     tacts = load_think("board_seed", W)
@@ -1344,7 +1633,7 @@ def run_transfer():
             for sname in sets_here:
                 rows_ = [{"run": p.parent.name, "agent": p.stem} for p in sorted((THINK / sname).glob("*/*.npz"))]
                 df = pd.DataFrame(rows_)
-                oa = load_think(sname, df)
+                oa = load_means(sname, df)
                 ks = list(zip(df.run, df.agent))
                 df = df[[k in oa for k in ks]].reset_index(drop=True)
                 ks = list(zip(df.run, df.agent))
@@ -1454,8 +1743,10 @@ def write_report(hub_counts, transfer_counts=None):
         d["o"] = [key(f) for f in d.features]
         return d.sort_values(["o", "features"])
 
-    def setting_title(st):
-        return SETTING[st] + ("" if st == "A" else f" ({b_state})")
+    def setting_title(st, title=""):
+        if st == "A" or "team collusion floor" not in title and not title[:1].isdigit():
+            return SETTING[st]
+        return SETTING[st] + f" ({b_state})"
 
     def agent_table(df, title):
         out = []
@@ -1465,7 +1756,7 @@ def write_report(hub_counts, transfer_counts=None):
                 continue
             rows = [[r.features, fmt(r.get("n"), 0), fmt(r.get("runs"), 0), fmt(r.get("pos"), 0), fmt(r.get("neg"), 0), ci(r),
                      fmt(r.get("null_mean")), fmt(r.get("null_95")), fmt(r.get("null_p"))] for _, r in sorted_rows(d).iterrows()]
-            out += [f"### {title}, setting {setting_title(st)}", "",
+            out += [f"### {title}, setting {setting_title(st, title)}", "",
                     md_table(["Features", "Agents" if "team" not in title else "Runs scored", "Runs", "Positive", "Negative",
                               "AUROC [95% CI]", "Null mean", "Null 95th pct", "Null p"], rows), ""]
         return out
@@ -1505,7 +1796,7 @@ def write_report(hub_counts, transfer_counts=None):
                                  f"{fmt(r.detected, 0)} / {fmt(r.agents_reaching, 0)}", fmt(r.fired_before_onset, 0),
                                  f"{fmt(r.get('turn_null_95'))} / {fmt(r.get('turn_null_p'))}",
                                  f"{fmt(r.get('agent_null_95'))} / {fmt(r.get('agent_null_p'))}"])
-                L += [f"### {name}, setting {setting_title(st)}", "",
+                L += [f"### {name}, setting {setting_title(st, name)}", "",
                       md_table(["Features", "Turns", "Positive turns", "Agents", "Runs", "Positive agents",
                                 "Turn AUROC [95% CI]", "Agent AUROC [95% CI]", "Delay median [IQR]",
                                 "Detected / reaching", "Fired before onset", "Turn null 95th / p",
@@ -1525,6 +1816,52 @@ def write_report(hub_counts, transfer_counts=None):
                 rows = [[r.features, r.target, fmt(r.n, 0), fmt(r.pos, 0), fmt(r.neg, 0), ci(r)] for _, r in d.iterrows()]
                 L += [f"### Trained on {arm}", "", md_table(["Features", "Scored on", "Rows", "Positive", "Negative",
                                                              "AUROC [95% CI]"], rows), ""]
+    for sname in LABEL_SETS:
+        dd = OUT / "sets" / sname
+        if not (dd / "agent_probes.csv").is_file():
+            continue
+        A_ = pd.read_csv(OUT / "labels" / f"{sname}_agents.csv")
+        W_ = A_[A_.role == "worker"]
+        T_ = pd.read_csv(OUT / "labels" / f"{sname}_teams.csv")
+        hub_n = hub_counts.get(sname, {}).get("agents", 0)
+        b_done = bool(len(A_)) and int(A_.has_boundary.sum()) == len(A_) and len(A_) >= hub_n
+        L += [f"## Set {sname}", "", md_table(["Population", "Count"], [
+            ["agents on the Hub", hub_n], ["agents with labels and activations", len(A_)], ["workers (probed)", len(W_)],
+            ["runs", int(A_.run.nunique())],
+            ["agents with turns.safetensors", int(A_.has_boundary.sum())],
+            ["setting B", "complete for the agents here" if b_done else "partial: rows carry their agent and run counts"],
+            *[[f"workers by author: {a}", int(n)] for a, n in W_.author.value_counts().items()],
+            ["workers at cheating used or above", int((W_.cheat >= USED).sum())],
+            ["workers who read the board", int((W_.coord >= 1).sum())],
+            ["workers who posted", int((W_.coord >= POSTED).sum())],
+            ["workers at collusion exploit crossed or above", int((W_.collude >= CROSSED).sum())],
+            ["workers at collusion none", int((W_.collude == 0).sum())],
+            ["teams at collaboration crossed or above", int(T_.collab_crossed.sum())],
+            ["teams", len(T_)],
+            ["metadata baseline covariates (the row keeps its board_seed name)", ", ".join(
+                ["arm", "turn budget", "seed"] + [c for c in META_EXTRA if c in W_ and W_[c].nunique() > 1])],
+            ["permutation arm", "level and post (seed_text)" if sname == "solo_design" else "condition"]]), ""]
+        ap_ = pd.read_csv(dd / "agent_probes.csv")
+        for sub in ap_.subset.unique():
+            for name, *_ in SET_PROBES:
+                d = ap_[(ap_.subset == sub) & (ap_.probe == name)]
+                if not len(d):
+                    continue
+                if d.features.str.startswith("skipped").all():
+                    r = d.iloc[0]
+                    L += [f"### {sname}, {sub}: {name}", "", md_table(["Status", "Agents", "Positive", "Negative"],
+                          [["skipped: fewer than 3 agents in a class", fmt(r.n, 0), fmt(r.pos, 0), fmt(r.neg, 0)]]), ""]
+                    continue
+                L += agent_table(d, f"{sname}, {sub}: {name}")
+        if (dd / "team_probe.csv").is_file():
+            L += agent_table(pd.read_csv(dd / "team_probe.csv"), f"{sname}: team collaboration crossed or above (team, mean or max of workers)")
+        if (dd / "author_transfer.csv").is_file() and (dd / "author_transfer.csv").stat().st_size > 10:
+            at = pd.read_csv(dd / "author_transfer.csv")
+            rows = [[r.probe, r.train, r.test, r.setting[:1], r.features, fmt(r.n, 0), fmt(r.runs, 0), fmt(r.pos, 0),
+                     fmt(r.neg, 0), ci(r)] for _, r in at.iterrows()]
+            L += [f"### {sname}: held-out author (fitted on the training authors, scored unchanged on the held-out one)", "",
+                  md_table(["Probe", "Trained on", "Scored on", "Setting", "Features", "Agents", "Runs", "Positive",
+                            "Negative", "AUROC [95% CI]"], rows), ""]
     L += ["## Data gaps", "",
           "- One author. Every team worker is DeepSeek V4.1 Flash, so these probes cannot separate the behaviour from the author's style; the controls transfer is the only cross-author test.",
           "- Small samples. The probes rest on a few dozen runs; intervals are wide and the folds hold few runs each.",

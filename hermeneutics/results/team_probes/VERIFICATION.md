@@ -40,3 +40,17 @@
 | B think pair against A think pair | same agents, two PCA solvers: per-step turn AUROCs agree within 0.01 | VERIFIED |
 | PNGs | reopened after the rerun; same six agents and curves | VERIFIED |
 | zero-turn agents | one cheatbench agent with zero turns is now skipped at load (it crashed the watch loop's transfer scoring) | FIXED |
+
+## 2026-11-09 02:05 PST: labelled sets solo_design (177 agents) and spar_mixed_41 (209 agents)
+
+| Output | How it was checked | Result |
+|---|---|---|
+| means-based loading | agent vectors from per-agent turn means equal those from the full tensors (max difference 2e-6, float32) | VERIFIED |
+| solo_design labels | levels.compute on the 59 run dirs; rung equals runs.csv rung for 177 of 177; read the board and posted equal runs.csv reads > 0 and posts > 0 for all 177; three workers traced to signals.jsonl | VERIFIED |
+| solo_design probes | 225 rows recomputed from agent_scores.csv, 0 mismatches; labels equal the ladder rules in pooled, batch 1 and clean; no run in two folds; 177 labelled = 177 on the Hub | VERIFIED |
+| solo_design collusion | every agent at collusion none: no collusion cut exists, the probe is skipped | NOT APPLICABLE |
+| solo_design step counts | 3 agents where the reader saw one turn more than source.json has steps; agent-level probes only, not affected | NOTED |
+| spar_mixed_41 labels | levels.compute on the 51 spar-swarm run dirs; three workers traced to signals.jsonl | VERIFIED |
+| spar_mixed_41 probes | 50 agent rows and 44 team rows recomputed, 0 mismatches; no run in two folds; 209 labelled = 209 on the Hub | VERIFIED |
+| spar_mixed_41 thin classes | 12 workers used or above, 7 collusion crossed; read and posted have no contrast (skipped) | NOTED |
+| spar_mixed_41 regulator transcript | one regulator rendered 232 of 358 steps; regulators are not probed | NOTED |

@@ -35,9 +35,12 @@ controls solo + cheat,probe Lall think-close,"team turns, cheating used at that 
 controls solo + cheat,TF-IDF agent's words,"team workers, cheating used or above",129,56,73,0.7032778864970646,0.6142415017415017,0.787898392060353,100.0
 controls solo + cheat,TF-IDF agent's words,"team workers, cheating tried or above (the controls' rule for software engineering)",129,127,2,0.9212598425196851,0.8649714285714286,0.96875,100.0
 controls solo + cheat,TF-IDF agent's words,"team workers, cheating opened or above",129,126,3,0.9206349206349206,0.8671875,0.9674993443482822,100.0
+controls solo,probe Lall think-open+close,"cheatbench, cheating (the set's own label)",224,134,90,0.27943615257048093,0.2008888888888889,0.6576923076923077,
 controls solo,probe Lall think-open+close,"spar_screen_team, cheating (the set's own label)",226,111,115,0.8571092831962397,0.7936535559117843,0.914355256534432,
 controls solo,probe Lall think-open+close,"spar_mixed_41, cheating (the set's own label)",209,43,166,0.7908377696833847,0.7086477958882396,0.8650812294244739,
+controls solo,probe Lall think-open,"cheatbench, cheating (the set's own label)",224,134,90,0.2883084577114428,0.2816399286987522,0.9509433962264151,
 controls solo,probe Lall think-open,"spar_screen_team, cheating (the set's own label)",226,111,115,0.8209165687426557,0.7483854619863943,0.8863115180978052,
 controls solo,probe Lall think-open,"spar_mixed_41, cheating (the set's own label)",209,43,166,0.719529279910339,0.6267654220779221,0.809171915374677,
+controls solo,probe Lall think-close,"cheatbench, cheating (the set's own label)",224,134,90,0.4748756218905473,0.3536541889483066,0.7094339622641509,
 controls solo,probe Lall think-close,"spar_screen_team, cheating (the set's own label)",226,111,115,0.8227183705444575,0.7404013256465377,0.8960311755149307,
 controls solo,probe Lall think-close,"spar_mixed_41, cheating (the set's own label)",209,43,166,0.7820117680022415,0.7015484418293328,0.8614780330278068,

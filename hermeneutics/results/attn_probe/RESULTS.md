@@ -1,6 +1,6 @@
 # Attention monitor over the reader's think tokens
 
-Updated 2026-11-09 02:05 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
+Updated 2026-11-09 02:12 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
 
 ## Design
 
@@ -385,13 +385,13 @@ Seed-to-seed spread of the binary head (max minus min over seeds): step 0.001, a
 
 Seed-to-seed spread of the binary head (max minus min over seeds): step 0.001, agent last 0.003, agent max 0.002.
 
-Permutation null (43 draws), attention monitor seed 0:
+Permutation null (50 draws), attention monitor seed 0:
 
 | Metric | Real | Null mean | Null 95th percentile | p |
 |---|---|---|---|---|
-| step AUROC | 0.983 | 0.679 | 0.699 | 0.023 |
-| agent AUROC (last) | 0.985 | 0.507 | 0.553 | 0.023 |
-| agent AUROC (max) | 0.989 | 0.507 | 0.553 | 0.023 |
+| step AUROC | 0.983 | 0.679 | 0.698 | 0.020 |
+| agent AUROC (last) | 0.985 | 0.507 | 0.551 | 0.020 |
+| agent AUROC (max) | 0.989 | 0.506 | 0.552 | 0.020 |
 
 ### Level accuracy
 

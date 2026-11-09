@@ -43,3 +43,7 @@
 - Independent verifier (read-only): 63 metric rows over the 7 controls and SPAR tags reproduced with sklearn to 2.2e-16; folds and held-out-author folds correct; controls and SPAR agent labels equal their sources; solo-arm rows, per-author tables and all 1463 RESULTS.md cells match the CSVs; no leakage. VERIFIED.
 - It found one label defect, now fixed: for SPAR (and solo_design) transcripts with agent steps that issued no tool call, the source step index is not the activation turn (e.g. spar_screen_team binder_minimal_cheat_haiku1/a02: 29 steps, 22 turns). attn_probe.py now maps a step to its rank among tool-call steps when the counts call for it, and marks onsets unknown when neither count matches. board_seed onsets are unchanged (0 mismatches). spar_screen_team, spar_mixed_41 (both label modes) and solo_design were rerun. After the fix, flipt_minimal_haiku2/a01's first positive turn is 12 (the tried call's turn), and the per-step AUROC of the spar_screen_team binary head, seed 0, recomputed with sklearn is 0.975351, equal to the CSV. VERIFIED.
 - Determinism: two trainings with the same seed and thread count gave identical scores; 3 against 5 threads differ by at most 2e-5 per score.
+
+## 2026-11-09, controls_600 null complete
+
+- 50 draws (null_controls_600_think_0_50.csv, run on MPS; the real scores were trained on CPU). No draw reaches the real AUROC on any metric, so p = 1/51 = 0.020. VERIFIED from the CSV.

@@ -10,7 +10,7 @@ import { COLLAB_MEANING, COLLAB_ORDER, COLLECTIONS, JUDGES, JUDGE_ORDER, RUNG_ME
 import { cheatLabelBadge, yesNo } from './view_index.js';
 import { renderTranscript } from './transcript.js';
 import { levelsPanel, stepTracker } from './levels.js';
-import { fullLegend, renderCase } from './case_view.js';
+import { RAMP, fullLegend, renderCase } from './case_view.js';
 import { lensLabel, listLenses, loadLens } from './lens.js';
 
 const LADDER = ['exposed', 'tried', 'opened', 'used', 'tampered', 'checked', 'shipped'];
@@ -142,7 +142,7 @@ export async function viewRun(id, q, view) {
               for (const [k, ms] of ladderMarks(a.spar_ladder, 'judge')) marks.set(k, [...(marks.get(k) || []), ...ms]);
             }
             state.tr = renderCase(t, { agent: a.agent, levels: d.levels, boardCalls: boardCalls.get(a.agent) || new Map(),
-              isRegulator: a.role === 'regulator', regulatorCalls: regulatorCalls(a.agent, a.role), runId: id });
+              role: a.role, isRegulator: a.role === 'regulator', regulatorCalls: regulatorCalls(a.agent, a.role), runId: id });
             if (lensState.L) state.tr.setLens(lensState.L);
             holder.replaceChildren(muted(`The transcript of ${a.agent} is shown at the top of the page, under its tab.`, 'small block'));
             btn.textContent = `Transcript at the top (${sizeTxt})`;
@@ -422,16 +422,23 @@ export async function viewRun(id, q, view) {
   const stage = h('div', { class: 'rp-stage', dataset: { show: 'all' } });
   const tabs = new Map();
   let current = null;
+  if (multi) tabs.set('team', h('button', { type: 'button', class: 'rp-tab', onclick: () => selectTab('team') }, 'Team'));
   const ROLE_WORD = { worker: 'worker', regulator: 'hidden regulator' };
   for (const a of d.agents) {
     tabs.set(a.agent, h('button', { type: 'button', class: 'rp-tab', onclick: () => selectTab(a.agent).catch(() => {}) },
       a.agent, h('span', { class: 'rp-role' }, ' ' + (ROLE_WORD[a.role] || a.role))));
   }
-  if (multi) tabs.set('team', h('button', { type: 'button', class: 'rp-tab', onclick: () => selectTab('team') }, 'Team'));
   const teamView = h('div', { class: 'rp-team' }, d.levels ? levelsPanel(d.levels, roles, row.task) : null,
     d.levels ? h('section', { class: 'card' }, h('h2', null, 'Colour legend'), fullLegend(d.levels.ladders, d.levels.order)) : null, boardCard);
+  const teamLine = h('div', { class: 'rp-teamline', hidden: true },
+    d.levels && multi ? ['Team: ', d.levels.order.map((L, i) => {
+      const c = d.levels.team[L];
+      return [i ? ' · ' : '', h('span', { title: c.via ? `set by ${c.via}` : '' },
+        h('i', { style: `background:${c.index ? RAMP[L][c.index] : 'var(--border)'}` }), `${d.levels.ladders[L].name} `, h('b', null, c.level), ` ${c.index}/${c.of}`)];
+    })] : null);
   async function selectTab(key) {
     current = key;
+    teamLine.hidden = key === 'team' || !multi;
     for (const [k, b] of tabs) b.classList.toggle('on', k === key);
     if (key === 'team') { stage.replaceChildren(teamView); return null; }
     const c = cards.get(key);
@@ -464,14 +471,15 @@ export async function viewRun(id, q, view) {
     h('span', { class: 'rp-tabs' }, [...tabs.values()]),
     lensBox,
     h('label', { class: 'rp-show' }, 'Show ', showSel),
-    h('button', { type: 'button', class: 'rp-dbtn', onclick: () => { details.open = !details.open; if (details.open) details.scrollIntoView({ block: 'start' }); } }, 'Details'));
+    h('button', { type: 'button', class: 'rp-dbtn', onclick: () => { details.open = !details.open; if (details.open) details.scrollIntoView({ block: 'start' }); } }, 'Details'),
+    teamLine);
 
   view.mounted(() => {
     document.title = `${row.run} · SGA transcripts`;
     const qa = q.get('agent');
     const qc = q.get('call');
     if (qa && qc != null && cards.has(qa)) gotoCall(qa, parseInt(qc, 10)).catch(() => {});
-    else selectTab(q.get('tab') === 'team' && multi ? 'team' : (firstAgent || 'team')).catch(() => {});
+    else selectTab(multi && q.get('tab') !== 'agent' ? 'team' : (firstAgent || 'team')).catch(() => {});
   });
   const details = h('details', { class: 'rp-details' }, h('summary', null, 'Details: labels, code-ladder evidence, judges, run settings, each agent\'s record'),
     header, labelsCard, teamCard, judgeCard, agentsBox);

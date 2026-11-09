@@ -19,7 +19,8 @@ function cellView(c, L, key) {
   const tip = `${L.kind === 'proxy' ? 'Proxy' : 'Direct'} rule. ${L.rule}${c.evidence ? '\nEvidence: ' + c.evidence : ''}`;
   return h('td', { class: ['lv-cell', c.index > 0 && 'lv-hit'], title: tip },
     glyph(c.index, c.of, key), h('span', { class: 'lv-name' }, c.level), h('span', { class: 'lv-rank' }, ` (${c.index} of ${c.of})`),
-    L.kind === 'proxy' ? h('span', { class: 'lv-proxy' }, 'proxy') : null);
+    L.kind === 'proxy' ? h('span', { class: 'lv-proxy' }, 'proxy') : null,
+    c.via ? h('span', { class: 'lv-via', title: 'the worker whose own level sets the team level' }, ` via ${c.via}`) : null);
 }
 
 /** Run panel: one row per agent, one team row, six columns. */

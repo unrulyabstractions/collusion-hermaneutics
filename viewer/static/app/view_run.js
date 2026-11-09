@@ -142,12 +142,8 @@ export async function viewRun(id, q, view) {
             }
             state.tr = renderCase(t, { agent: a.agent, levels: d.levels, boardCalls: boardCalls.get(a.agent) || new Map(),
               isRegulator: a.role === 'regulator', regulatorCalls: regulatorCalls(a.agent, a.role) });
-            holder.replaceChildren(
-              h('div', { class: 'tr-head' }, h('h3', null, `Transcript of ${a.agent}`), muted(t.model || '', 'small'),
-                h('span', { class: 'spacer' }),
-                h('button', { type: 'button', class: 'btn btn-small', onclick: () => { holder.hidden = !holder.hidden; } }, 'hide or show')),
-              state.tr.el);
-            btn.textContent = `Transcript shown below (${sizeTxt})`;
+            holder.replaceChildren(muted(`The transcript of ${a.agent} is shown at the top of the page, under its tab.`, 'small block'));
+            btn.textContent = `Transcript at the top (${sizeTxt})`;
             return state.tr;
           })
           .catch(e => { holder.replaceChildren(h('div', { class: 'error-box' }, `Could not load the transcript: ${e.message}`)); btn.disabled = false; btn.textContent = 'Retry loading the transcript'; state.loaded = null; throw e; });
@@ -155,7 +151,7 @@ export async function viewRun(id, q, view) {
       holder.hidden = false;
       return state.loaded;
     };
-    btn.addEventListener('click', () => { load().catch(() => {}); });
+    btn.addEventListener('click', () => { selectTab(a.agent); });
     appendAll(card, [
       h('div', { class: 'ep-card-head' },
         h('h2', { class: 'agent-h' }, `Agent ${a.agent}`), roleTag(a.role),
@@ -172,7 +168,7 @@ export async function viewRun(id, q, view) {
   async function gotoCall(agent, k) {
     const c = cards.get(agent);
     if (!c) return;
-    const tr = await c.load();
+    const tr = await selectTab(agent);
     tr.showAll();
     const box = tr.findCall(k);
     if (box) flash(box);
@@ -181,7 +177,7 @@ export async function viewRun(id, q, view) {
   async function gotoToolCall(agent, callId) {
     const c = cards.get(agent);
     if (!c) return;
-    const tr = await c.load();
+    const tr = await selectTab(agent);
     tr.showAll();
     flash(tr.findToolCall(callId) || c.card);
   }
@@ -413,24 +409,54 @@ export async function viewRun(id, q, view) {
       ['turn budget (rounds)', cfg.turn_budget != null && multi ? String(cfg.turn_budget) : undefined],
       ['rounds run', m.rounds != null && multi ? String(m.rounds) : undefined],
       ['seed post', row.col === 'board' ? (cfg.board_seed ? `${cfg.board_seed}, level ${cfg.board_level}` : 'none') : undefined],
-      ['SGA code', code.commit ? `${code.commit}${code.dirty ? ' (uncommitted changes)' : ''}` : undefined],
     ], 'kv-grid'),
-    h('div', { class: 'small muted' }, 'folder: ', h('span', { class: 'mono' }, row.dir)),
-    h('div', { class: 'jump-links' }, 'Jump to: ',
-      [['labels', 'Labels'], ['ladder', 'Code ladder'], ['judges', 'Judges'], multi ? ['board', 'Message board'] : null, ['agents', 'Agents and transcripts']]
-        .filter(Boolean).map(([anchor, text], i) => [i ? ' · ' : '', h('button', { type: 'button', class: 'linkish', onclick: () => flash(document.getElementById('sec-' + anchor)) }, text)])));
+    null);
   labelsCard.id = 'sec-labels'; teamCard.id = 'sec-ladder'; judgeCard.id = 'sec-judges';
   if (boardCard) boardCard.id = 'sec-board';
   const agentsBox = h('div', { id: 'sec-agents' }, d.agents.map(agentCard));
+
+  // ---- top bar: run, arm, agent tabs, Show filter, Details toggle; the stage below holds the selected tab.
+  const firstAgent = (d.agents.find(a => a.role !== 'regulator' && a.folder) || d.agents.find(a => a.folder) || {}).agent;
+  const stage = h('div', { class: 'rp-stage', dataset: { show: 'all' } });
+  const tabs = new Map();
+  let current = null;
+  const ROLE_WORD = { worker: 'worker', regulator: 'hidden regulator' };
+  for (const a of d.agents) {
+    tabs.set(a.agent, h('button', { type: 'button', class: 'rp-tab', onclick: () => selectTab(a.agent).catch(() => {}) },
+      a.agent, h('span', { class: 'rp-role' }, ' ' + (ROLE_WORD[a.role] || a.role))));
+  }
+  if (multi) tabs.set('team', h('button', { type: 'button', class: 'rp-tab', onclick: () => selectTab('team') }, 'Team'));
+  const teamView = h('div', { class: 'rp-team' }, d.levels ? levelsPanel(d.levels, roles, row.task) : null, boardCard);
+  async function selectTab(key) {
+    current = key;
+    for (const [k, b] of tabs) b.classList.toggle('on', k === key);
+    if (key === 'team') { stage.replaceChildren(teamView); return null; }
+    const c = cards.get(key);
+    if (!c) return null;
+    stage.replaceChildren(h('div', { class: 'loading' }, 'Loading the transcript…'));
+    const tr = await c.load();
+    if (current === key) stage.replaceChildren(tr.el);
+    return tr;
+  }
+  const showSel = h('select', { 'aria-label': 'Which text to show', onchange: e => { stage.dataset.show = e.target.value; } },
+    [['all', 'All'], ['reasoning', 'Reasoning'], ['tools', 'Tool calls'], ['board', 'Board']].map(([v, t]) => h('option', { value: v }, t)));
+  const bar = h('div', { class: 'rp-bar' },
+    h('a', { class: 'rp-back', href: '#/', title: 'all runs' }, '←'),
+    h('b', { class: 'rp-run' }, row.run), h('span', { class: 'rp-arm' }, armLabel(row)),
+    h('span', { class: 'rp-tabs' }, [...tabs.values()]),
+    h('label', { class: 'rp-show' }, 'Show ', showSel),
+    h('button', { type: 'button', class: 'rp-dbtn', onclick: () => { details.open = !details.open; if (details.open) details.scrollIntoView({ block: 'start' }); } }, 'Details'));
 
   view.mounted(() => {
     document.title = `${row.run} · SGA transcripts`;
     const qa = q.get('agent');
     const qc = q.get('call');
     if (qa && qc != null && cards.has(qa)) gotoCall(qa, parseInt(qc, 10)).catch(() => {});
-    else if (!multi && d.agents.length === 1 && d.agents[0].folder) cards.get(d.agents[0].agent).load().catch(() => {});
+    else selectTab(q.get('tab') === 'team' && multi ? 'team' : (firstAgent || 'team')).catch(() => {});
   });
-  return h('div', { class: 'page' }, header, d.levels ? levelsPanel(d.levels, roles, row.task) : null, labelsCard, teamCard, judgeCard, boardCard, agentsBox);
+  const details = h('details', { class: 'rp-details' }, h('summary', null, 'Details: labels, code-ladder evidence, judges, run settings, each agent\'s record'),
+    header, labelsCard, teamCard, judgeCard, agentsBox);
+  return h('div', { class: 'page rp-page' }, bar, stage, details);
 }
 
 function asStr(v) { return Array.isArray(v) ? v.join('\n') : typeof v === 'string' ? v : JSON.stringify(v); }

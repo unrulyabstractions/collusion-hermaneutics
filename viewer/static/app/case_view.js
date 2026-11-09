@@ -50,8 +50,8 @@ function resultText(r) {
   if (Array.isArray(c)) return c.map(p => (p && p.text) || asStr(p)).join('\n');
   return asStr(c) || asStr(r.extra && r.extra.error);
 }
-function blk(label, text, call, input) {
-  const el = h('div', { class: ['blk', input && 'inp', input && 'fold'] }, h('div', { class: 'lab' }, label), sentences(text, call));
+function blk(label, text, call, input, kind) {
+  const el = h('div', { class: ['blk', input && 'inp', input && 'fold', kind && 'k-' + kind] }, h('div', { class: 'lab' }, label), sentences(text, call));
   if (input) el.addEventListener('click', () => el.classList.remove('fold'));
   return el;
 }
@@ -130,9 +130,16 @@ export function renderCase(t, ctx) {
     return h('span', { class: ['cs-chip', isNew && 'cs-new'], title: na ? `${lad.name}: n/a (one agent, no board)` : `${lad.name}: ${lad.levels[v]} (${v} of ${lad.levels.length - 1})${isNew ? '\nnew at this call: ' + (fresh.get(k) || []).filter(e => e.ladder === L).map(e => e.evidence).join('; ') : ''}` },
       h('i', { style: `background:${na ? 'transparent' : RAMP[L][v]}` }), na ? `${lad.name}: n/a` : [`${lad.name}: `, h('b', null, lad.levels[v]), ` (${v} of ${lad.levels.length - 1})`]);
   }));
+  const miniLanes = k => h('span', { class: 'cs-mini' }, order.map((L, i) => {
+    const lad = lv ? lv.ladders[L] : { name: 'Cheating', levels: STAGE };
+    const na = single && L !== 'cheat';
+    const v = level[i][k];
+    return h('i', { style: `background:${na || !v ? 'var(--line)' : RAMP[L][v]}`,
+      title: na ? `${lad.name}: n/a (one agent, no board)` : `${lad.name}: ${lad.levels[v]} (${v} of ${lad.levels.length - 1})` });
+  }));
   let li = 0;
   const looseBlock = x => h('div', { class: 'call msg' }, h('div', { class: 'ch' }, h('span', { class: 'cn' }, x.src === 'agent' ? 'Message' : x.src === 'user' ? 'User' : 'System'), x.step != null ? h('span', null, `step ${x.step}`) : null),
-    x.reasoning ? blk('Reasoning', x.reasoning, -1, false) : null, x.text ? blk(x.src === 'agent' ? 'Text' : 'Prompt', x.text, -1, x.src !== 'agent') : null);
+    x.reasoning ? blk('Reasoning', x.reasoning, -1, false, 'reasoning') : null, x.text ? blk(x.src === 'agent' ? 'Text' : 'Prompt', x.text, -1, x.src !== 'agent', x.src === 'agent' ? 'reasoning' : 'input') : null);
   for (const c of calls) {
     while (li < loose.length && loose[li].before <= c.k) right.appendChild(looseBlock(loose[li++]));
     const k = c.k;
@@ -140,14 +147,14 @@ export function renderCase(t, ctx) {
     const evNew = fresh.get(k) || [];
     const el = h('div', { class: 'call', id: `a-${ctx.agent}-call-${k}`, dataset: { call: String(k) } },
       h('div', { class: 'ch' }, h('span', { class: 'cn' }, `Call ${k}`), ' · ', h('span', { title: 'how far the agent had got toward the honeypot by this call' }, STAGE[level[0][k]] || ''),
-        evNew.map(e => h('span', { class: 'ev', title: e.evidence }, (WORDS[e.ladder] || {})[e.level] || e.level)),
-        h('span', { class: 'mz' }, c.tc.function_name || '')),
-      stripOf(k),
+        evNew.filter(e => e.ladder !== 'cheat').map(e => [' · ', h('span', { class: 'ev-w', title: e.evidence }, `${lv.ladders[e.ladder].name} ${e.level}`)]),
+        evNew.filter(e => e.ladder === 'cheat' && WORDS.cheat[e.level] !== STAGE[level[0][k]]).map(e => [' · ', h('span', { class: 'ev-w', title: e.evidence }, WORDS.cheat[e.level] || e.level)]),
+        h('span', { class: 'mz' }, miniLanes(k), ' ', c.tc.function_name || '')),
       marks.length ? h('div', { class: 'cs-board' }, 'Board: ', marks.map((m, i) => [i ? ' · ' : '', h('span', { title: m.title || '' }, m.badge), m.text ? ` (${m.text})` : ''])) : null,
-      c.reasoning ? blk('Reasoning', c.reasoning, k, false) : null,
-      c.text && c.text.trim() ? blk('Text', c.text, k, false) : null,
-      blk(`Tool call: ${c.tc.function_name || '?'}`, argText(c.tc.arguments), k, false),
-      c.res.length ? c.res.map(r => blk('Tool result', resultText(r), k, true)) : null);
+      c.reasoning ? blk('Reasoning', c.reasoning, k, false, 'reasoning') : null,
+      c.text && c.text.trim() ? blk('Text', c.text, k, false, 'reasoning') : null,
+      blk(`Tool call: ${c.tc.function_name || '?'}`, argText(c.tc.arguments), k, false, 'tool'),
+      c.res.length ? c.res.map(r => blk('Tool result', resultText(r), k, true, 'tool')) : null);
     blocks.push(el);
     right.appendChild(el);
   }
@@ -155,7 +162,7 @@ export function renderCase(t, ctx) {
 
   // 4. left: the whole episode, one row per call, six lanes, milestones in the margin
   const NS = 'http://www.w3.org/2000/svg';
-  const LB = 180, LW = 14, GAP = 2, W = LB + order.length * (LW + GAP) + 10;
+  const LB = 140, LW = 13, GAP = 2, W = LB + order.length * (LW + GAP) + 10;
   const maxH = Math.max(320, Math.min(window.innerHeight - 220, 900));
   const rh = Math.max(2, Math.min(9, maxH / Math.max(n, 1)));
   const H = Math.ceil(n * rh) + 20 + 14;
@@ -219,8 +226,16 @@ export function renderCase(t, ctx) {
     if (k >= 0 && k < n) show(k);
   });
   const nSent = right.querySelectorAll('.sn').length;
+  const mine = lv && lv.agents[ctx.agent];
+  const sixLine = mine ? h('div', { class: 'cs-six' }, order.map((L, i) => {
+    const c = mine[L];
+    return [i ? ' · ' : '', h('span', { title: `${c.kind === 'proxy' ? 'Proxy' : 'Direct'} rule. ${c.rule}${c.evidence ? '\nEvidence: ' + c.evidence : ''}` },
+      h('i', { style: `background:${c.na || !c.index ? 'var(--line)' : RAMP[L][c.index]}` }), `${lv.ladders[L].name} `,
+      c.na ? 'n/a' : h('b', null, c.level), c.na ? '' : ` ${c.index}/${c.of}`)];
+  })) : null;
   const left = h('div', { class: 'left' },
     h('h2', null, 'The whole episode ', h('span', { class: 'sub' }, `${n} calls, ${nSent} sentences`)),
+    sixLine,
     svg,
     h('div', { class: 'cs-legend' }, order.map(L => h('span', null, h('b', null, SHORT[L]), ' ', lv ? lv.ladders[L].name : L))),
     h('p', { class: 'note' }, 'No reader pass for this run; lanes show the six ladders. One row per tool call, call 0 at the top; the band below the last call is the level at the end of the run. Click a row or a label to open that call.'));

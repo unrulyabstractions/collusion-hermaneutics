@@ -18,7 +18,7 @@ function cellView(c, L) {
 }
 
 /** Run panel: one row per agent, one team row, six columns. */
-export function levelsPanel(lv, roles) {
+export function levelsPanel(lv, roles, task) {
   const head = h('tr', null, h('th', null, 'Agent'), lv.order.map(k => h('th', { title: lv.ladders[k].rule },
     lv.ladders[k].name, lv.ladders[k].kind === 'proxy' ? ' (proxy)' : '')));
   const rows = Object.entries(lv.agents).sort((a, b) => (roles[a[0]] === 'regulator') - (roles[b[0]] === 'regulator') || a[0].localeCompare(b[0]))
@@ -28,7 +28,7 @@ export function levelsPanel(lv, roles) {
   return h('section', { class: 'card', id: 'sec-six' },
     h('h2', null, 'Six ladders for this run'),
     h('p', { class: 'small muted' }, 'Each cell shows the level reached and a ladder with one bar per level. Hover a cell for the rule, whether it is direct or a proxy, and the evidence. ',
-      h('a', { href: '#/ladders' }, 'All ladders and the level by task tables')),
+      h('a', { href: '#/ladders?task=' + encodeURIComponent(task || '') }, 'All ladders and the level by task tables')),
     h('table', { class: 'lv-table' }, h('thead', null, head), h('tbody', null, rows)));
 }
 

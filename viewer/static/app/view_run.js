@@ -417,7 +417,7 @@ export async function viewRun(id, q, view) {
     if (qa && qc != null && cards.has(qa)) gotoCall(qa, parseInt(qc, 10)).catch(() => {});
     else if (!multi && d.agents.length === 1 && d.agents[0].folder) cards.get(d.agents[0].agent).load().catch(() => {});
   });
-  return h('div', { class: 'page' }, header, d.levels ? levelsPanel(d.levels, roles) : null, labelsCard, teamCard, judgeCard, boardCard, agentsBox);
+  return h('div', { class: 'page' }, header, d.levels ? levelsPanel(d.levels, roles, row.task) : null, labelsCard, teamCard, judgeCard, boardCard, agentsBox);
 }
 
 function asStr(v) { return Array.isArray(v) ? v.join('\n') : typeof v === 'string' ? v : JSON.stringify(v); }

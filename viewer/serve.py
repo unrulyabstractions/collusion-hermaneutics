@@ -42,7 +42,7 @@ CACHE = HERE / ".cache" / "index.json"
 SPAR_DEFAULT = Path("/Users/unrulyabstractions/work/arena-capstone/data/hf/spar-swarm")
 OLD_CONTROLS = "/Users/unrulyabstractions/work/arena-capstone/data/apart_controls/"
 NEW_CONTROLS = str(DATA / "apart_controls") + "/"
-INDEX_VERSION = 4
+INDEX_VERSION = 5
 
 # The honeypot ladder (SGA src/measures/rungs.py RUNGS) and the levels data/labels.csv reads it by
 # (hermeneutics/labels.py): used and tampered sit on one level.
@@ -152,6 +152,7 @@ def controls_rows(api: dict) -> list[dict]:
                 "label": label, "collab": None, "judges": judges, "agree": status, "disagree": disagree,
                 "host": r["host"], "seed": r["seed"], "dir": run_dir,
                 "n_transcripts": len(transcript_dirs(Path(run_dir))),
+                "levels": six.single_levels(team_rung),
             })
     return rows
 
@@ -246,8 +247,19 @@ def spar_rows(spar: Path) -> list[dict]:
             "presentation": t["presentation"] or None, "seed": t["sample"],
             "roles": {a["agent"]: a["role"] for a in agents if a["role"]},
             "dir": str(run_dir), "n_transcripts": len(transcript_dirs(run_dir)),
+            "levels": spar_levels(run_dir, t),
         })
     return rows
+
+
+def spar_levels(run_dir: Path, t: dict):
+    """Six-ladder levels of a SPAR run from its own files; a lone agent reads its code rung."""
+    try:
+        if int(t["n_agents"]) <= 1:
+            return six.single_levels(t["code_rung"] or None)
+        return six.team_levels_for_index(run_dir, board_view, jsonl)
+    except (OSError, ValueError, KeyError):
+        return None
 
 
 def build_index(spar: Path) -> dict:
@@ -476,6 +488,12 @@ class Handler(BaseHTTPRequestHandler):
                 if row is None:
                     return self.fail(HTTPStatus.NOT_FOUND, f"no run {q.get('id')!r} in the index")
                 return self.send_json(run_detail(row, self.viewer.api, self.viewer.spar_tables))
+            if url.path == "/api/ladders":
+                import ladders_data as ld
+                return self.send_json({"domains": ld.DOMAINS, "rung_notes": ld.RUNG_NOTES,
+                                       "rungs": ld.RUNGS_BY_DOMAIN, "collab_notes": ld.COLLABORATION_NOTES,
+                                       "collab": ld.COLLABORATION_BY_DOMAIN, "task_column": ld.TASK_COLUMN,
+                                       "ladders": six.LADDERS, "order": six.ORDER})
             if url.path == "/api/transcript":
                 return self.transcript(q.get("id", ""), q.get("agent", ""))
             return self.fail(HTTPStatus.NOT_FOUND, "no such path")

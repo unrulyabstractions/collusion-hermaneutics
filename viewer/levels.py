@@ -323,4 +323,12 @@ def team_levels_for_index(run_dir: Path, board_view_fn, jsonl):
     boards = board_view_fn(run_dir, (rj.get("rules") or {}).get("timeline") or [], roles,
                            bool((rj.get("config") or {}).get("board_seed")))
     r = compute(team, sa, episodes, boards, roles)
-    return {L: r["team"][L]["level"] for L in ORDER}
+    return {"team": {L: r["team"][L]["level"] for L in ORDER},
+            "agents": {L: sorted({c[L]["level"] for c in r["agents"].values()}) for L in ORDER}}
+
+
+def single_levels(rung):
+    """Index levels of a one-agent run: its rung, and not applicable on the five team ladders."""
+    rung = rung if rung in RUNGS else "none"
+    t = {L: (rung if L == "cheat" else NA) for L in ORDER}
+    return {"team": t, "agents": {L: [v] for L, v in t.items()}}

@@ -8,6 +8,7 @@
 import { h } from './dom.js';
 import { viewIndex } from './view_index.js';
 import { viewRun } from './view_run.js';
+import { viewLadders } from './view_ladders.js';
 
 const main = () => document.getElementById('main');
 let token = 0;
@@ -19,6 +20,7 @@ function shell() {
       h('a', { class: 'brand', href: '#/' }, 'SGA transcripts'),
       h('span', { class: 'muted small' }, 'code-ladder and judge labels for cheating and collaboration'),
       h('span', { class: 'spacer' }),
+      h('a', { class: 'btn btn-small', href: '#/ladders' }, 'Ladders'), ' ',
       h('a', { class: 'btn btn-small', href: '#/' }, 'All runs')),
     h('main', { id: 'main', tabindex: '-1' }));
 }
@@ -35,6 +37,7 @@ async function route() {
     let node;
     const m = /^\/run\/(.+)$/.exec(path);
     if (m) node = await viewRun(m[1].split('/').map(decodeURIComponent).join('/'), q, view);
+    else if (path === '/ladders') { node = await viewLadders(q); document.title = 'Ladders · SGA transcripts'; }
     else { node = await viewIndex(q); document.title = 'Runs · SGA transcripts'; }
     if (my !== token) return;
     main().replaceChildren(node);

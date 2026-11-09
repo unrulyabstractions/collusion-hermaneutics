@@ -449,7 +449,36 @@ def other_set_records(sname):
     cands = sorted((tp.OUT / "labels").glob(f"*{sname}*.csv")) + sorted(tp.OUT.glob(f"*{sname}*labels*.csv"))
     if not cands:
         raise FileNotFoundError(f"no label CSV for {sname} under {tp.OUT} yet")
-    raise NotImplementedError(f"label CSV for {sname} found ({cands}); map its columns before running")
+    return records_from_agents_csv(sname, cands[0])
+
+
+def records_from_agents_csv(sname, path):
+    """Records from a team_probes agents.csv-shaped table (one row per agent): final ladder indices in columns cheat,
+    coord, coop, collab, collude, scheme (missing ladders are marked not applicable) and the onset steps
+    exposed_step, tried_step, opened_step, used_onset_step (estimate), first_read_step, first_post_step,
+    collude_onset_step (estimate); regulators are left out."""
+    import pandas as pd
+    A = pd.read_csv(path)
+    if "role" in A:
+        A = A[A.role.fillna("worker") != "regulator"]
+    recs = []
+    for r in A.itertuples():
+        d = r._asdict()
+        fin = {L: int(d[L]) if L in d and pd.notna(d[L]) else 0 for L in LADDERS}
+        na = [L for L in LADDERS if L not in d or pd.isna(d.get(L))]
+        on = {L: {} for L in LADDERS}
+        for L, lev, col in (("cheat", 1, "exposed_step"), ("cheat", 2, "tried_step"), ("cheat", 3, "opened_step"),
+                            ("cheat", 4, "used_onset_step"), ("coord", 1, "first_read_step"), ("coord", 2, "first_post_step"),
+                            ("collude", 3, "collude_onset_step")):
+            v = d.get(col)
+            if v is not None and pd.notna(v) and lev <= fin[L]:
+                on[L][str(lev)] = int(v)
+        meta_p = HUB / "activations" / sname / r.run / r.agent / "meta.json"
+        meta = json.load(open(meta_p)) if meta_p.is_file() else {}
+        recs.append({"set": sname, "run": r.run, "agent": r.agent, "arm": str(d.get("arm") or d.get("condition") or meta.get("condition") or "all"),
+                     "author": str(d.get("author") or meta.get("author") or "unknown"), "budget": d.get("budget") if pd.notna(d.get("budget")) else None,
+                     "n_turns": int(meta.get("n_turns") or d.get("n_turns")), "final": fin, "onset": on, "na": na})
+    return recs
 
 
 def folds_of(recs, split="folds"):

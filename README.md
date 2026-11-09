@@ -13,6 +13,7 @@ We ask whether a small open-weight **reader** model, Qwen3.8-27B, can monitor la
 | `submodule/spar-guardian-agents` | **SparGuardianAgents**, the agent framework that produced the transcripts (CheatBench tasks on ORBIT with our instrumentation) (branch `board-seed-injection`), including the board-seed mechanism `src/swarm/board_seed.py` |
 | `tools/controls_run/` | the scripts that drove the five-author controls run across the hosts (archival; hostnames replaced by placeholders) |
 | `publish_apart_swarm/` | the scripts that built, published and verified the controls dataset on Hugging Face |
+| `OWN_DATA.md` | every dataset we generated ourselves, by task, model, arm and label, with where it lives and what it cost |
 | `DATASETS.md`, `DATASET_DETAILS.md`, `datasets/` | the survey of transcript datasets and what each can label |
 | `VERIFICATION_LOG.md`, `logs/` | the verification log: every result, upload and change with how it was checked |
 | `PROJECT_DESCRIPTION.md` | the project vision as written by the author |

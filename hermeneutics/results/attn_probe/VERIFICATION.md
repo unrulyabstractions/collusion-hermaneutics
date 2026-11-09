@@ -27,3 +27,7 @@
 - Labels: team_probes' joined cheating label (transfer_other_sets_scores.csv, y); onsets from the floor rung's call in the cached spar-swarm signals.jsonl, used only where the signals' call count equals the transcript's tool-call count (209 of 209 and 226 of 226 agents). 4 spar_mixed_41 positives have no onset and are left out of that cut's scoring.
 - No run crosses folds in either set. Per-step AUROC of the binary head, seed 0, recomputed with sklearn from the saved scores: 0.963906 (spar_screen_team) and 0.814647 (spar_mixed_41), equal to the CSVs. VERIFIED.
 - spar_screen_team covers the 226 agents fetched locally of the 450 on the Hub (partial).
+
+## 2026-11-09, controls_600 seven tokens
+
+- All 600 agents have the boundary file. No run crosses folds. Per-step AUROC of the binary head, seed 1, recomputed with sklearn: 0.987832, equal to metrics_controls_600_seven.csv. Baseline rows equal the think-pair run's (0.916, 0.914, 0.943, 0.672, 0.973). VERIFIED.

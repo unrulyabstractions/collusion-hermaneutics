@@ -1107,7 +1107,7 @@ def write_report():
             M = pd.read_csv(p_)
             F = pd.read_csv(OUT / f"fit_check_{p_.stem[len('metrics_'):]}.csv")
             for _, r in M[M.model == "attention monitor, binary head"].iterrows():
-                Lc = next(L for L, nm in MAIN_CUTS if r.cut.startswith(nm) or r.cut == nm) if any(r.cut == nm for _, nm in MAIN_CUTS) else None
+                Lc = {"cheating": "cheat", "collusion": "collude", "coordination": "coord"}.get(r.cut.split()[0])
                 gap = float((F[f"train|{Lc}"] - F[f"val|{Lc}"])[F.seed == r.seed].mean()) if Lc else np.nan
                 rows.append([r.cut, t, int(r.seed), fmt(r.step_auroc), fmt(r.agent_auroc_last), fmt(r.agent_auroc_max),
                              f"{fmt(r.delay_median, 1)} [{fmt(r.delay_q25, 1)}, {fmt(r.delay_q75, 1)}]", f"{int(r.detected)}/{int(r.agents_reaching)}",

@@ -47,3 +47,7 @@
 ## 2026-11-09, controls_600 null complete
 
 - 50 draws (null_controls_600_think_0_50.csv, run on MPS; the real scores were trained on CPU). No draw reaches the real AUROC on any metric, so p = 1/51 = 0.020. VERIFIED from the CSV.
+
+## 2026-11-09, spar_screen_team six ladders
+
+- Labels from team_probes' labels/spar_screen_team_agents.csv (405 workers, 135 runs, ds/haiku/luna 135 each), source steps mapped to activation turns. No run crosses folds. Agent AUROC (last step) of the collusion binary head, seed 1, recomputed with sklearn: 0.962952, equal to the CSV. VERIFIED.

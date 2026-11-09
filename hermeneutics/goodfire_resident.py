@@ -77,6 +77,57 @@ class Resident:
         return acts, absmax
 
 
+def write_atomic(out, job, tensors, layers, model):
+    """extract_goodfire.write's files, each written to a temporary name, fsynced and renamed into place, acts first and
+    meta.json last, so a crash never leaves a meta.json (the done marker) beside missing or partial acts."""
+    from safetensors.torch import save_file
+    row, rid, ids, _, think, readable, info = job
+    d = os.path.join(out, row["run_dir"], rid)
+    os.makedirs(d, exist_ok=True)
+    t = dict(tensors)
+    for name, x in t.items():
+        if not torch.isfinite(x).all():
+            raise RuntimeError(f"non-finite values in {row['run_dir']}/{rid} {name}")
+    t["ids"] = torch.tensor(ids, dtype=torch.int32)
+    t["think_pos"] = torch.tensor(think, dtype=torch.int32).reshape(len(think), 2)
+    t["think_readable"] = torch.tensor(readable, dtype=torch.int8)
+    meta = {"dataset": extract_goodfire.DATASET, "run_dir": row["run_dir"], "rollout_id": rid, "run": row["run_dir"],
+            "agent": rid, "author": row["author"], "author_name": row["author_name"], "benchmark": row["benchmark"],
+            "condition": "goodfire", "model": model, "layers": layers, "n_tokens": len(ids), "n_units": 0,
+            "n_turns": len(think), "n_readable": int(sum(readable)), "units": False, "dtype": "float16",
+            "think_ids": [extract_goodfire.OPEN, extract_goodfire.CLOSE], "template": extract_goodfire.TEMPLATE_KWARGS,
+            "layer_convention": "HF hidden_states index: residual stream after L blocks", "teacher_forced": True, **info}
+
+    def done(tmp, final):
+        fd = os.open(tmp, os.O_RDONLY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        os.replace(tmp, final)
+
+    save_file(t, os.path.join(d, "acts.safetensors.tmp"))
+    done(os.path.join(d, "acts.safetensors.tmp"), os.path.join(d, "acts.safetensors"))
+    open(os.path.join(d, "spans.jsonl"), "w").close()
+    with open(os.path.join(d, "meta.json.tmp"), "w") as f:
+        json.dump(meta, f, indent=1)
+    done(os.path.join(d, "meta.json.tmp"), os.path.join(d, "meta.json"))
+
+
+def check_done_folders(out, run_dir, code_sha):
+    """Refuse to resume into folders written by other code: resume skips any folder with a meta.json, so a mismatch
+    would silently mix vectors from two versions of the pipeline."""
+    import glob
+    other = []
+    for p in glob.glob(os.path.join(out, run_dir, "*", "meta.json")):
+        sha = json.load(open(p)).get("code_sha")
+        if sha != code_sha:
+            other.append((p, sha))
+    if other:
+        raise SystemExit(f"{len(other)} finished folders under {out}/{run_dir} come from other code ({other[0]}); "
+                         f"use a fresh --out")
+
+
 def append_jsonl(path, rows, key="rollout_id"):
     """Append rows whose key is not already in the file (restarts do not duplicate)."""
     seen = set()
@@ -108,6 +159,8 @@ def main():
     tok = AutoTokenizer.from_pretrained(mdir)
     env = versions(dev)
     print("env", json.dumps(env), flush=True)
+    if not env["code_sha"]:
+        raise SystemExit("set HERM_CODE_SHA to the commit being run (git rev-parse HEAD): meta.json records it and resume checks it")
     res = Resident(mdir, layers, dev)
     for traces in args.traces:
         run_dir = run_dir_of(traces)
@@ -117,6 +170,9 @@ def main():
             p = os.path.join(args.ids_dir, f"{run_dir}.ids")
             ids = read_ids(p) if os.path.exists(p) else None
         labels = label_rows(os.path.dirname(os.path.abspath(traces)))
+        if not labels:
+            raise SystemExit(f"no labels/ or generic_monitor/ beside {traces}: every meta.json would lack its verdict")
+        check_done_folders(args.out, run_dir, env["code_sha"])
         t0 = time.time()
         jobs, skipped = extract_goodfire.jobs_of(traces, ids, args.out, run_dir, tok, args.max_tokens, False,
                                                  args.truncate, labels)
@@ -134,7 +190,7 @@ def main():
                 acts, absmax = res.forward(toks, think, args.linear_chunk)
                 info = {**info, **env, **{f"absmax_L{L}": v for L, v in absmax.items()},
                         "fp16_overflow": any(v > FP16_MAX for v in absmax.values())}
-                extract_goodfire.write(args.out, (row, rid, toks, None, think, job[5], info), acts, layers, model)
+                write_atomic(args.out, (row, rid, toks, None, think, job[5], info), acts, layers, model)
             except (torch.OutOfMemoryError, RuntimeError) as e:
                 failed.append({"rollout_id": rid, "n_tokens": len(toks), "error": f"{type(e).__name__}: {str(e)[:300]}"})
                 append_jsonl(os.path.join(args.out, run_dir, "_failed.jsonl"), failed[-1:])

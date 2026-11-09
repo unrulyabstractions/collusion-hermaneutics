@@ -121,9 +121,10 @@ def load_rollouts(traces_path, ids=None, first=0):
             yield i, r
 
 
-def main_path(nodes):
+def main_path(nodes, with_original=False):
     """(path, off_path_unexplained): the node indices from the root to the deepest leaf (ties: the last in file order),
-    unsampled assistant nodes replaced by their sampled sibling; and the off-path nodes that are not such siblings."""
+    unsampled assistant nodes replaced by their sampled sibling; and the off-path nodes that are not such siblings.
+    with_original: also the path before substitution, index for index (judge files address either sibling)."""
     children = collections.defaultdict(list)
     roots = []
     for i, nd in enumerate(nodes):
@@ -159,6 +160,8 @@ def main_path(nodes):
                 explained.add(i)
         out.append(i)
     unexplained = [i for i in range(len(nodes)) if i not in explained]
+    if with_original:
+        return out, unexplained, path
     return out, unexplained
 
 
@@ -213,8 +216,26 @@ def to_openai(message, info):
                 info["think_from_content"] += 1
                 if closed is False:
                     info["think_unclosed"] += 1
+        else:
+            # The provider failed to split the output: reasoning_content holds "REASONING</think>VISIBLE ANSWER" (Kimi K3 on
+            # ImpossibleBench, 307 turns). The answer goes back to the content, so the template's </think> follows the
+            # reasoning only.
+            j = reasoning.find("</think>")
+            if j >= 0:
+                after = reasoning[j + len("</think>"):].strip("\n")
+                reasoning = reasoning[:j]
+                content = after + ("\n\n" + content if content.strip() and after.strip() else content)
+                info["think_split_from_reasoning"] += 1
+            # A second think block opening the content while reasoning is present: its text is reasoning too.
+            r2, c2, closed = split_think(content)
+            if r2 is not None:
+                reasoning = reasoning.rstrip("\n") + "\n\n" + r2
+                content = c2
+                info["think_extra_from_content"] += 1
         reasoning, n = neutralize(reasoning or "")
         info["think_tags_neutralized"] += n
+        content, n = neutralize(content)  # literal tags in the visible answer must not become think ids outside the block
+        info["content_tags_neutralized"] += n
         calls = []
         for c in message.get("tool_calls") or []:
             fn = c.get("function") if isinstance(c.get("function"), dict) else c
@@ -246,13 +267,16 @@ def messages_of(rollout):
     definitions, the node index of every assistant turn, and the reconstruction counts."""
     t = rollout["traces"][0]
     nodes = t["nodes"]
-    path, unexplained = main_path(nodes)
+    path, unexplained, original = main_path(nodes, with_original=True)
     info = collections.Counter()
-    msgs, turn_nodes = [], []
-    for i in path:
+    msgs, turn_nodes, turn_path_nodes, turn_sampled = [], [], [], []
+    for i, i0 in zip(path, original):
         m = to_openai(nodes[i]["message"], info)
         if m["role"] == "assistant":
             turn_nodes.append(i)
+            turn_path_nodes.append(i0)
+            # False for assistant text the author never generated, e.g. tau3-bench's scripted opening greeting
+            turn_sampled.append(bool(nodes[i].get("sampled")))
         msgs.append(m)
     agent = t.get("agent") or {}
     model = agent.get("model") or (agent.get("config") or {}).get("model")
@@ -264,7 +288,8 @@ def messages_of(rollout):
     info.update(rollout_id=t["id"], outer_id=rollout.get("id"), env=(rollout.get("env") or {}).get("id"), ok=rollout.get("ok"),
                 stop_condition=t.get("stop_condition"), task=data.get("name"), author_model=model, n_nodes=len(nodes),
                 n_sampled=sum(1 for nd in nodes if nd.get("sampled")), n_calls=len(t.get("calls") or []), n_path=len(path),
-                n_off_path=len(nodes) - len(path), n_off_path_unexplained=len(unexplained))
+                n_off_path=len(nodes) - len(path), n_off_path_unexplained=len(unexplained),
+                turn_path_nodes=turn_path_nodes, turn_sampled=turn_sampled)
     return msgs, [to_tool(x) for x in (t.get("tools") or [])], turn_nodes, info
 
 
@@ -281,7 +306,15 @@ def render(rollout, tok=None, with_units=False):
     else:
         ids, units = tok(text, add_special_tokens=False)["input_ids"], None
     think = think_positions(ids)
-    readable = [bool((m.get("reasoning") or "").strip()) for m in msgs if m["role"] == "assistant"]
+    asst = [m for m in msgs if m["role"] == "assistant"]
+    readable = [bool((m.get("reasoning") or "").strip()) for m in asst]
+    # Every assistant turn renders as "<think>\n{reasoning|trim}\n</think>\n\n{content}" (chat_template.jinja, preserve_thinking
+    # defaults to true), so the tokens strictly between a turn's pair decode to its trimmed reasoning. A pair that does not
+    # is misplaced (e.g. a literal "<|im_start|>assistant\n<think>" in a tool output fooling think_positions' guard).
+    mism = [k for k, ((a, b), m) in enumerate(zip(think, asst))
+            if tok.decode(ids[a + 1:b]).strip() != (m.get("reasoning") or "").strip()]
+    info["think_mismatch"] = len(mism) + abs(len(think) - len(asst))
+    info["think_mismatch_first"] = mism[0] if mism else None
     return {"text": text, "ids": ids, "units": units, "think": think, "readable": readable, "messages": msgs, "tools": tools,
             "calls": info["n_calls"] or len(turn_nodes), "turns": len(turn_nodes), "model": info["author_model"],
             "append_only": {}, "turn_nodes": turn_nodes, "info": info}
@@ -304,14 +337,22 @@ def _plan_one(args):
                    reason=f"render_error: {type(e).__name__}: {str(e)[:160]}")
         return row
     n = len(q["ids"])
+    mism = q["info"].get("think_mismatch", 0)
     row.update(n_tokens=n, n_turns=q["turns"], n_readable=sum(q["readable"]), n_messages=len(q["messages"]),
-               think_pairs=len(q["think"]), included=n <= max_tokens and len(q["think"]) == q["turns"],
+               think_pairs=len(q["think"]), included=n <= max_tokens and len(q["think"]) == q["turns"] and not mism,
                reason="" if n <= max_tokens else "over_max_tokens")
     if len(q["think"]) != q["turns"]:
         row["reason"] = (row["reason"] + ";" if row["reason"] else "") + "think_pairs!=turns"
-    for k in ("task", "author_model", "n_off_path_unexplained", "think_from_content", "think_unclosed", "think_tags_neutralized"):
+    if mism:
+        row["reason"] = (row["reason"] + ";" if row["reason"] else "") + "think_mismatch"
+    for k in PLAN_COUNTS:
         row[k] = q["info"].get(k, 0)
+    row["n_unsampled_turns"] = sum(1 for s in q["info"].get("turn_sampled", []) if not s)
     return row
+
+
+PLAN_COUNTS = ("task", "author_model", "n_off_path_unexplained", "think_from_content", "think_unclosed", "think_tags_neutralized",
+               "think_split_from_reasoning", "think_extra_from_content", "content_tags_neutralized", "think_mismatch")
 
 
 def plan_shards(traces_path, max_tokens=100_000, n_shards=1, jobs=1, first=0, run_dir=None):
@@ -330,8 +371,7 @@ def plan_shards(traces_path, max_tokens=100_000, n_shards=1, jobs=1, first=0, ru
 
 def write_plan(rows, out_csv, ids_dir=None):
     fields = ["run_dir", "rollout_id", "row_index", "shard", "n_tokens", "n_turns", "n_readable", "n_messages", "think_pairs",
-              "included", "reason", "task", "author_model", "n_off_path_unexplained", "think_from_content", "think_unclosed",
-              "think_tags_neutralized"]
+              "included", "reason", *PLAN_COUNTS, "n_unsampled_turns"]
     os.makedirs(os.path.dirname(os.path.abspath(out_csv)), exist_ok=True)
     with open(out_csv, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fields)
@@ -376,7 +416,11 @@ def summarize(rows, max_tokens):
              f"turns {sum(r['n_turns'] for r in ok)}, readable {sum(r['n_readable'] for r in ok)}",
              f"off-path nodes unexplained: {sum(r['n_off_path_unexplained'] for r in ok)}; think from content "
              f"{sum(r['think_from_content'] for r in ok)} (unclosed {sum(r['think_unclosed'] for r in ok)}); "
-             f"think tags neutralized {sum(r['think_tags_neutralized'] for r in ok)}"]
+             f"think tags neutralized {sum(r['think_tags_neutralized'] for r in ok)}",
+             f"think split from reasoning {sum(r.get('think_split_from_reasoning') or 0 for r in ok)}; extra think from content "
+             f"{sum(r.get('think_extra_from_content') or 0 for r in ok)}; content tags neutralized "
+             f"{sum(r.get('content_tags_neutralized') or 0 for r in ok)}; THINK MISMATCH rollouts "
+             f"{sum(1 for r in ok if r.get('think_mismatch'))}; unsampled turns {sum(r.get('n_unsampled_turns') or 0 for r in ok)}"]
     shards = collections.Counter(r["shard"] for r in rows if r["included"])
     if len(shards) > 1:
         lines.append("included per shard: " + ", ".join(f"{s}: {n}" for s, n in sorted(shards.items())))
@@ -392,8 +436,10 @@ MONITOR_FIELDS = ("verdict", "status", "judged", "any_certain_considered", "any_
 
 def label_rows(run_path):
     """{rollout_id: label dict} for one run directory: judge_rollouts.jsonl (verdict yes/no/split, verdict_enacted,
-    categories, ...) or monitor_rollouts.jsonl (verdict yes/unclear/no; verdict_enacted is derived here as "yes" when
-    any_certain_enacted else "no"; no rollout-level categories). Every dict carries label_source and row_index."""
+    categories, ...) or monitor_rollouts.jsonl (verdict yes/unclear/no; no rollout-level categories). For monitor rows
+    verdict_enacted is derived to mean what the judge's field means, attempted or enacted: "yes" when any_certain_attempted
+    or any_certain_enacted, "no" when the verdict is "no", else None (undecided: the monitor README says unclear is not a
+    negative). The raw any_certain_* fields are kept. Every dict carries label_source and row_index."""
     out = {}
     judge = os.path.join(run_path, "labels", "judge_rollouts.jsonl")
     monitor = os.path.join(run_path, "generic_monitor", "monitor_rollouts.jsonl")
@@ -411,7 +457,8 @@ def label_rows(run_path):
                     r = json.loads(line)
                     out[r["trace_id"]] = {"label_source": "monitor", "row_index": r.get("row_index"),
                                           **{k: r.get(k) for k in MONITOR_FIELDS},
-                                          "verdict_enacted": "yes" if r.get("any_certain_enacted") else "no", "categories": []}
+                                          "verdict_enacted": "yes" if (r.get("any_certain_attempted") or r.get("any_certain_enacted"))
+                                          else "no" if r.get("verdict") == "no" else None, "categories": []}
     return out
 
 

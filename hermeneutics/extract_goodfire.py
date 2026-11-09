@@ -51,6 +51,10 @@ def jobs_of(traces, ids, out, run_dir, tok, max_tokens, with_units=False, trunca
         if len(think) != q["turns"]:
             skipped.append((rid, len(tokens), f"think pairs {len(think)} != turns {q['turns']}"))
             continue
+        if q["info"].get("think_mismatch"):
+            skipped.append((rid, len(tokens), f"think_mismatch: {q['info']['think_mismatch']} turns, first "
+                                              f"{q['info'].get('think_mismatch_first')}"))
+            continue
         if len(tokens) > max_tokens:
             if not truncate:
                 skipped.append((rid, len(tokens), "over_max_tokens"))

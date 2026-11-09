@@ -1,0 +1,592 @@
+{
+ "solo_L1_vuls-1832_ds_s0": {
+  "commit": "c3e6cffb887e2342a5d5e9df18b61813ef95540d",
+  "files": 19,
+  "bytes": 1786962,
+  "size_check": "OK",
+  "time": "2026-11-09T06:25:24Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_vuls-1832_ds_s0/eval/2026-11-09T06-10-35-00-00_solo-L1-vuls-1832-ds-s0_MK4GL7jhqvJLLwtGJR8sRR.eval"
+  ]
+ },
+ "solo_L1_binder_luna_s0": {
+  "commit": "c3e6cffb887e2342a5d5e9df18b61813ef95540d",
+  "files": 13,
+  "bytes": 1390640,
+  "size_check": "OK",
+  "time": "2026-11-09T06:25:24Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_binder_luna_s0/eval/2026-11-09T06-10-34-00-00_solo-L1-binder-luna-s0_f9vNRXFK4FguKLN6J2J76H.eval"
+  ]
+ },
+ "solo_L1_riemann_luna_s0": {
+  "commit": "c3e6cffb887e2342a5d5e9df18b61813ef95540d",
+  "files": 13,
+  "bytes": 979574,
+  "size_check": "OK",
+  "time": "2026-11-09T06:25:24Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_riemann_luna_s0/eval/2026-11-09T06-13-37-00-00_solo-L1-riemann-luna-s0_hh7Hudbxejyjvokz6Y5npW.eval"
+  ]
+ },
+ "solo_L1_subset_ds_s0": {
+  "commit": "c3e6cffb887e2342a5d5e9df18b61813ef95540d",
+  "files": 13,
+  "bytes": 716432,
+  "size_check": "OK",
+  "time": "2026-11-09T06:25:25Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_subset_ds_s0/eval/2026-11-09T06-18-58-00-00_solo-L1-subset-ds-s0_YtsU7kagtC5fRppc7JWMTi.eval"
+  ]
+ },
+ "solo_L1_factor_ds_s0": {
+  "commit": "c3e6cffb887e2342a5d5e9df18b61813ef95540d",
+  "files": 13,
+  "bytes": 426304,
+  "size_check": "OK",
+  "time": "2026-11-09T06:25:25Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_factor_ds_s0/eval/2026-11-09T06-18-58-00-00_solo-L1-factor-ds-s0_7k73KvXZcdrVjb8MrPxUuq.eval"
+  ]
+ },
+ "solo_L1_binder_ds_s0": {
+  "commit": "82ca8dcc4741032d11a7d13aa35f0aad0972300d",
+  "files": 13,
+  "bytes": 1843650,
+  "size_check": "OK",
+  "time": "2026-11-09T06:33:34Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_binder_ds_s0/eval/2026-11-09T06-10-34-00-00_solo-L1-binder-ds-s0_5Pm2okBYv2PBknNgP5iTif.eval"
+  ]
+ },
+ "solo_L1_poem_ds_s0": {
+  "commit": "82ca8dcc4741032d11a7d13aa35f0aad0972300d",
+  "files": 13,
+  "bytes": 1281426,
+  "size_check": "OK",
+  "time": "2026-11-09T06:33:35Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_poem_ds_s0/eval/2026-11-09T06-18-58-00-00_solo-L1-poem-ds-s0_Srak7rXwaStBmFiWw8Ambc.eval"
+  ]
+ },
+ "solo_L1_poem_luna_s0": {
+  "commit": "82ca8dcc4741032d11a7d13aa35f0aad0972300d",
+  "files": 13,
+  "bytes": 3790217,
+  "size_check": "OK",
+  "time": "2026-11-09T06:33:35Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_poem_luna_s0/eval/2026-11-09T06-18-58-00-00_solo-L1-poem-luna-s0_HLH7NuvxRhcrgN6doF54WL.eval"
+  ]
+ },
+ "solo_L1_factor_luna_s0": {
+  "commit": "82ca8dcc4741032d11a7d13aa35f0aad0972300d",
+  "files": 13,
+  "bytes": 1253369,
+  "size_check": "OK",
+  "time": "2026-11-09T06:33:35Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_factor_luna_s0/eval/2026-11-09T06-20-07-00-00_solo-L1-factor-luna-s0_AVDUYRaY7ZxroJYb9St2Eg.eval"
+  ]
+ },
+ "solo_L1_binder_luna_s1": {
+  "commit": "82ca8dcc4741032d11a7d13aa35f0aad0972300d",
+  "files": 13,
+  "bytes": 638067,
+  "size_check": "OK",
+  "time": "2026-11-09T06:33:35Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_binder_luna_s1/eval/2026-11-09T06-22-10-00-00_solo-L1-binder-luna-s1_4PQUGddjCgnQ5NZahhjN6S.eval"
+  ]
+ },
+ "solo_L0_binder_luna_s0": {
+  "commit": "82ca8dcc4741032d11a7d13aa35f0aad0972300d",
+  "files": 12,
+  "bytes": 1555559,
+  "size_check": "OK",
+  "time": "2026-11-09T06:33:35Z",
+  "eval_files": [
+   "runs/solo_design/solo_L0_binder_luna_s0/eval/2026-11-09T06-22-09-00-00_solo-L0-binder-luna-s0_8e4nGrAeF77RMaBMRPZeSi.eval"
+  ]
+ },
+ "solo_L1_riemann_luna_s1": {
+  "commit": "82ca8dcc4741032d11a7d13aa35f0aad0972300d",
+  "files": 13,
+  "bytes": 1175614,
+  "size_check": "OK",
+  "time": "2026-11-09T06:33:35Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_riemann_luna_s1/eval/2026-11-09T06-22-25-00-00_solo-L1-riemann-luna-s1_8L7UvDNq2MsgUoevKitDoZ.eval"
+  ]
+ },
+ "solo_L0_riemann_luna_s0": {
+  "commit": "82ca8dcc4741032d11a7d13aa35f0aad0972300d",
+  "files": 12,
+  "bytes": 1068920,
+  "size_check": "OK",
+  "time": "2026-11-09T06:33:35Z",
+  "eval_files": [
+   "runs/solo_design/solo_L0_riemann_luna_s0/eval/2026-11-09T06-22-26-00-00_solo-L0-riemann-luna-s0_XFGzuLJiUTugkfnoFVSfG5.eval"
+  ]
+ },
+ "solo_L1_vuls-1832_luna_s0": {
+  "commit": "e6eb9932616fe9280e7e47667fa7152e5d389e46",
+  "files": 19,
+  "bytes": 2282850,
+  "size_check": "OK",
+  "time": "2026-11-09T06:49:45Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_vuls-1832_luna_s0/eval/2026-11-09T06-10-35-00-00_solo-L1-vuls-1832-luna-s0_behadQFoM3V8Xn97CH6zKs.eval"
+  ]
+ },
+ "solo_L1_worktime_ds_s0": {
+  "commit": "e6eb9932616fe9280e7e47667fa7152e5d389e46",
+  "files": 13,
+  "bytes": 2524324,
+  "size_check": "OK",
+  "time": "2026-11-09T06:49:45Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_worktime_ds_s0/eval/2026-11-09T06-18-58-00-00_solo-L1-worktime-ds-s0_DENrzarNAJsPRdLjavFcWa.eval"
+  ]
+ },
+ "solo_L1_worktime_luna_s0": {
+  "commit": "e6eb9932616fe9280e7e47667fa7152e5d389e46",
+  "files": 13,
+  "bytes": 1504496,
+  "size_check": "OK",
+  "time": "2026-11-09T06:49:45Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_worktime_luna_s0/eval/2026-11-09T06-18-58-00-00_solo-L1-worktime-luna-s0_UrUegVM3TiZRpT26p5beDo.eval"
+  ]
+ },
+ "solo_L1_binder_ds_s1": {
+  "commit": "e6eb9932616fe9280e7e47667fa7152e5d389e46",
+  "files": 13,
+  "bytes": 2199766,
+  "size_check": "OK",
+  "time": "2026-11-09T06:49:45Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_binder_ds_s1/eval/2026-11-09T06-22-09-00-00_solo-L1-binder-ds-s1_BafxiXvwEfjDyHLw3MrRwL.eval"
+  ]
+ },
+ "solo_L2_binder_ds_s0": {
+  "commit": "e6eb9932616fe9280e7e47667fa7152e5d389e46",
+  "files": 13,
+  "bytes": 1213407,
+  "size_check": "OK",
+  "time": "2026-11-09T06:49:45Z",
+  "eval_files": [
+   "runs/solo_design/solo_L2_binder_ds_s0/eval/2026-11-09T06-22-08-00-00_solo-L2-binder-ds-s0_j9WWMbqGzDPrroLA27DtqK.eval"
+  ]
+ },
+ "solo_L1_flipt-02e2_ds_s0": {
+  "commit": "0eab1f52ff5516cba1077f52b9138bf67e927da0",
+  "files": 19,
+  "bytes": 896524,
+  "size_check": "OK",
+  "time": "2026-11-09T07:09:59Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_flipt-02e2_ds_s0/eval/2026-11-09T06-13-36-00-00_solo-L1-flipt-02e2-ds-s0_iPnRQw2ZYPU5chnRimcgzv.eval"
+  ]
+ },
+ "solo_L1_game_luna_s0": {
+  "commit": "0eab1f52ff5516cba1077f52b9138bf67e927da0",
+  "files": 13,
+  "bytes": 5189827,
+  "size_check": "OK",
+  "time": "2026-11-09T07:09:59Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_game_luna_s0/eval/2026-11-09T06-16-57-00-00_solo-L1-game-luna-s0_Qhwpffg4AWxDdjUuGBPJzN.eval"
+  ]
+ },
+ "solo_L1_flipt-02e2_luna_s0": {
+  "commit": "0eab1f52ff5516cba1077f52b9138bf67e927da0",
+  "files": 19,
+  "bytes": 1555714,
+  "size_check": "OK",
+  "time": "2026-11-09T07:10:00Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_flipt-02e2_luna_s0/eval/2026-11-09T06-19-00-00-00_solo-L1-flipt-02e2-luna-s0_EnA8kJN4mwa5tkvKEamiXv.eval"
+  ]
+ },
+ "solo_L1_subset_luna_s0": {
+  "commit": "0eab1f52ff5516cba1077f52b9138bf67e927da0",
+  "files": 13,
+  "bytes": 10309129,
+  "size_check": "OK",
+  "time": "2026-11-09T07:10:00Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_subset_luna_s0/eval/2026-11-09T06-30-05-00-00_solo-L1-subset-luna-s0_NazKc3fKdtivQdoAEEkv3f.eval"
+  ]
+ },
+ "solo_L1_flipt-02e2_ds_s1": {
+  "commit": "0eab1f52ff5516cba1077f52b9138bf67e927da0",
+  "files": 19,
+  "bytes": 2138532,
+  "size_check": "OK",
+  "time": "2026-11-09T07:10:00Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_flipt-02e2_ds_s1/eval/2026-11-09T06-20-07-00-00_solo-L1-flipt-02e2-ds-s1_cyQFfkn69STX9ntABaJrsy.eval"
+  ]
+ },
+ "solo_L1_flipt-02e2_luna_s1": {
+  "commit": "0eab1f52ff5516cba1077f52b9138bf67e927da0",
+  "files": 19,
+  "bytes": 1414627,
+  "size_check": "OK",
+  "time": "2026-11-09T07:10:00Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_flipt-02e2_luna_s1/eval/2026-11-09T06-21-32-00-00_solo-L1-flipt-02e2-luna-s1_RyMWtNnTdya7tEs4puZQgL.eval"
+  ]
+ },
+ "solo_L0_flipt-02e2_luna_s0": {
+  "commit": "0eab1f52ff5516cba1077f52b9138bf67e927da0",
+  "files": 18,
+  "bytes": 1182539,
+  "size_check": "OK",
+  "time": "2026-11-09T07:10:00Z",
+  "eval_files": [
+   "runs/solo_design/solo_L0_flipt-02e2_luna_s0/eval/2026-11-09T06-22-16-00-00_solo-L0-flipt-02e2-luna-s0_iA4GV6wH2En4TfnguNxkzj.eval"
+  ]
+ },
+ "solo_L2_riemann_ds_s0": {
+  "commit": "0eab1f52ff5516cba1077f52b9138bf67e927da0",
+  "files": 13,
+  "bytes": 2653299,
+  "size_check": "OK",
+  "time": "2026-11-09T07:10:01Z",
+  "eval_files": [
+   "runs/solo_design/solo_L2_riemann_ds_s0/eval/2026-11-09T06-22-25-00-00_solo-L2-riemann-ds-s0_hsPvfDHfGYSBJYz4pkwyG9.eval"
+  ]
+ },
+ "solo_L1_game_ds_s0": {
+  "commit": "86a4fd1c15e9942227efba51c0a450e0870050f0",
+  "files": 13,
+  "bytes": 3038862,
+  "size_check": "OK",
+  "time": "2026-11-09T07:13:07Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_game_ds_s0/eval/2026-11-09T06-16-27-00-00_solo-L1-game-ds-s0_Me78dr7ZZ3AzyPqfFU9Rx2.eval"
+  ]
+ },
+ "solo_L1_flipt-02e2_qmax_s0": {
+  "commit": "303075073cc59921cbe56973a2536b9f549a6a5c",
+  "files": 19,
+  "bytes": 1390362,
+  "size_check": "OK",
+  "time": "2026-11-09T07:15:17Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_flipt-02e2_qmax_s0/eval/2026-11-09T06-10-35-00-00_solo-L1-flipt-02e2-qmax-s0_8WpSWLKvez2kDwUBiecCQN.eval"
+  ]
+ },
+ "solo_L1_riemann_ds_s0": {
+  "commit": "ea13686483bb15ac011a064e0356a1cc5e7ec9ac",
+  "files": 13,
+  "bytes": 2479625,
+  "size_check": "OK",
+  "time": "2026-11-09T07:15:27Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_riemann_ds_s0/eval/2026-11-09T06-10-36-00-00_solo-L1-riemann-ds-s0_fqNc3mxZuNvURE4R5nRaES.eval"
+  ]
+ },
+ "solo_L2_flipt-02e2_ds_s0": {
+  "commit": "ea13686483bb15ac011a064e0356a1cc5e7ec9ac",
+  "files": 19,
+  "bytes": 951286,
+  "size_check": "OK",
+  "time": "2026-11-09T07:15:27Z",
+  "eval_files": [
+   "runs/solo_design/solo_L2_flipt-02e2_ds_s0/eval/2026-11-09T06-22-16-00-00_solo-L2-flipt-02e2-ds-s0_nzS94BYYdSmBcT5Wp9iu3J.eval"
+  ]
+ },
+ "solo_L1_riemann_ds_s1": {
+  "commit": "ea13686483bb15ac011a064e0356a1cc5e7ec9ac",
+  "files": 13,
+  "bytes": 2816861,
+  "size_check": "OK",
+  "time": "2026-11-09T07:15:27Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1_riemann_ds_s1/eval/2026-11-09T06-22-25-00-00_solo-L1-riemann-ds-s1_ZfSJkJ4S6FpYsP7NsjEfHa.eval"
+  ]
+ },
+ "solo_L1c_binder_luna_s0": {
+  "commit": "b60873ca8b88e725eeef41f8c25bde43ba8e3d49",
+  "files": 13,
+  "bytes": 969975,
+  "size_check": "OK",
+  "time": "2026-11-09T07:56:33Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_binder_luna_s0/eval/2026-11-09T07-48-56-00-00_solo-L1c-binder-luna-s0_c8quRfdcG6vZRe9wXARn9w.eval"
+  ]
+ },
+ "solo_L1c_factor_ds_s0": {
+  "commit": "b60873ca8b88e725eeef41f8c25bde43ba8e3d49",
+  "files": 13,
+  "bytes": 583981,
+  "size_check": "OK",
+  "time": "2026-11-09T07:56:33Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_factor_ds_s0/eval/2026-11-09T07-49-00-00-00_solo-L1c-factor-ds-s0_dTxpQZGKvghRDVXmhFzNTz.eval"
+  ]
+ },
+ "solo_L1c_factor_luna_s0": {
+  "commit": "b60873ca8b88e725eeef41f8c25bde43ba8e3d49",
+  "files": 13,
+  "bytes": 1049087,
+  "size_check": "OK",
+  "time": "2026-11-09T07:56:33Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_factor_luna_s0/eval/2026-11-09T07-49-00-00-00_solo-L1c-factor-luna-s0_FDC79nBKu6J9MrapRx24fR.eval"
+  ]
+ },
+ "solo_L1c_binder_luna_s1": {
+  "commit": "b60873ca8b88e725eeef41f8c25bde43ba8e3d49",
+  "files": 13,
+  "bytes": 920496,
+  "size_check": "OK",
+  "time": "2026-11-09T07:56:33Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_binder_luna_s1/eval/2026-11-09T07-48-57-00-00_solo-L1c-binder-luna-s1_4L9zsaa9jTQiyKoEWhgvJb.eval"
+  ]
+ },
+ "solo_L1c_binder_ds_s0": {
+  "commit": "6c22ab2fb90bf7d8f870b2d6ebe172013899ee82",
+  "files": 13,
+  "bytes": 1969630,
+  "size_check": "OK",
+  "time": "2026-11-09T08:04:40Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_binder_ds_s0/eval/2026-11-09T07-48-54-00-00_solo-L1c-binder-ds-s0_T43CfQdzcZ8CTA9BYctMem.eval"
+  ]
+ },
+ "solo_L1c_riemann_luna_s0": {
+  "commit": "6c22ab2fb90bf7d8f870b2d6ebe172013899ee82",
+  "files": 13,
+  "bytes": 1176189,
+  "size_check": "OK",
+  "time": "2026-11-09T08:04:40Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_riemann_luna_s0/eval/2026-11-09T07-49-13-00-00_solo-L1c-riemann-luna-s0_E4LcrgbKNM6JqTtRgsAakF.eval"
+  ]
+ },
+ "solo_L1c_poem_ds_s0": {
+  "commit": "6c22ab2fb90bf7d8f870b2d6ebe172013899ee82",
+  "files": 13,
+  "bytes": 1577456,
+  "size_check": "OK",
+  "time": "2026-11-09T08:04:40Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_poem_ds_s0/eval/2026-11-09T07-48-59-00-00_solo-L1c-poem-ds-s0_8sgGBo2BKXQER3Y42RMBsg.eval"
+  ]
+ },
+ "solo_L2c_binder_ds_s0": {
+  "commit": "6c22ab2fb90bf7d8f870b2d6ebe172013899ee82",
+  "files": 13,
+  "bytes": 1868682,
+  "size_check": "OK",
+  "time": "2026-11-09T08:04:40Z",
+  "eval_files": [
+   "runs/solo_design/solo_L2c_binder_ds_s0/eval/2026-11-09T07-48-57-00-00_solo-L2c-binder-ds-s0_jAJ93mJDC2RTjRYqcAjWNb.eval"
+  ]
+ },
+ "solo_L1c_riemann_luna_s1": {
+  "commit": "6c22ab2fb90bf7d8f870b2d6ebe172013899ee82",
+  "files": 13,
+  "bytes": 1144101,
+  "size_check": "OK",
+  "time": "2026-11-09T08:04:40Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_riemann_luna_s1/eval/2026-11-09T07-49-13-00-00_solo-L1c-riemann-luna-s1_PDJZhfPNXjwP4hTk2eijHh.eval"
+  ]
+ },
+ "solo_L1c_poem_luna_s0": {
+  "commit": "f84aca9cff2233f361ac2568484e5d950ab5aebd",
+  "files": 13,
+  "bytes": 6950395,
+  "size_check": "OK",
+  "time": "2026-11-09T08:24:00Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_poem_luna_s0/eval/2026-11-09T07-48-59-00-00_solo-L1c-poem-luna-s0_d3y9TU3QTkVEzmsxQt8njb.eval"
+  ]
+ },
+ "solo_L1c_subset_ds_s0": {
+  "commit": "f84aca9cff2233f361ac2568484e5d950ab5aebd",
+  "files": 13,
+  "bytes": 766704,
+  "size_check": "OK",
+  "time": "2026-11-09T08:24:00Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_subset_ds_s0/eval/2026-11-09T07-48-59-00-00_solo-L1c-subset-ds-s0_UUXDYoQFW639MhbtVk6ZHM.eval"
+  ]
+ },
+ "solo_L1c_binder_ds_s1": {
+  "commit": "f84aca9cff2233f361ac2568484e5d950ab5aebd",
+  "files": 12,
+  "bytes": 2496593,
+  "size_check": "OK",
+  "time": "2026-11-09T08:24:00Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_binder_ds_s1/eval/2026-11-09T07-48-58-00-00_solo-L1c-binder-ds-s1_6PpnMhFafrzoNKoX79PBGV.eval"
+  ]
+ },
+ "solo_L1c_riemann_ds_s0": {
+  "commit": "431873189406f0ea9567407804e5a512ca99b79b",
+  "files": 13,
+  "bytes": 2641169,
+  "size_check": "OK",
+  "time": "2026-11-09T08:32:10Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_riemann_ds_s0/eval/2026-11-09T07-49-14-00-00_solo-L1c-riemann-ds-s0_WAdfaxcxytofXsrMvZySwR.eval"
+  ]
+ },
+ "solo_L1c_game_luna_s0": {
+  "commit": "431873189406f0ea9567407804e5a512ca99b79b",
+  "files": 13,
+  "bytes": 4993100,
+  "size_check": "OK",
+  "time": "2026-11-09T08:32:10Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_game_luna_s0/eval/2026-11-09T07-48-56-00-00_solo-L1c-game-luna-s0_6Yof5LaSN8rKRLrCrz7YoM.eval"
+  ]
+ },
+ "solo_L1c_worktime_ds_s0": {
+  "commit": "431873189406f0ea9567407804e5a512ca99b79b",
+  "files": 13,
+  "bytes": 2581854,
+  "size_check": "OK",
+  "time": "2026-11-09T08:32:11Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_worktime_ds_s0/eval/2026-11-09T07-48-58-00-00_solo-L1c-worktime-ds-s0_i3QH5pZmhFMTh8Yfc5jTzX.eval"
+  ]
+ },
+ "solo_L1c_subset_luna_s0": {
+  "commit": "431873189406f0ea9567407804e5a512ca99b79b",
+  "files": 13,
+  "bytes": 10035471,
+  "size_check": "OK",
+  "time": "2026-11-09T08:32:11Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_subset_luna_s0/eval/2026-11-09T07-49-00-00-00_solo-L1c-subset-luna-s0_ZtkTfhVnNHCWnMSEnNgH6T.eval"
+  ]
+ },
+ "solo_L1c_vuls-1832_ds_s0": {
+  "commit": "6534e20396a4ba1cc6d52010a3ca177236ed3791",
+  "files": 19,
+  "bytes": 2095627,
+  "size_check": "OK",
+  "time": "2026-11-09T08:44:48Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_vuls-1832_ds_s0/eval/2026-11-09T07-48-58-00-00_solo-L1c-vuls-1832-ds-s0_TXabTDK5Zv6uzF2g9M9Kbc.eval"
+  ]
+ },
+ "solo_L1c_vuls-1832_luna_s0": {
+  "commit": "6534e20396a4ba1cc6d52010a3ca177236ed3791",
+  "files": 19,
+  "bytes": 2577527,
+  "size_check": "OK",
+  "time": "2026-11-09T08:44:49Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_vuls-1832_luna_s0/eval/2026-11-09T07-48-55-00-00_solo-L1c-vuls-1832-luna-s0_ByVA3Z5oSMm8YMsr7LYvvR.eval"
+  ]
+ },
+ "solo_L1c_flipt-02e2_ds_s0": {
+  "commit": "6534e20396a4ba1cc6d52010a3ca177236ed3791",
+  "files": 19,
+  "bytes": 1256458,
+  "size_check": "OK",
+  "time": "2026-11-09T08:44:49Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_flipt-02e2_ds_s0/eval/2026-11-09T07-48-59-00-00_solo-L1c-flipt-02e2-ds-s0_Urt8RGfPvdqUBv6Kvr8wgd.eval"
+  ]
+ },
+ "solo_L1c_flipt-02e2_luna_s0": {
+  "commit": "6534e20396a4ba1cc6d52010a3ca177236ed3791",
+  "files": 19,
+  "bytes": 1576277,
+  "size_check": "OK",
+  "time": "2026-11-09T08:44:49Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_flipt-02e2_luna_s0/eval/2026-11-09T07-49-00-00-00_solo-L1c-flipt-02e2-luna-s0_Lm5vkZhXZguagyTvpuSPqk.eval"
+  ]
+ },
+ "solo_L1c_worktime_luna_s0": {
+  "commit": "6534e20396a4ba1cc6d52010a3ca177236ed3791",
+  "files": 13,
+  "bytes": 3053152,
+  "size_check": "OK",
+  "time": "2026-11-09T08:44:49Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_worktime_luna_s0/eval/2026-11-09T07-48-58-00-00_solo-L1c-worktime-luna-s0_L2zmvPXLFqPb6WVCtPWCTy.eval"
+  ]
+ },
+ "solo_L1c_flipt-02e2_ds_s1": {
+  "commit": "6534e20396a4ba1cc6d52010a3ca177236ed3791",
+  "files": 19,
+  "bytes": 851939,
+  "size_check": "OK",
+  "time": "2026-11-09T08:44:49Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_flipt-02e2_ds_s1/eval/2026-11-09T07-49-00-00-00_solo-L1c-flipt-02e2-ds-s1_LxWwQrLp4cygbSWDEWTHaW.eval"
+  ]
+ },
+ "solo_L1c_flipt-02e2_luna_s1": {
+  "commit": "6534e20396a4ba1cc6d52010a3ca177236ed3791",
+  "files": 19,
+  "bytes": 1401467,
+  "size_check": "OK",
+  "time": "2026-11-09T08:44:49Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_flipt-02e2_luna_s1/eval/2026-11-09T07-49-00-00-00_solo-L1c-flipt-02e2-luna-s1_Br5ao67LLVGFWiCTBuk4CF.eval"
+  ]
+ },
+ "solo_L2c_flipt-02e2_ds_s0": {
+  "commit": "6534e20396a4ba1cc6d52010a3ca177236ed3791",
+  "files": 19,
+  "bytes": 2839310,
+  "size_check": "OK",
+  "time": "2026-11-09T08:44:50Z",
+  "eval_files": [
+   "runs/solo_design/solo_L2c_flipt-02e2_ds_s0/eval/2026-11-09T07-49-00-00-00_solo-L2c-flipt-02e2-ds-s0_a7eXcMJouh49eb5TRgb3Se.eval"
+  ]
+ },
+ "solo_L1c_flipt-02e2_qmax_s0": {
+  "commit": "c03c49d47e4a9781498aac6f96c4b13b5d7554c5",
+  "files": 19,
+  "bytes": 1268888,
+  "size_check": "OK",
+  "time": "2026-11-09T09:06:09Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_flipt-02e2_qmax_s0/eval/2026-11-09T07-48-59-00-00_solo-L1c-flipt-02e2-qmax-s0_hAUfD2XqASUerZERh6AqmL.eval"
+  ]
+ },
+ "solo_L1c_game_ds_s0": {
+  "commit": "c03c49d47e4a9781498aac6f96c4b13b5d7554c5",
+  "files": 13,
+  "bytes": 2850950,
+  "size_check": "OK",
+  "time": "2026-11-09T09:06:09Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_game_ds_s0/eval/2026-11-09T07-48-56-00-00_solo-L1c-game-ds-s0_LFfB5dWvb2RMNkXo4S32ea.eval"
+  ]
+ },
+ "solo_L1c_riemann_ds_s1": {
+  "commit": "c03c49d47e4a9781498aac6f96c4b13b5d7554c5",
+  "files": 13,
+  "bytes": 2935595,
+  "size_check": "OK",
+  "time": "2026-11-09T09:06:09Z",
+  "eval_files": [
+   "runs/solo_design/solo_L1c_riemann_ds_s1/eval/2026-11-09T07-49-13-00-00_solo-L1c-riemann-ds-s1_nqbc99qFERtKscHeZgP8kT.eval"
+  ]
+ },
+ "solo_L2c_riemann_ds_s0": {
+  "commit": "c03c49d47e4a9781498aac6f96c4b13b5d7554c5",
+  "files": 13,
+  "bytes": 2164715,
+  "size_check": "OK",
+  "time": "2026-11-09T09:06:09Z",
+  "eval_files": [
+   "runs/solo_design/solo_L2c_riemann_ds_s0/eval/2026-11-09T07-49-13-00-00_solo-L2c-riemann-ds-s0_HQkxfLmzFCUN9exSUYudSM.eval"
+  ]
+ }
+}

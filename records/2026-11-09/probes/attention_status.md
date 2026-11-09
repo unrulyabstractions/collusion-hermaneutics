@@ -1,0 +1,124 @@
+07:41 UTC: started; torch 2.15 installed in venv (MPS available); reading team_probes.py and levels.py; no spend
+07:47 UTC: encoder simplified per user (layer 38 concat, MLP to 128, d128 attention, wd 0.1); board_seed think-pair run launched
+- 2026-11-08 23:47 PST (07:47 UTC) board_seed_think: training the attention monitor (129 agents, 6818 steps)
+- 2026-11-08 23:48 PST (07:48 UTC) board_seed_think: seed 0 done: cheating used or step 0.883 agent-last 0.868; collusion exploi step 0.879 agent-last 0.919; coordination pos step 0.959 agent-last 0.966
+- 2026-11-08 23:50 PST (07:50 UTC) board_seed_think: seed 1 done: cheating used or step 0.890 agent-last 0.817; collusion exploi step 0.876 agent-last 0.836; coordination pos step 0.957 agent-last 0.974
+- 2026-11-08 23:50 PST (07:50 UTC) board_seed_think: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 07:51 UTC: board_seed think pair: seeds 0 and 1 trained (cheat-used step AUROC 0.883/0.890, collusion 0.879/0.876, coordination 0.959/0.957); baselines and 50-draw null running; controls_600 records built (600 agents, 336 direct onsets); board_seed boundary files 11/134
+- 2026-11-08 23:53 PST (07:53 UTC) board_seed_think: metrics written
+- 2026-11-08 23:54 PST (07:54 UTC) controls_600_think: training the attention monitor (600 agents, 10985 steps)
+- 07:57 UTC: board_seed think pair DONE and committed (6263e8e); first report sent. Cheat-used step 0.883/0.890 (linear 0.889), collusion 0.879/0.876 (linear 0.849), coordination 0.959/0.957 (linear 0.942); null 11/50 draws running; controls_600 folds run started
+- 08:06 UTC: all 134 board_seed boundary files local; seven-token board_seed run launched; controls folds run in progress; board null at ~17/50
+- 2026-11-09 00:06 PST (08:06 UTC) board_seed_seven: training the attention monitor (129 agents, 6818 steps)
+- 2026-11-09 00:11 PST (08:11 UTC) controls_600_think: seed 0 done: cheating (the se step 0.983 agent-last 0.985
+- 2026-11-09 00:13 PST (08:13 UTC) board_seed_seven: seed 0 done: cheating used or step 0.871 agent-last 0.841; collusion exploi step 0.873 agent-last 0.882; coordination pos step 0.940 agent-last 0.932
+- 2026-11-09 00:20 PST (08:20 UTC) board_seed_seven: seed 1 done: cheating used or step 0.891 agent-last 0.829; collusion exploi step 0.890 agent-last 0.863; coordination pos step 0.950 agent-last 0.978
+- 2026-11-09 00:20 PST (08:20 UTC) board_seed_seven: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 00:24 PST (08:24 UTC) board_seed_seven: metrics written
+- 08:25 UTC: board_seed seven-token run done and committed (2609390); no gain over think pair; controls_600 folds run on seed 1; board null 40/50
+- 2026-11-09 00:29 PST (08:29 UTC) controls_600_think: seed 1 done: cheating (the se step 0.984 agent-last 0.988
+- 2026-11-09 00:29 PST (08:29 UTC) controls_600_think: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 00:31 PST (08:31 UTC) controls_600_think: metrics written
+- 2026-11-09 00:31 PST (08:31 UTC) controls_600_think_heldout_author: training the attention monitor (600 agents, 10985 steps)
+- 08:35 UTC: board null done (50 draws, p=0.020 floor all cuts); controls_600 5-fold committed (step 0.983/0.984 vs linear 0.916, TF-IDF 0.973; solo arm 0.987); held-out-author controls run going; controls null running on MPS
+- 2026-11-09 00:40 PST (08:40 UTC) controls_600_think_heldout_author: seed 0 done: cheating (the se step 0.923 agent-last 0.903
+- 2026-11-09 00:43 PST (08:43 UTC) controls_600_think_heldout_author: seed 1 done: cheating (the se step 0.942 agent-last 0.906
+- 2026-11-09 00:43 PST (08:43 UTC) controls_600_think_heldout_author: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 00:47 PST (08:47 UTC) controls_600_think_heldout_author: metrics written
+- 08:53 UTC: controls held-out author done and committed: monitor step 0.923/0.942, agent 0.903/0.906 vs linear 0.839/0.733, TF-IDF 0.953/0.933; controls null on MPS at a few draws; waiting for SPAR/solo labels
+- 08:57 UTC: idle on labels: waiting for team_probes SPAR/solo_design label CSVs; controls null on MPS (4 draws); controls boundary 31/600
+- 2026-11-09 01:06 PST (09:06 UTC) spar_mixed_41_think: training the attention monitor (209 agents, 12373 steps)
+- 2026-11-09 01:06 PST (09:06 UTC) spar_screen_team_think: training the attention monitor (226 agents, 9026 steps)
+- 09:07 UTC: SPAR labels found in team_probes transfer_other_sets_scores.csv (y); spar_mixed_41 (209 agents, 2 authors) and spar_screen_team (226 local of 450, 3 authors) runs launched, 5 folds then held-out author
+- 2026-11-09 01:08 PST (09:08 UTC) spar_mixed_41_think: seed 0 done: cheating (the se step 0.815 agent-last 0.702
+- 2026-11-09 01:08 PST (09:08 UTC) spar_screen_team_think: seed 0 done: cheating (the se step 0.964 agent-last 0.938
+- 2026-11-09 01:09 PST (09:09 UTC) spar_mixed_41_think: seed 1 done: cheating (the se step 0.820 agent-last 0.737
+- 2026-11-09 01:09 PST (09:09 UTC) spar_mixed_41_think: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 01:10 PST (09:10 UTC) spar_screen_team_think: seed 1 done: cheating (the se step 0.967 agent-last 0.962
+- 2026-11-09 01:10 PST (09:10 UTC) spar_screen_team_think: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 01:11 PST (09:11 UTC) spar_screen_team_think: metrics written
+- 2026-11-09 01:11 PST (09:11 UTC) spar_screen_team_think_heldout_author: training the attention monitor (226 agents, 9026 steps)
+- 2026-11-09 01:11 PST (09:11 UTC) spar_mixed_41_think: metrics written
+- 2026-11-09 01:11 PST (09:11 UTC) spar_mixed_41_think_heldout_author: training the attention monitor (209 agents, 12373 steps)
+- 2026-11-09 01:11 PST (09:11 UTC) spar_mixed_41_think_heldout_author: seed 0 done: cheating (the se step 0.779 agent-last 0.651
+- 2026-11-09 01:11 PST (09:11 UTC) spar_screen_team_think_heldout_author: seed 0 done: cheating (the se step 0.949 agent-last 0.929
+- 2026-11-09 01:11 PST (09:11 UTC) spar_mixed_41_think_heldout_author: seed 1 done: cheating (the se step 0.579 agent-last 0.630
+- 2026-11-09 01:11 PST (09:11 UTC) spar_mixed_41_think_heldout_author: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 01:12 PST (09:12 UTC) spar_mixed_41_think_heldout_author: metrics written
+- 2026-11-09 01:12 PST (09:12 UTC) spar_screen_team_think_heldout_author: seed 1 done: cheating (the se step 0.962 agent-last 0.921
+- 2026-11-09 01:12 PST (09:12 UTC) spar_screen_team_think_heldout_author: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 01:13 PST (09:13 UTC) spar_screen_team_think_heldout_author: metrics written
+- 09:29 UTC: SPAR sets done and committed (7681a0b); spar_screen_team monitor step 0.964/0.967 (TF-IDF 0.982, linear 0.948); spar_mixed_41 0.815/0.820 (TF-IDF 0.888); held-out author weak on spar_mixed_41; controls null 16 draws; solo_design labels still absent
+- 2026-11-09 01:40 PST (09:40 UTC) controls_600_seven: training the attention monitor (600 agents, 10985 steps)
+- 09:41 UTC: controls boundary 600/600 local; controls seven-token 5-fold run launched
+- 2026-11-09 01:43 PST (09:43 UTC) controls_600_seven: seed 0 done: cheating (the se step 0.987 agent-last 0.993
+- 2026-11-09 01:46 PST (09:46 UTC) controls_600_seven: seed 1 done: cheating (the se step 0.988 agent-last 0.988
+- 2026-11-09 01:46 PST (09:46 UTC) controls_600_seven: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 01:47 PST (09:47 UTC) controls_600_seven: metrics written
+- 09:47 UTC: controls seven-token done and committed (f53880f): step 0.987/0.988 vs think 0.983/0.984; solo_design labels still absent; controls null running
+- 2026-11-09 01:50 PST (09:50 UTC) solo_design_think: training the attention monitor (177 agents, 6086 steps)
+- 2026-11-09 01:50 PST (09:50 UTC) spar_mixed_41_think_ladders: training the attention monitor (158 agents, 7440 steps)
+- 09:50 UTC: team_probes label CSVs arrived (solo_design_agents.csv, spar_mixed_41_agents.csv); solo_design run (177 agents, 59 runs) and spar_mixed_41 six-ladder run launched
+- 2026-11-09 01:51 PST (09:51 UTC) solo_design_think: seed 0 done: cheating used or step 0.898 agent-last 0.896; coordination pos step 0.917 agent-last 0.890
+- 2026-11-09 01:51 PST (09:51 UTC) spar_mixed_41_think_ladders: seed 0 done: cheating used or step 0.763 agent-last 0.757; collusion exploi step 0.831 agent-last 0.871
+- 2026-11-09 01:52 PST (09:52 UTC) spar_mixed_41_think_ladders: seed 1 done: cheating used or step 0.895 agent-last 0.851; collusion exploi step 0.857 agent-last 0.899
+- 2026-11-09 01:52 PST (09:52 UTC) spar_mixed_41_think_ladders: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 01:52 PST (09:52 UTC) solo_design_think: seed 1 done: cheating used or step 0.890 agent-last 0.915; coordination pos step 0.798 agent-last 0.824
+- 2026-11-09 01:52 PST (09:52 UTC) solo_design_think: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 01:52 PST (09:52 UTC) spar_mixed_41_think_ladders: metrics written
+- 2026-11-09 01:53 PST (09:53 UTC) solo_design_think: metrics written
+- 2026-11-09 01:53 PST (09:53 UTC) solo_design_think_heldout_author: training the attention monitor (177 agents, 6086 steps)
+- 2026-11-09 01:53 PST (09:53 UTC) solo_design_think_heldout_author: seed 0 done: cheating used or step 0.680 agent-last 0.558; coordination pos step 0.757 agent-last 0.694
+- 2026-11-09 01:53 PST (09:53 UTC) solo_design_think_heldout_author: seed 1 done: cheating used or step 0.710 agent-last 0.397; coordination pos step 0.392 agent-last 0.622
+- 2026-11-09 01:53 PST (09:53 UTC) solo_design_think_heldout_author: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 01:53 PST (09:53 UTC) solo_design_think_heldout_author: metrics written
+- 09:54 UTC: solo_design and spar_mixed_41 six-ladder runs committed (ebf6b2d); verifier on controls/SPAR running; controls null continuing until ~10:45 UTC
+- 09:58 UTC: verifier found SPAR/solo onset steps off when transcripts have steps with no tool call (step != activation turn); fixed mapping (rank among tool-call steps, unknown when neither count matches); rerunning spar_screen_team, spar_mixed_41 (both label modes) and solo_design
+- 2026-11-09 01:58 PST (09:58 UTC) solo_design_think: training the attention monitor (177 agents, 6086 steps)
+- 2026-11-09 01:58 PST (09:58 UTC) spar_mixed_41_think: training the attention monitor (209 agents, 12373 steps)
+- 2026-11-09 01:58 PST (09:58 UTC) spar_mixed_41_think_ladders: training the attention monitor (158 agents, 7440 steps)
+- 2026-11-09 01:58 PST (09:58 UTC) spar_screen_team_think: training the attention monitor (226 agents, 9026 steps)
+- 2026-11-09 01:59 PST (09:59 UTC) solo_design_think: seed 0 done: cheating used or step 0.892 agent-last 0.894; coordination pos step 0.889 agent-last 0.852
+- 2026-11-09 01:59 PST (09:59 UTC) spar_mixed_41_think_ladders: seed 0 done: cheating used or step 0.798 agent-last 0.833; collusion exploi step 0.811 agent-last 0.841
+- 2026-11-09 02:00 PST (10:00 UTC) solo_design_think: seed 1 done: cheating used or step 0.896 agent-last 0.903; coordination pos step 0.855 agent-last 0.838
+- 2026-11-09 02:00 PST (10:00 UTC) solo_design_think: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 02:00 PST (10:00 UTC) spar_mixed_41_think_ladders: seed 1 done: cheating used or step 0.893 agent-last 0.852; collusion exploi step 0.855 agent-last 0.899
+- 2026-11-09 02:00 PST (10:00 UTC) spar_mixed_41_think_ladders: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 02:00 PST (10:00 UTC) spar_mixed_41_think: seed 0 done: cheating (the se step 0.750 agent-last 0.649
+- 2026-11-09 02:00 PST (10:00 UTC) spar_screen_team_think: seed 0 done: cheating (the se step 0.975 agent-last 0.977
+- 2026-11-09 02:01 PST (10:01 UTC) solo_design_think: metrics written
+- 2026-11-09 02:01 PST (10:01 UTC) solo_design_think_heldout_author: training the attention monitor (177 agents, 6086 steps)
+- 2026-11-09 02:01 PST (10:01 UTC) spar_mixed_41_think_ladders: metrics written
+- 2026-11-09 02:01 PST (10:01 UTC) solo_design_think_heldout_author: seed 0 done: cheating used or step 0.665 agent-last 0.334; coordination pos step 0.580 agent-last 0.601
+- 2026-11-09 02:01 PST (10:01 UTC) spar_screen_team_think: seed 1 done: cheating (the se step 0.981 agent-last 0.978
+- 2026-11-09 02:01 PST (10:01 UTC) spar_screen_team_think: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 02:01 PST (10:01 UTC) spar_mixed_41_think: seed 1 done: cheating (the se step 0.816 agent-last 0.724
+- 2026-11-09 02:01 PST (10:01 UTC) spar_mixed_41_think: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 02:01 PST (10:01 UTC) solo_design_think_heldout_author: seed 1 done: cheating used or step 0.698 agent-last 0.407; coordination pos step 0.446 agent-last 0.623
+- 2026-11-09 02:01 PST (10:01 UTC) solo_design_think_heldout_author: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 02:02 PST (10:02 UTC) solo_design_think_heldout_author: metrics written
+- 2026-11-09 02:02 PST (10:02 UTC) spar_screen_team_think: metrics written
+- 2026-11-09 02:02 PST (10:02 UTC) spar_screen_team_think_heldout_author: training the attention monitor (226 agents, 9026 steps)
+- 2026-11-09 02:02 PST (10:02 UTC) spar_mixed_41_think: metrics written
+- 2026-11-09 02:02 PST (10:02 UTC) spar_mixed_41_think_heldout_author: training the attention monitor (209 agents, 12373 steps)
+- 2026-11-09 02:02 PST (10:02 UTC) spar_screen_team_think_heldout_author: seed 0 done: cheating (the se step 0.940 agent-last 0.922
+- 2026-11-09 02:03 PST (10:03 UTC) spar_mixed_41_think_heldout_author: seed 0 done: cheating (the se step 0.784 agent-last 0.671
+- 2026-11-09 02:03 PST (10:03 UTC) spar_mixed_41_think_heldout_author: seed 1 done: cheating (the se step 0.568 agent-last 0.607
+- 2026-11-09 02:03 PST (10:03 UTC) spar_mixed_41_think_heldout_author: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 02:03 PST (10:03 UTC) spar_mixed_41_think_heldout_author: metrics written
+- 2026-11-09 02:03 PST (10:03 UTC) spar_screen_team_think_heldout_author: seed 1 done: cheating (the se step 0.910 agent-last 0.907
+- 2026-11-09 02:03 PST (10:03 UTC) spar_screen_team_think_heldout_author: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 02:03 PST (10:03 UTC) spar_screen_team_think_heldout_author: metrics written
+- 10:05 UTC: step-turn fix committed (ba0a436, ac87cc1); SPAR/solo rerun numbers sent; controls null 43/50
+- 10:12 UTC: controls null done (50 draws, p=0.020); spar_screen_team_agents.csv arrived; six-ladder spar_screen_team run launched
+- 2026-11-09 02:12 PST (10:12 UTC) spar_screen_team_think_ladders: training the attention monitor (405 agents, 15463 steps)
+- 2026-11-09 02:14 PST (10:14 UTC) spar_screen_team_think_ladders: seed 0 done: cheating used or step 0.948 agent-last 0.959; collusion exploi step 0.938 agent-last 0.949; coordination pos step 0.970 agent-last 0.944
+- 2026-11-09 02:15 PST (10:15 UTC) spar_screen_team_think_ladders: seed 1 done: cheating used or step 0.949 agent-last 0.965; collusion exploi step 0.934 agent-last 0.963; coordination pos step 0.975 agent-last 0.952
+- 2026-11-09 02:15 PST (10:15 UTC) spar_screen_team_think_ladders: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 02:18 PST (10:18 UTC) spar_screen_team_think_ladders: metrics written
+- 2026-11-09 02:18 PST (10:18 UTC) spar_screen_team_think_ladders_heldout_author: training the attention monitor (405 agents, 15463 steps)
+- 2026-11-09 02:19 PST (10:19 UTC) spar_screen_team_think_ladders_heldout_author: seed 0 done: cheating used or step 0.820 agent-last 0.812; collusion exploi step 0.782 agent-last 0.762; coordination pos step 0.861 agent-last 0.855
+- 2026-11-09 02:20 PST (10:20 UTC) spar_screen_team_think_ladders_heldout_author: seed 1 done: cheating used or step 0.795 agent-last 0.803; collusion exploi step 0.784 agent-last 0.778; coordination pos step 0.877 agent-last 0.619
+- 2026-11-09 02:20 PST (10:20 UTC) spar_screen_team_think_ladders_heldout_author: baselines (linear probe, cumulative mean, GRU, turn index, TF-IDF)
+- 2026-11-09 02:21 PST (10:21 UTC) spar_screen_team_think_ladders_heldout_author: metrics written
+- 10:22 UTC: spar_screen_team six-ladder results committed (bb0dad6); all sets done; no jobs running

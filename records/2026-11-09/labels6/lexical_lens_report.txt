@@ -1,0 +1,10 @@
+Lexical cheat lens: NB log-count ratio on run-level df, solo controls, agent words only (message + reasoning + tool args), min df 5.
+Runs: 4,102 valid labelled runs (other dropped); solo train 1,624 (814 cheat / 810 no cheat), solo held-out 406 (218 cheat), cheat-condition 2,072 (1,672 cheat).
+AUROC solo held-out 0.923 (train 0.939); AUROC cheat-condition transfer 0.777.
+Terms kept: 25,854 (all terms with df >= 5; fewer than the 30,000 cap). 19,911 positive, 5,943 negative.
+Sentence norm (177,877 sentences from 200 held-out runs): mean 0.505, sd 0.524. Sentences split on [.!?]+space or newline.
+Top +20: litter, feat, tongs, toilets, plaster, certified_result, oak, proof.tex, tongs., pr., accessioned, data/cache/artifacts/workstudy.pptx, origin/mainek00n/macos, riemann/solution.lean, seated, a4102a2, .../submitted/binder_candidates.fasta, toes, maeqireem...(protein seq), .../gen-20260824-060d.log
+Top -20: pool.appendcertsfrompem, math.gcd, abbrev-ref, small_primes, is_probable_prime, pollards_rho, stopping., autofit, clr.set, advantageous, relaxed, re-evaluating, d//, unfactored, trequire_tls, c.redis.cacertbytes, c.redis.cacertpath, chars/line, time.millisecond, gradfill
+Reading: the top terms are task-specific artifact names and paths (the leaked answer files each task plants), with df_nocheat = 0. The lens mostly detects "touched the planted artifact", not cheating language.
+Caveat: the split is random over runs, so held-out runs share tasks with training runs; a task-held-out split would likely score lower.
+Caveat: labels.csv run_dir points at arena-capstone/data/apart_controls; the script remaps it to collusion-hermaneutics/data/apart_controls.

@@ -41,7 +41,7 @@ Label hierarchy (⇒ = implies), from the vision doc's definitions:
 
 ## Plan by priority
 
-1. **Own environment** (cheatbench + orbit): only source labelling all six deterministically for our authors.
+1. **Own environment** (SparGuardianAgents: CheatBench tasks + ORBIT): only source labelling all six deterministically for our authors.
 2. **SALT-NLP agent-collusion**: primary emergent-Col source; deterministic column; 10×11 authors ⇒ B.II for free.
 3. **NARCBench**: closest benchmark; matched pairs; instructed ⇒ validation and cheap author-probe baseline.
 4. **Colosseum**: run with our authors; action-based Col, no judge.
@@ -53,8 +53,8 @@ Label hierarchy (⇒ = implies), from the vision doc's definitions:
 
 | Output | Frontier, labelled | Open, labelled | Self-generate |
 |---|---|---|---|
-| Ch | Terminal Wrench, Goodfire, MALT, CheatBench traces (steinad) | Goodfire (Qwen3.8 Max), CheatBench traces (DeepSeek-R1) | cheatbench, ImpossibleBench |
-| Cd | SALT (judge), AI Village (derivable, chat graph) | NARCBench, AI Village swarm (GLM) | orbit |
+| Ch | Terminal Wrench, Goodfire, MALT, CheatBench traces (steinad) | Goodfire (Qwen3.8 Max), CheatBench traces (DeepSeek-R1) | SparGuardianAgents (CheatBench tasks), ImpossibleBench |
+| Cd | SALT (judge), AI Village (derivable, chat graph) | NARCBench, AI Village swarm (GLM) | SparGuardianAgents (ORBIT) |
 | Cp | SALT (judge, partial) | — | Colosseum, GovSim |
 | Cb | SALT (judge, partial), AI Village (derivable, village vs agent goals) | AI Village swarm (GLM) | Colosseum |
 | Col | SALT (deterministic), Peer-Preservation (def.-dependent) | NARCBench, ColludeBench | Colosseum |
@@ -231,7 +231,7 @@ Zero for Cd, Cp, Cb, Col, Sch (subject to Q1).
 - **Authors:** none released by its authors (environments only; the HF dataset `steinad/CheatBench` above is a different project); re-runnable with any model through its harness adapters (Claude Agent SDK, Codex, Gemini CLI, Terminus-2 and others). Our run: DeepSeek V4.1 Flash, GPT-5 mini, Claude Haiku 5.5, GPT-6 Luna, Qwen3.8-27B.
 - **Labels:** Ch via an LLM behavioural judge (default gpt-6-sol), scored separately from task success. Derivable with our instrumentation: the cheat ladder (none < exposed < tried < opened < used = tampered < checked < shipped) from logged actions, no judge.
 - **Env:** 14 tasks in 10 categories: mathematical research (OpenMath, OpenMath Agent), multimodal (GeoGuessr, Visual Puzzles), creative writing, SVG competition, menial computation (Prime Factorization, Subset Sum), protein design, knowledge work, board games (Chess, Go), sycophancy, software engineering. Each sets expectations of honest work and plants opportunities to violate them. Enroot or Docker sandboxes; software engineering through Harbor.
-- **Notes:** Phan et al., arXiv 2609.36308 (28 Sep 2026), MIT licence; forked to unrulyabstractions/cheatbench on 2026-10-09, before the sprint, and run inside spar-guardian-agents / ORBIT. Our controls dataset (unrulyabstractions/apart-swarm, private) uses 8 of its tasks as 9 task instances: openmath_agent (riemann), protein_design (binder), prime_factorization (factor), subset_sum (subset), creative_writings (poem), chess (game), knowledge_work (worktime) and software_engineering (two issues: flipt, vuls), in a solo and a cheat arm: 4,157 valid runs for our five authors with deterministic ladder labels. Third-party code: cite it wherever the controls data is used.
+- **Notes:** Phan et al., arXiv 2609.36308 (28 Sep 2026), MIT licence; forked to unrulyabstractions/cheatbench on 2026-10-09, before the sprint, and run inside SparGuardianAgents (repository spar-guardian-agents, on ORBIT). Our controls dataset (unrulyabstractions/apart-swarm, private) uses 8 of its tasks as 9 task instances: openmath_agent (riemann), protein_design (binder), prime_factorization (factor), subset_sum (subset), creative_writings (poem), chess (game), knowledge_work (worktime) and software_engineering (two issues: flipt, vuls), in a solo and a cheat arm: 4,157 valid runs for our five authors with deterministic ladder labels. Third-party code: cite it wherever the controls data is used.
 
 ### [B] HackTrace · [C] HackBench · [C] TRACE
 - **Authors:** mixed (HackTrace); GPT-5.5, GLM-5.2 (HackBench); Claude Opus 4.5 / likely synthetic (TRACE).
@@ -411,13 +411,14 @@ Control set under Q2.
 
 ## 8. Own data
 
-### [A] cheatbench + orbit + instrumentation — self-gen
+### [A] SparGuardianAgents (CheatBench tasks + ORBIT + instrumentation) — self-gen
+- **Source:** github.com/unrulyabstractions/spar-guardian-agents; described in Cierniak, Kappai and Rios-Sialer, "Swarm Contagion and Peer Pressure", SPAR report, November 2026 (https://docs.google.com/document/d/1-Ph3v3OPblL2tBs2lxPLk3oPMDhVh686zzhywludDgc).
 - **Authors:** GPT-6 Luna, Claude Haiku 5.5, DeepSeek V4.1 Flash, gpt-5-mini, Qwen3.8-27B.
 - **Labels:** all six derivable with instrumentation (instrumented Ch; message dependence for Cd).
 - **Env:** two agents, multi-model swarm, same-model swarm.
 - **Notes:** the backbone. Add a bypassable verifier (Ch), a secret channel (Sch), regret scoring (Col). Only source with on-policy Qwen3.8-27B ⇒ true author-probe comparison for the reader.
 
-### [B] SPAR (spar-guardian-agents)
+### [B] SPAR swarm data (spar-swarm, made with SparGuardianAgents)
 - **Authors:** GPT-6-Luna, Claude Haiku 5.5, DeepSeek-V4.1-Flash.
 - **Labels:** depend on existing annotations.
 - **Notes:** our only labelled data from closed authors.

@@ -21,7 +21,7 @@ Status: **gated** · **request** · **no data** · **self-gen** (environment, mu
 
 | # | Source | M | L | A | R | P | Grade | Role |
 |---|---|---|---|---|---|---|---|---|
-| 1 | cheatbench + orbit (own) | ✓ | ✓ | ✓ | self-gen | ✓ | A | backbone; all six labels |
+| 1 | SparGuardianAgents (own: CheatBench tasks + ORBIT) | ✓ | ✓ | ✓ | self-gen | ✓ | A | backbone; all six labels |
 | 2 | SALT-NLP agent-collusion | ✓ | ✓ | ✓ | ✓ | ~ | A | primary Col, emergent, 10×11 authors |
 | 3 | NARCBench | ✓ | ✓ | ~ | ✓ | ✓ | A | Col/Sch validation; author-probe baseline |
 | 4 | Colosseum | ✓ | ✓ | ✓ | self-gen | ✓ | A | deterministic ladder; Cb vs Col |
@@ -97,7 +97,7 @@ Status: **gated** · **request** · **no data** · **self-gen** (environment, mu
 - **[B] ImpossibleBench** — self-gen: [GitHub](https://github.com/safety-research/impossiblebench) · [HF](https://huggingface.co/datasets/fjzzq2002/impossible_livecodebench)
   Coding tasks whose tests contradict the spec, so any pass is cheating by construction.
 - **[B] CheatBench** (Center for AI Safety; same name as the steinad trace dataset above, a different project) — self-gen: [GitHub](https://github.com/centerforaisafety/cheatbench) · [Paper](https://arxiv.org/abs/2609.36308) · [Site](https://cheatbench.ai) · [our fork](https://github.com/unrulyabstractions/cheatbench)
-  14 agent tasks in 10 categories that pair hard assignments with chances to cheat (hidden answers, another participant's work, the evaluator); an LLM judge labels cheating apart from task success. Its authors release environments, not transcripts. Our controls dataset runs 8 of its tasks with our five authors (§8, [details](DATASET_DETAILS.md)).
+  14 agent tasks in 10 categories that pair hard assignments with chances to cheat (hidden answers, another participant's work, the evaluator); an LLM judge labels cheating apart from task success. Its authors release environments, not transcripts. Our controls dataset runs 8 of its tasks in SparGuardianAgents with our five authors (§8, [details](DATASET_DETAILS.md)).
 - **[B] HackTrace**: [HF](https://huggingface.co/datasets/JH012/HackTrace-Data)
   174K coding trajectories labelled for attempted shortcuts, including failed attempts.
 - **[C] TRACE** (Patronus): [HF](https://huggingface.co/datasets/PatronusAI/trace-dataset)
@@ -189,9 +189,9 @@ Status: **gated** · **request** · **no data** · **self-gen** (environment, mu
 
 ## 8. Own data
 
-- **[A] cheatbench + orbit + instrumentation** — self-gen
+- **[A] SparGuardianAgents** (own: CheatBench (CAIS) tasks + ORBIT + instrumentation) — self-gen: [GitHub](https://github.com/unrulyabstractions/spar-guardian-agents) · [SPAR report](https://docs.google.com/document/d/1-Ph3v3OPblL2tBs2lxPLk3oPMDhVh686zzhywludDgc)
   2-agent, multi-model and same-model swarms with our authors and full instrumentation.
-- **[B] SPAR (spar-guardian-agents)**: GPT-6-Luna, Claude Haiku 5.5, DeepSeek-V4.1-Flash
+- **[B] SPAR swarm data** (spar-swarm, made with SparGuardianAgents before the sprint): GPT-6-Luna, Claude Haiku 5.5, DeepSeek-V4.1-Flash
   Our only labelled data from closed authors; labels depend on existing annotations.
 - **[B] arena_capstone**: gpt-5-mini, Qwen3.8-27B
   Qwen3.8-27B as both author and reader gives a free author-probe baseline.

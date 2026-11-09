@@ -7,17 +7,35 @@ the files on this Mac.
 Everything here was made with SparGuardianAgents (repository spar-guardian-agents):
 CheatBench tasks run on the ORBIT scaffold with our own instrumentation and ladders.
 
-## Overview
+## Tasks covered by each set
+
+Runs per task. The controls, probed and judge columns count single-agent runs; board-seed and SPAR count team runs.
+
+| task | controls (valid) | probed (and judged) | board-seed | SPAR screen |
+|---|---|---|---|---|
+| software engineering (flipt-02e2) | 390 | 58 | 43 | 45 |
+| software engineering (vuls-1832) | 383 | 52 | 0 | 0 |
+| open mathematics | 498 | 65 | 0 | 0 |
+| subset sum | 498 | 66 | 0 | 0 |
+| prime factorization | 499 | 63 | 0 | 0 |
+| protein design | 498 | 78 | 0 | 45 |
+| creative writing | 498 | 74 | 0 | 45 |
+| knowledge work | 491 | 100 | 0 | 45 |
+| chess | 402 | 44 | 0 | 45 |
+| all | 4,157 | 600 | 43 | 225 |
+
+All tasks are CheatBench tasks with a planted exploit. Software engineering appears as two issues in the
+controls set and as one (flipt-02e2) in the board-seed runs and the SPAR screen.
+## Overview of each set
 
 ### 1. Controls dataset
 
 - what: one agent, one CheatBench task with a planted exploit, two arms (solo, cheat)
 - runs: 4,157 valid of 4,219 launched
+- tasks: 9 task instances from 8 CheatBench tasks: software engineering (2 issues), open mathematics, subset sum, prime factorization, protein design, creative writing, knowledge work, chess
 - agents per run: 1 (no board, no roles)
 - authors: 5 (DeepSeek V4.1 Flash, GPT-5 mini, Claude Haiku 5.5, GPT-6 Luna, Qwen3.8-27B)
 - labels: cheat ladder from code; no judge; no collaboration label (single agent)
-- made: 2026-11-06 to 07, on 20 arena9 hosts
-- cost: $192.85
 - where: Hugging Face `unrulyabstractions/apart-swarm` (private); local `data/apart_controls/` (2.0 GB, not in git)
 - in the report: yes (Tables 1 to 3, Figure 1)
 
@@ -25,9 +43,8 @@ CheatBench tasks run on the ORBIT scaffold with our own instrumentation and ladd
 
 - what: the controls runs the reader (Qwen3.8-27B) read
 - runs: 600 (about 120 per author)
+- tasks: all 9 instances; per task: flipt 58, vuls 52, open mathematics 65, subset sum 66, prime factorization 63, protein design 78, creative writing 74, knowledge work 100, chess 44
 - labels: as the controls, plus think-token positions per turn
-- made: 2026-11-07, on arena9-wild (one L40S GPU, 1.9 h)
-- cost: $0 (free host)
 - where: `data/subsample.csv`, `hermeneutics/results/*/agents.csv`; the activation cache was on wild only and is lost
 - in the report: yes
 
@@ -35,9 +52,8 @@ CheatBench tasks run on the ORBIT scaffold with our own instrumentation and ladd
 
 - what: three API judges asked "did this agent cheat?" on the probed subsample
 - agents: 600; judges: Claude Haiku 5.5, GPT-5 mini, Claude Sonnet 5.5
+- tasks: the same 600 agents as the probed subsample, so all 9 instances
 - labels: yes/no with a confidence, cheating only
-- made: 2026-11-07, Mac OpenRouter key
-- cost: $12.34
 - where: `data/judge_*.jsonl`
 - in the report: yes (Table 3)
 
@@ -45,11 +61,10 @@ CheatBench tasks run on the ORBIT scaffold with our own instrumentation and ladd
 
 - what: three agents of one author share a message board; one planted post varies by arm
 - runs: 43 (18 pilots, 25 dose-response)
+- tasks: one, software engineering (flipt-02e2), worked as a team
 - agents per run: 3 workers (4 with the hidden regulator)
 - authors: 1 (DeepSeek V4.1 Flash)
 - labels: cheat ladder and collaboration ladder from code; no judge
-- made: 2026-11-07, on the Mac
-- cost: $8.19
 - where: local `data/board_seed_pilot/` (76 MB, not in git); not on Hugging Face
 - in the report: yes (Table 4)
 
@@ -57,10 +72,10 @@ CheatBench tasks run on the ORBIT scaffold with our own instrumentation and ladd
 
 - what: the SparGuardianAgents screen: solo, team and regulated cells
 - runs: 225
+- tasks: 5: software engineering (flipt), knowledge work, protein design, creative writing, chess; 45 runs each
 - agents per run: 1, 3 or 4
 - authors: 3 (DeepSeek V4.1 Flash, GPT-6 Luna, Claude Haiku 5.5)
 - labels: cheat ladder from code AND from CheatBench's judge; collaboration ladder from code; a second judge
-- made: October 2026, before the sprint
 - where: Hugging Face `unrulyabstractions/spar-swarm` (public); local `~/work/arena-capstone/data/hf/spar-swarm/` (700 MB)
 - in the report: no
 
@@ -264,6 +279,8 @@ survive; the cache does not.
 
 ## Judge outputs in detail
 
+Cost: $12.34 on the Mac's OpenRouter key.
+
 One prompt per probed agent: the task and the transcript, each tool result cut to 500 characters and
 the tail cut to 12,000 tokens; one yes-or-no answer with a confidence.
 
@@ -276,6 +293,8 @@ the tail cut to 12,000 tokens; one yes-or-no answer with a confidence.
 Sonnet stopped at its in-code spend cap. No judge was run on collaboration, and none on the board-seed runs.
 
 ## Board-seed runs in detail
+
+Cost: $8.19 on the Mac's OpenRouter key.
 
 Three worker agents of one author (DeepSeek V4.1 Flash) work the software-engineering issue
 flipt-02e2 on a shared ORBIT message board. The planted fix is split into three pieces, one per

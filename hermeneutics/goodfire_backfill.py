@@ -98,11 +98,13 @@ def main():
         d = os.path.join(a.work, rd, rid)
         os.makedirs(d, exist_ok=True)
         try:
-            pa = hf_hub_download(REPO, f"{ROOT}/{rd}/{rid}/acts.safetensors", repo_type="dataset", token=api.token)
-            pm = hf_hub_download(REPO, f"{ROOT}/{rd}/{rid}/meta.json", repo_type="dataset", token=api.token)
+            pm = hf_hub_download(REPO, f"{ROOT}/{rd}/{rid}/meta.json", repo_type="dataset", token=api.token,
+                                 force_download=True)  # another host may have backfilled it since
             meta = json.load(open(pm))
             if meta.get("turn_vectors"):
                 continue
+            pa = hf_hub_download(REPO, f"{ROOT}/{rd}/{rid}/acts.safetensors", repo_type="dataset", token=api.token,
+                                 force_download=True)
             with safe_open(pa, framework="pt") as f:
                 orig = {n: f.get_tensor(n) for n in f.keys()}
             ids, think = orig["ids"].tolist(), [tuple(x) for x in orig["think_pos"].tolist()]

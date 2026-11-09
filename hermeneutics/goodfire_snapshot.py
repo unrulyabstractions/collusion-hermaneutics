@@ -105,7 +105,8 @@ def build(acts, snap, max_rollouts=0):
         shas.add(meta.get("code_sha"))
         models.add(meta.get("model"))
         kernels.add(meta.get("gdn_kernel"))
-    think_compatible = {"f4672813f425c6a5ba627198b720e7eb810883ba"}  # later commits add turn_L only; think_L identical
+    think_compatible = {"f4672813f425c6a5ba627198b720e7eb810883ba",  # later commits add turn_L only; think_L identical
+                        "5724bb3f32272197c0a6a3e0c7456ebf85278618"}
     if len(shas - think_compatible) > 1 or len(kernels) != 1:
         raise RuntimeError(f"mixed provenance in one part: code_sha {shas} gdn_kernel {kernels}")
     files = {}

@@ -27,7 +27,7 @@ FP16_MAX = 65504.0
 TURN_IDS = (248046, 198, 248045, 74455, 198)  # <|im_end|> \n <|im_start|> assistant \n: the change of turn before <think>
 # Commits whose think_L vectors are identical to this code's (same forward; later commits only add turn_L): a resume may
 # skip folders they wrote. Folders without turn_L are the backfill list.
-THINK_COMPATIBLE = {"f4672813f425c6a5ba627198b720e7eb810883ba"}
+THINK_COMPATIBLE = {"f4672813f425c6a5ba627198b720e7eb810883ba", "5724bb3f32272197c0a6a3e0c7456ebf85278618"}
 
 
 def versions(dev):

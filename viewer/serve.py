@@ -31,6 +31,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import levels as six  # noqa: E402
+
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 DATA = REPO / "data"
@@ -39,7 +42,7 @@ CACHE = HERE / ".cache" / "index.json"
 SPAR_DEFAULT = Path("/Users/unrulyabstractions/work/arena-capstone/data/hf/spar-swarm")
 OLD_CONTROLS = "/Users/unrulyabstractions/work/arena-capstone/data/apart_controls/"
 NEW_CONTROLS = str(DATA / "apart_controls") + "/"
-INDEX_VERSION = 3
+INDEX_VERSION = 4
 
 # The honeypot ladder (SGA src/measures/rungs.py RUNGS) and the levels data/labels.csv reads it by
 # (hermeneutics/labels.py): used and tampered sit on one level.
@@ -192,6 +195,7 @@ def board_rows() -> list[dict]:
             "batch": "confirm" if d.name.startswith("cm_") else ("pilot60" if d.name.startswith("pilot60") else "pilot"),
             "roles": {e.get("orbit_agent"): e.get("role") for e in eps if e.get("role")},
             "dir": str(d), "n_transcripts": len(transcript_dirs(d)),
+            "levels": six.team_levels_for_index(d, board_view, jsonl),
         })
     return rows
 
@@ -407,8 +411,9 @@ def run_detail(row: dict, api: dict, spar_tables: dict) -> dict:
     meta["composition"] = (rj.get("swarm") or {}).get("composition")
     if row["col"] == "controls":
         meta["eval_log"] = (meta.get("eval_log") or "").replace(OLD_CONTROLS, NEW_CONTROLS) or None
-    return {"row": row, "meta": meta, "team": team, "agents": agents,
-            "boards": board_view(run_dir, timeline, roles, bool((rj.get("config") or {}).get("board_seed"))),
+    boards = board_view(run_dir, timeline, roles, bool((rj.get("config") or {}).get("board_seed")))
+    return {"row": row, "meta": meta, "team": team, "agents": agents, "boards": boards,
+            "levels": six.compute(team, sig_agents, episodes, boards, roles),
             "spar_team_ladder": spar_ladder.get("_team")}
 
 

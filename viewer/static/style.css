@@ -450,3 +450,22 @@ table.idx-table tr.row-disagree td:first-child { box-shadow: inset 3px 0 0 var(-
 .call-mark { display: flex; gap: 6px; align-items: baseline; font-size: 12.5px; }
 .cm-text { overflow-wrap: anywhere; color: var(--text); }
 .reasoning-hidden { font-style: italic; }
+/* six ladders */
+.lv-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.lv-table th, .lv-table td { border-bottom: 1px solid #ddd; padding: 4px 6px; text-align: left; vertical-align: top; }
+.lv-team td { background: #f4f1ea; }
+.lv-glyph { display: inline-flex; gap: 1px; margin-right: 5px; vertical-align: middle; }
+.lv-seg { width: 5px; height: 11px; background: #e3e3e3; border-radius: 1px; }
+.lv-seg.on { background: #b5532b; }
+.lv-hit .lv-name { font-weight: 600; }
+.lv-proxy { margin-left: 4px; font-size: 10px; color: #777; border: 1px solid #bbb; border-radius: 3px; padding: 0 3px; }
+.lv-strip { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; padding: 3px 5px; background: #faf8f4; border: 1px solid #eee3d3; border-radius: 4px; font-size: 11px; }
+.lv-chip { display: inline-flex; align-items: center; gap: 3px; }
+.lv-chip-name { color: #555; }
+.lv-new { background: #ffe5cc; border-radius: 3px; padding: 0 3px; }
+.lv-star { color: #a33; font-weight: 600; }
+.lv-board { color: #335; }
+.lv-loose { margin: 6px 0; padding: 4px 6px; background: #fff7e8; border-left: 3px solid #d9a441; }
+.lv-ladder-table { border-collapse: collapse; font-size: 12px; }
+.lv-ladder-table th, .lv-ladder-table td { border: 1px solid #ccc; padding: 4px 6px; vertical-align: top; max-width: 260px; }
+.lv-ladder-table .lv-hl { background: #fff1d6; }

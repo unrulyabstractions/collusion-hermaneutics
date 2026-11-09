@@ -9,6 +9,7 @@ import { COLLAB_MEANING, COLLAB_ORDER, COLLECTIONS, JUDGES, JUDGE_ORDER, RUNG_ME
   armLabel, modelLabel, taskLabel } from './labels.js';
 import { cheatLabelBadge, yesNo } from './view_index.js';
 import { renderTranscript } from './transcript.js';
+import { levelsPanel, stepTracker } from './levels.js';
 
 const LADDER = ['exposed', 'tried', 'opened', 'used', 'tampered', 'checked', 'shipped'];
 const CALL_FIELDS = ['exposed', 'tried', 'opened', 'joined'];
@@ -127,7 +128,7 @@ export async function viewRun(id, q, view) {
             if (a.spar_ladder) {
               for (const [k, ms] of ladderMarks(a.spar_ladder, 'judge')) marks.set(k, [...(marks.get(k) || []), ...ms]);
             }
-            state.tr = renderTranscript(t, { agent: a.agent, marks, boardCalls: boardCalls.get(a.agent) || new Map() });
+            state.tr = renderTranscript(t, { agent: a.agent, marks, boardCalls: boardCalls.get(a.agent) || new Map(), tracker: d.levels ? stepTracker(d.levels, a.agent) : null });
             holder.replaceChildren(
               h('div', { class: 'tr-head' }, h('h3', null, `Transcript of ${a.agent}`), muted(t.model || '', 'small'),
                 h('span', { class: 'spacer' }),
@@ -416,7 +417,7 @@ export async function viewRun(id, q, view) {
     if (qa && qc != null && cards.has(qa)) gotoCall(qa, parseInt(qc, 10)).catch(() => {});
     else if (!multi && d.agents.length === 1 && d.agents[0].folder) cards.get(d.agents[0].agent).load().catch(() => {});
   });
-  return h('div', { class: 'page' }, header, labelsCard, teamCard, judgeCard, boardCard, agentsBox);
+  return h('div', { class: 'page' }, header, d.levels ? levelsPanel(d.levels, roles) : null, labelsCard, teamCard, judgeCard, boardCard, agentsBox);
 }
 
 function asStr(v) { return Array.isArray(v) ? v.join('\n') : typeof v === 'string' ? v : JSON.stringify(v); }

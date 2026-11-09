@@ -23,11 +23,33 @@ What is lossy (all reported in info):
   * a continuation woken by a task notification gets a user message that is the notification's fields as JSON; the
     exact text Claude Code injected is not recorded.
   * a user turn whose text is not recorded (fresh-session retry prompt, self-review resume) is an empty user message.
-  * tool_result blocks that are not text (ToolSearch's tool_reference) are kept as their JSON.
+  * tool_result blocks that are not text (ToolSearch's tool_reference, Read's image) are kept as their JSON.
   * Claude Code's thinking blocks fill "reasoning"; with Claude 4 models these may be the API's summarized thinking.
 Dropped as chrome the model did not see: Pilot banner/log lines, system/init, system/task_started, rate_limit_event,
 result lines (their "result" repeats the last assistant text), message usage/stop fields, the user lines'
 tool_use_result (Claude Code's structured copy of the tool output; the model sees the tool_result content).
+
+Version 2 (each case below raised in version 1; a trace without them converts exactly as before, info included: the
+info keys named here appear only when nonzero):
+  * A Pilot banner line that starts with '{' but is not JSON (the task echo under "Task:" quotes JSON schemas) is a Pilot
+    text line when it comes before the first stream-json line and does not start with '{"type"'
+    (info["banner_brace_lines"]). Anywhere else such a line still raises: it could be a truncated stream line.
+  * Subagents. A line with parent_tool_use_id is a subagent's (Agent tool) own conversation. The main model never sees
+    it: it sees the Agent call's input (its tool_use, with the prompt) and the subagent's final report (the main-thread
+    tool_result for that call). Sidechain lines are dropped (info["sidechain_lines"], info["subagent_calls"]); a
+    sidechain whose parent is not a main-thread tool_use raises. A foreground subagent's system/task_notification
+    arrives while its call is still open; it does not wake the main model, so it neither closes the assistant message
+    nor becomes a continuation's user turn (info["foreground_agent_notifications"]).
+  * A user line with text (or other non-tool_result) blocks on the main thread is something the model saw:
+      - right after system/compact_boundary: Claude Code's compaction summary. The context was replaced by it, so it
+        opens a segment of kind "compaction" (info["compactions"]); like a fresh session, the earlier messages stay in
+        the sequence but the model did not see them after the boundary.
+      - right after a tool_result: a synthetic attachment Claude Code sends in the same user turn (Read's "[Image:
+        original WxH ...]" note, a PDF's document block). It is appended to that tool message after a newline
+        (info["attached_user_blocks"]); non-text blocks are kept as their JSON (info["nontext_user_blocks"]).
+      - otherwise (after an assistant message, e.g. Pilot's Stop-hook feedback "Stop hook feedback: ... Tests failed"):
+        its own user message (info["user_text_turns"]).
+    A user line mixing tool_result and other blocks, or with plain-string content, still raises.
 """
 import json
 import re
@@ -63,8 +85,12 @@ def _task_prompt(event):
 
 
 def _json_lines(stdout):
-    """The Claude Code stream-json lines of stdout, in order; Pilot's text lines are skipped and counted."""
-    out, text_lines, bad = [], 0, 0
+    """The Claude Code stream-json lines of stdout, in order; Pilot's text lines are skipped and counted.
+
+    A line that starts with '{' but is not JSON is a Pilot banner line (the task echo quoting a JSON schema) when no
+    stream-json line has come yet and it does not start with '{"type"'; it is counted in text_lines and banner_brace.
+    Any other such line is counted in bad."""
+    out, text_lines, bad, banner_brace = [], 0, 0, 0
     for line in stdout.split("\n"):
         s = line.strip()
         if not s.startswith("{"):
@@ -73,8 +99,29 @@ def _json_lines(stdout):
         try:
             out.append(json.loads(s))
         except ValueError:
-            bad += 1
-    return out, text_lines, bad
+            if not out and not s.startswith('{"type"'):
+                text_lines += 1
+                banner_brace += 1
+            else:
+                bad += 1
+    return out, text_lines, bad, banner_brace
+
+
+def _user_text(content, info):
+    """The text of a main-thread user line's non-tool_result blocks; non-text blocks (a PDF's document) as JSON."""
+    parts = []
+    for b in content:
+        if b.get("type") == "text":
+            parts.append(b.get("text", ""))
+        else:
+            nb = info.setdefault("nontext_user_blocks", {})
+            nb[b.get("type")] = nb.get(b.get("type"), 0) + 1
+            parts.append(json.dumps(b, ensure_ascii=False))
+    return "\n".join(parts)
+
+
+def _bump(info, key, k=1):
+    info[key] = info.get(key, 0) + k
 
 
 def _tool_text(content, info):
@@ -105,10 +152,12 @@ def convert(row):
         raise ValueError(f"expected one agent_command event, got {[e.get('type') for e in events]}")
     red = _Redactor()
     event = events[0]
-    lines, text_lines, bad = _json_lines(event.get("stdout") or "")
+    lines, text_lines, bad, banner_brace = _json_lines(event.get("stdout") or "")
     if bad:
         raise ValueError(f"{bad} stdout lines start with '{{' but are not JSON")
     info["dropped_pilot_text_lines"] = text_lines
+    if banner_brace:
+        info["banner_brace_lines"] = banner_brace
 
     messages = [{"role": "user", "content": _task_prompt(event)}]
     cur = None                 # the assistant message being assembled (its blocks arrive one line each)
@@ -117,6 +166,10 @@ def convert(row):
     session = None
     seen_result = False
     dropped = {}
+    main_calls = set()         # tool_use ids of main-thread assistant messages (a sidechain's parent must be one)
+    subagents = set()          # parent_tool_use_ids of the sidechain lines seen
+    last_main = None           # kind of the last main-thread line: assistant, tool_result, user_text or compact
+    last_tool = None           # the tool message of the last main-thread tool_result block
 
     def flush():
         nonlocal cur, pending_tools
@@ -136,8 +189,16 @@ def convert(row):
 
     for j in lines:
         t, sub = j.get("type"), j.get("subtype")
-        if j.get("parent_tool_use_id"):
-            raise NotImplementedError("subagent (sidechain) lines are not handled; none occur in the Pilot samples")
+        parent = j.get("parent_tool_use_id")
+        if parent:
+            # a subagent's own conversation: the main model sees only the Agent call and its main-thread tool_result
+            if parent not in main_calls:
+                raise ValueError(f"sidechain line whose parent {parent} is not a main-thread tool_use")
+            subagents.add(parent)
+            _bump(info, "sidechain_lines")
+            key = f"sidechain/{t}/{sub}" if sub else f"sidechain/{t}"
+            dropped[key] = dropped.get(key, 0) + 1
+            continue
         if t == "system" and sub == "init":
             flush()
             if not info["tool_names"]:
@@ -175,16 +236,41 @@ def convert(row):
                 elif bt == "redacted_thinking":
                     info["lossy"].append("redacted_thinking block (opaque) dropped")
                 elif bt == "tool_use":
+                    main_calls.add(b.get("id"))
                     cur["calls"].append({"id": b.get("id"), "type": "function",
                                          "function": {"name": b.get("name"),
                                                       "arguments": json.dumps(red(b.get("input") or {}),
                                                                               ensure_ascii=False)}})
                 else:
                     raise ValueError(f"unknown assistant block type {bt!r}")
+            last_main = "assistant"
         elif t == "user":
             content = j["message"].get("content")
             if isinstance(content, str):
                 raise ValueError("user line with plain text content: unhandled")
+            kinds = {b.get("type") == "tool_result" for b in content}
+            if kinds == {False}:
+                # text (or document) the model saw on the main thread; see the module docstring
+                text = _user_text(content, info)
+                if last_main == "compact":
+                    flush()
+                    _bump(info, "compactions")
+                    info["segments"].append({"kind": "compaction", "session_id": session, "start": len(messages)})
+                    messages.append({"role": "user", "content": text})
+                elif last_main == "tool_result":
+                    if last_tool is None:
+                        raise ValueError("user attachment after a tool_result line with no tool_result block")
+                    last_tool["content"] += "\n" + text
+                    _bump(info, "attached_user_blocks", len(content))
+                else:
+                    flush()
+                    _bump(info, "user_text_turns")
+                    messages.append({"role": "user", "content": text})
+                last_main = "user_text"
+                dropped["user.tool_use_result"] = dropped.get("user.tool_use_result", 0) + ("tool_use_result" in j)
+                continue
+            if kinds == {True, False}:
+                raise ValueError("user line mixing tool_result and other blocks: unhandled")
             for b in content:
                 if b.get("type") != "tool_result":
                     raise ValueError(f"user block {b.get('type')!r}: unhandled")
@@ -198,11 +284,24 @@ def convert(row):
                     messages.append(tm)
                     info["n_tool"] += 1
                     info["lossy"].append(f"tool_result {b.get('tool_use_id')} answers no open assistant message")
+                last_tool = tm
+            if content:
+                last_main = "tool_result"
             dropped["user.tool_use_result"] = dropped.get("user.tool_use_result", 0) + ("tool_use_result" in j)
         elif t == "system" and sub == "task_notification":
-            flush()
-            notifications.append(j)
+            tid = j.get("tool_use_id")
+            if (cur is not None and any(c["id"] == tid for c in cur["calls"])
+                    and not any(p["tool_call_id"] == tid for p in pending_tools)):
+                # a foreground subagent finished; its report arrives as the open call's tool_result
+                _bump(info, "foreground_agent_notifications")
+            else:
+                flush()
+                notifications.append(j)
             dropped["system/task_notification"] = dropped.get("system/task_notification", 0) + 1
+        elif t == "system" and sub == "compact_boundary":
+            flush()
+            last_main = "compact"
+            dropped["system/compact_boundary"] = dropped.get("system/compact_boundary", 0) + 1
         elif t == "result":
             flush()
             seen_result = True
@@ -234,4 +333,16 @@ def convert(row):
                              "see earlier segments (info.segments gives the boundaries)")
     if info["nontext_tool_blocks"]:
         info["lossy"].append(f"non-text tool_result blocks kept as JSON: {info['nontext_tool_blocks']}")
+    if subagents:
+        info["subagent_calls"] = len(subagents)
+        info["lossy"].append(f"{info['sidechain_lines']} subagent (sidechain) line(s) over {len(subagents)} Agent call(s) "
+                             "dropped: the main model saw only each call's input and its main-thread tool_result")
+    if info.get("compactions"):
+        info["lossy"].append(f"{info['compactions']} context compaction(s): after each, the model saw Claude Code's "
+                             "summary (the segment's first user message), not the earlier messages (info.segments)")
+    if info.get("attached_user_blocks"):
+        info["lossy"].append(f"{info['attached_user_blocks']} synthetic user block(s) sent with a tool result (image "
+                             "note, PDF document) appended to that tool message")
+    if info.get("nontext_user_blocks"):
+        info["lossy"].append(f"non-text user blocks kept as JSON: {info['nontext_user_blocks']}")
     return {"messages": messages, "tools": [], "info": info}

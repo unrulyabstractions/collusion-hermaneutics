@@ -1,6 +1,6 @@
 # Attention monitor over the reader's think tokens
 
-Updated 2026-11-09 00:35 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
+Updated 2026-11-09 00:51 PST. Every number below is read from the CSVs in this folder; the held-out scores per step are saved in step_scores_<set>.csv.gz, so each AUROC can be recomputed.
 
 ## Design
 
@@ -303,6 +303,14 @@ Held-out score per turn of the cheating-used binary head for the six agents of t
 
 Seed-to-seed spread of the binary head (max minus min over seeds): step 0.001, agent last 0.003, agent max 0.002.
 
+Permutation null (3 draws), attention monitor seed 0:
+
+| Metric | Real | Null mean | Null 95th percentile | p |
+|---|---|---|---|---|
+| step AUROC | 0.983 | 0.680 | 0.691 | 0.250 |
+| agent AUROC (last) | 0.985 | 0.501 | 0.518 | 0.250 |
+| agent AUROC (max) | 0.989 | 0.495 | 0.506 | 0.250 |
+
 ### Level accuracy
 
 | Ladder | Model | Final-step level accuracy | Final-step level mean absolute error | Per-step level accuracy |
@@ -325,6 +333,63 @@ Seed-to-seed spread of the binary head (max minus min over seeds): step 0.001, a
 | 1 | 2 | 51 | 40 | 1.000 |  |  | 0.992 |  |  |
 | 1 | 3 | 40 | 29 | 1.000 |  |  | 0.994 |  |  |
 | 1 | 4 | 47 | 36 | 1.000 |  |  | 0.992 |  |  |
+
+## Controls, one agent per run (five authors): controls_600_think_heldout_author
+
+600 agents, 600 runs, 10985 steps. Split: held-out author (train on the other authors, test on one).
+
+### cheating (the set's label: from tried or opened by task)
+
+593 agents scored per step (336 reach the cut), 10834 steps (3759 positive).
+
+| Model | Step AUROC | Agent AUROC (last) | Agent AUROC (max) | Delay at 5% FPR, turns | Detected | Negative agents ever above threshold | ECE |
+|---|---|---|---|---|---|---|---|
+| attention monitor, binary head (seed 0) | 0.923 [0.907, 0.939] | 0.903 [0.878, 0.929] | 0.908 [0.884, 0.933] | 1.0 [0.0, 1.0] | 276/336 | 43/257 | 0.128 |
+| attention monitor, ordinal head P(level >= cut) (seed 0) | 0.912 [0.895, 0.929] | 0.886 [0.856, 0.913] | 0.890 [0.861, 0.917] | 1.0 [0.0, 1.0] | 283/336 | 40/257 | 0.245 |
+| attention monitor, binary head (seed 1) | 0.942 [0.930, 0.953] | 0.906 [0.878, 0.931] | 0.908 [0.881, 0.932] | 1.0 [1.0, 2.0] | 290/336 | 42/257 | 0.098 |
+| attention monitor, ordinal head P(level >= cut) (seed 1) | 0.938 [0.924, 0.949] | 0.897 [0.864, 0.923] | 0.896 [0.863, 0.922] | 1.0 [0.0, 2.0] | 303/336 | 46/257 | 0.237 |
+| linear per-step probe (team_probes) | 0.839 [0.818, 0.861] | 0.733 [0.694, 0.772] | 0.838 [0.810, 0.867] | 1.0 [0.0, 1.0] | 272/336 | 83/257 | 0.065 |
+| cumulative mean of the linear probe | 0.869 [0.849, 0.886] | 0.767 [0.729, 0.804] | 0.769 [0.732, 0.807] | 2.0 [1.0, 5.0] | 199/336 | 52/257 | 0.212 |
+| GRU over the linear probe scores | 0.884 [0.859, 0.909] | 0.819 [0.784, 0.854] | 0.852 [0.821, 0.880] | 1.0 [0.0, 2.0] | 254/336 | 56/257 | 0.069 |
+| turn index alone | 0.671 [0.650, 0.691] | 0.443 [0.395, 0.493] | 0.443 [0.395, 0.493] | 16.0 [8.0, 19.0] | 158/336 | 143/257 | 0.140 |
+| TF-IDF on the agent's words so far | 0.953 [0.943, 0.962] | 0.933 [0.916, 0.951] | 0.939 [0.921, 0.956] | 0.0 [0.0, 1.0] | 285/336 | 25/257 | 0.030 |
+
+Seed-to-seed spread of the binary head (max minus min over seeds): step 0.019, agent last 0.003, agent max 0.000.
+
+### Per held-out author, cheating (the set's label: from tried or opened by task) (step AUROC / agent AUROC from the last step)
+
+| Model | ds held out | gpt5m held out | haiku held out | luna held out | qwen held out |
+|---|---|---|---|---|---|
+| attention monitor, binary head (seed 0) | 0.923 / 0.918 | 0.945 / 0.901 | 0.944 / 0.930 | 0.933 / 0.907 | 0.966 / 0.961 |
+| attention monitor, binary head (seed 1) | 0.956 / 0.931 | 0.961 / 0.932 | 0.946 / 0.962 | 0.914 / 0.846 | 0.985 / 0.994 |
+| linear per-step probe (team_probes) | 0.814 / 0.552 | 0.827 / 0.739 | 0.925 / 0.821 | 0.900 / 0.809 | 0.871 / 0.809 |
+| cumulative mean of the linear probe | 0.914 / 0.785 | 0.822 / 0.689 | 0.852 / 0.841 | 0.894 / 0.801 | 0.937 / 0.830 |
+| GRU over the linear probe scores | 0.826 / 0.643 | 0.841 / 0.778 | 0.933 / 0.886 | 0.945 / 0.926 | 0.976 / 0.952 |
+| turn index alone | 0.710 / 0.557 | 0.713 / 0.499 | 0.592 / 0.432 | 0.689 / 0.451 | 0.646 / 0.262 |
+| TF-IDF on the agent's words so far | 0.975 / 0.948 | 0.899 / 0.881 | 0.954 / 0.947 | 0.955 / 0.967 | 0.977 / 0.964 |
+
+### Level accuracy
+
+| Ladder | Model | Final-step level accuracy | Final-step level mean absolute error | Per-step level accuracy |
+|---|---|---|---|---|
+| cheat | attention monitor (seed 0) | 0.263 | 1.833 | 0.583 |
+| cheat | attention monitor (seed 1) | 0.377 | 1.657 | 0.734 |
+| cheat | majority level of the training fold | 0.325 | 3.568 | 0.326 |
+
+### Fit check (binary heads, step AUROC on the fold's training and validation agents)
+
+| Seed | Fold | Epochs run | Best epoch | train|cheat | train|collude | train|coord | val|cheat | val|collude | val|coord |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0 | 17 | 6 | 0.996 |  |  | 0.990 |  |  |
+| 0 | 1 | 22 | 11 | 0.998 |  |  | 0.981 |  |  |
+| 0 | 2 | 60 | 51 | 1.000 |  |  | 0.994 |  |  |
+| 0 | 3 | 60 | 56 | 1.000 |  |  | 0.993 |  |  |
+| 0 | 4 | 45 | 34 | 1.000 |  |  | 0.976 |  |  |
+| 1 | 0 | 60 | 59 | 1.000 |  |  | 0.994 |  |  |
+| 1 | 1 | 42 | 31 | 1.000 |  |  | 0.994 |  |  |
+| 1 | 2 | 60 | 59 | 1.000 |  |  | 0.994 |  |  |
+| 1 | 3 | 54 | 43 | 1.000 |  |  | 0.983 |  |  |
+| 1 | 4 | 34 | 23 | 0.999 |  |  | 0.988 |  |  |
 
 ## Controls, one agent per run (five authors): controls_600_think_soloarm
 

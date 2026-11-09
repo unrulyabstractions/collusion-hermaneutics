@@ -1,0 +1,4 @@
+draw,cut,step_auroc,agent_auroc_last,agent_auroc_max
+0,cheating (the set's label: from tried or opened by task),0.6832248595497747,0.5053501945525292,0.49615527144710025
+1,cheating (the set's label: from tried or opened by task),0.6636838602475892,0.4794098573281453,0.4825134333889198
+2,cheating (the set's label: from tried or opened by task),0.6920713700937856,0.5196057995182509,0.5067166944598851

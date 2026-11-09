@@ -869,6 +869,37 @@ def subset_metrics(sname, tag, arm):
     return M
 
 
+def author_breakdown(sname, tag):
+    """Held-out author runs: step AUROC and agent AUROC (last step) per held-out author for every saved score column,
+    from step_scores_<tag>.csv.gz; written as authors_<tag>.csv."""
+    import pandas as pd
+    S = pd.read_csv(OUT / f"step_scores_{tag}.csv.gz")
+    recs = other_set_records(sname) if sname != "board_seed" else [json.loads(x) for x in open(OUT / "labels_board_seed.jsonl")]
+    by = {(r["run"], r["agent"]): r for r in recs}
+    rows = []
+    for au, g in S.groupby("heldout_author"):
+        keys = list(dict.fromkeys(zip(g.run, g.agent)))
+        rs = [by[k] for k in keys]
+        idx = {k: i for i, k in enumerate(keys)}
+        ai = np.array([idx[k] for k in zip(g.run, g.agent)])
+        EL, _ = eval_labels(rs, np.bincount(ai), ai, g.turn.values)
+        runs = np.array([r["run"] for r in rs])
+        for L, nm in active_cuts(rs, EL):
+            y, reach, onset, keep_a = EL[L]
+            for c in g.columns:
+                parts = c.split("|")
+                if len(parts) < 3 or parts[1] != L or parts[0] not in ("bin", "base"):
+                    continue
+                model = parts[2] if parts[0] == "base" else "attention monitor, binary head"
+                seed = None if parts[0] == "base" else int(parts[2][1:])
+                r, _, _ = cut_metrics(g[c].values, y, reach, keep_a, ai, g.turn.values, onset, runs[ai], runs, ci=False)
+                rows.append({"heldout_author": au, "cut": nm, "model": model, "seed": seed, "agents": r["agents"],
+                             "pos_agents": r["pos_agents"], "step_auroc": r["step_auroc"], "agent_auroc_last": r["agent_auroc_last"]})
+    D = pd.DataFrame(rows)
+    D.to_csv(OUT / f"authors_{tag}.csv", index=False)
+    return D
+
+
 def run_null(sname, tokens, draws):
     """Labels shuffled within arm (whole agent label records, onsets rescaled to the receiving agent's length), the
     monitor retrained (seed 0) on the same folds, scored against the shuffled labels."""
@@ -1053,6 +1084,18 @@ def write_report():
                     prow.append([nmc, fmt(real[c]), fmt(v.mean()), fmt(np.percentile(v, 95)), fmt((1 + (v >= real[c]).sum()) / (1 + len(v)))])
                 L += [f"Permutation null ({len(n)} draws), attention monitor seed 0:", "",
                       md(["Metric", "Real", "Null mean", "Null 95th percentile", "p"], prow), ""]
+        ap_ = OUT / f"authors_{tag}.csv"
+        if ap_.is_file():
+            A_ = pd.read_csv(ap_)
+            for cut in A_.cut.unique():
+                d = A_[A_.cut == cut].copy()
+                d["m"] = d.model + d.seed.map(lambda x: f" (seed {int(x)})" if pd.notna(x) else "")
+                piv_s = d.pivot_table(index="m", columns="heldout_author", values="step_auroc", sort=False)
+                piv_a = d.pivot_table(index="m", columns="heldout_author", values="agent_auroc_last", sort=False)
+                aus = list(piv_s.columns)
+                rows = [[m] + [f"{fmt(piv_s.loc[m, au])} / {fmt(piv_a.loc[m, au])}" for au in aus] for m in piv_s.index]
+                L += [f"### Per held-out author, {cut} (step AUROC / agent AUROC from the last step)", "",
+                      md(["Model"] + [f"{au} held out" for au in aus], rows), ""]
         lp = OUT / f"levels_{tag}.csv"
         if lp.is_file():
             Lv = pd.read_csv(lp)
@@ -1077,7 +1120,7 @@ def write_report():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("stage", choices=["run", "null", "plot", "labels", "report", "subset"])
+    ap.add_argument("stage", choices=["run", "null", "plot", "labels", "report", "subset", "authors"])
     ap.add_argument("--set", default="board_seed")
     ap.add_argument("--tokens", default="think", choices=["think", "seven"])
     ap.add_argument("--draws", default="0:50")
@@ -1106,6 +1149,8 @@ def main():
     elif a.stage == "null":
         d0, d1 = map(int, a.draws.split(":"))
         run_null(a.set, a.tokens, (d0, d1))
+    elif a.stage == "authors":
+        print(author_breakdown(a.set, a.tag).to_string())
     elif a.stage == "subset":
         print(subset_metrics(a.set, a.tag, a.arm).to_string())
     elif a.stage == "report":

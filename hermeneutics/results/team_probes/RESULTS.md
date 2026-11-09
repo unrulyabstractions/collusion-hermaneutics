@@ -1,6 +1,6 @@
 # Hermeneutic probes on the team runs
 
-Updated 2026-11-09 01:58 PST. Every number below comes from the CSVs in this folder; held-out scores per agent, team and turn are saved beside them (transfer scores in transfer_scores.csv and transfer_turn_scores.csv.gz), so each AUROC can be recomputed.
+Updated 2026-11-09 02:12 PST. Every number below comes from the CSVs in this folder; held-out scores per agent, team and turn are saved beside them (transfer scores in transfer_scores.csv and transfer_turn_scores.csv.gz), so each AUROC can be recomputed.
 
 ## Data
 
@@ -549,6 +549,8 @@ Turn AUROC scores held-out turns against the turn label. Agent AUROC scores the 
 | teams | 59 |
 | metadata baseline covariates (the row keeps its board_seed name) | arm, turn budget, seed, author, seed_text, level, batch, task |
 | permutation arm | level and post (seed_text) |
+| agents whose turns map to source steps: step | 174 |
+| agents whose turns map to source steps: unmappable | 3 |
 
 ### solo_design, pooled: 1a cheating: used or above, setting A: think pair, all agents
 
@@ -927,6 +929,8 @@ Turn AUROC scores held-out turns against the turn label. Agent AUROC scores the 
 | teams | 51 |
 | metadata baseline covariates (the row keeps its board_seed name) | arm, turn budget, seed, author, task |
 | permutation arm | condition |
+| agents whose turns map to source steps: step | 208 |
+| agents whose turns map to source steps: unmappable | 1 |
 
 ### spar_mixed_41, all: 1a cheating: used or above, setting A: think pair, all agents
 
@@ -1081,6 +1085,235 @@ Turn AUROC scores held-out turns against the turn label. Agent AUROC scores the 
 | 1a cheating: used or above | ds | luna | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 117 | 39 | 3 | 114 | 0.325 [0.000, 0.673] |
 | 1a cheating: used or above | ds | luna | A | TF-IDF agent's words | 117 | 39 | 3 | 114 | 0.246 [0.069, 0.513] |
 
+## Set spar_screen_team
+
+| Population | Count |
+|---|---|
+| agents on the Hub | 450 |
+| agents with labels and activations | 450 |
+| workers (probed) | 405 |
+| runs | 135 |
+| agents with turns.safetensors | 450 |
+| setting B | complete for the agents here |
+| workers by author: ds | 135 |
+| workers by author: haiku | 135 |
+| workers by author: luna | 135 |
+| workers at cheating used or above | 103 |
+| workers who read the board | 403 |
+| workers who posted | 364 |
+| workers at collusion exploit crossed or above | 67 |
+| workers at collusion none | 330 |
+| teams at collaboration crossed or above | 42 |
+| teams | 135 |
+| metadata baseline covariates (the row keeps its board_seed name) | arm, turn budget, seed, author, task |
+| permutation arm | condition |
+| agents whose turns map to source steps: step | 381 |
+| agents whose turns map to source steps: tool-call rank | 37 |
+| agents whose turns map to source steps: unmappable | 32 |
+
+### spar_screen_team, all: 1a cheating: used or above, setting A: think pair, all agents
+
+| Features | Runs scored | Runs | Positive | Negative | AUROC [95% CI] | Null mean | Null 95th pct | Null p |
+|---|---|---|---|---|---|---|---|---|
+| probe Lall think-open+close | 405 | 135 | 103 | 302 | 0.943 [0.912, 0.970] | 0.512 | 0.575 | 0.010 |
+| probe Lall think-open | 405 | 135 | 103 | 302 | 0.944 [0.916, 0.970] | 0.514 | 0.571 | 0.010 |
+| probe Lall think-close | 405 | 135 | 103 | 302 | 0.946 [0.911, 0.974] | 0.508 | 0.566 | 0.010 |
+| probe L26 think-open | 405 | 135 | 103 | 302 | 0.957 [0.929, 0.979] | 0.520 | 0.581 | 0.010 |
+| probe L26 think-close | 405 | 135 | 103 | 302 | 0.952 [0.923, 0.978] | 0.508 | 0.578 | 0.010 |
+| probe L38 think-open | 405 | 135 | 103 | 302 | 0.958 [0.934, 0.977] | 0.510 | 0.581 | 0.010 |
+| probe L38 think-close | 405 | 135 | 103 | 302 | 0.954 [0.926, 0.977] | 0.512 | 0.574 | 0.010 |
+| probe L51 think-open | 405 | 135 | 103 | 302 | 0.941 [0.912, 0.968] | 0.514 | 0.571 | 0.010 |
+| probe L51 think-close | 405 | 135 | 103 | 302 | 0.944 [0.913, 0.971] | 0.507 | 0.578 | 0.010 |
+| TF-IDF agent's words | 405 | 135 | 103 | 302 | 0.971 [0.950, 0.987] |  |  |  |
+| TF-IDF whole text | 405 | 135 | 103 | 302 | 0.977 [0.958, 0.991] |  |  |  |
+| metadata (arm, seed, turn budget) | 405 | 135 | 103 | 302 | 0.919 [0.881, 0.954] |  |  |  |
+
+### spar_screen_team, all: 1a cheating: used or above, setting B: all seven tokens, agents with turns.safetensors
+
+| Features | Runs scored | Runs | Positive | Negative | AUROC [95% CI] | Null mean | Null 95th pct | Null p |
+|---|---|---|---|---|---|---|---|---|
+| probe Lall think-open+close | 405 | 135 | 103 | 302 | 0.943 [0.912, 0.970] | 0.512 | 0.575 | 0.010 |
+| probe Lall think-open | 405 | 135 | 103 | 302 | 0.944 [0.916, 0.970] | 0.514 | 0.571 | 0.010 |
+| probe Lall think-close | 405 | 135 | 103 | 302 | 0.946 [0.911, 0.974] | 0.508 | 0.566 | 0.010 |
+| probe Lall all seven tokens (boundary 1-5 + think pair) | 405 | 135 | 103 | 302 | 0.969 [0.949, 0.985] | 0.516 | 0.580 | 0.010 |
+| probe Lall boundary 1 (previous <|im_end|>) | 405 | 135 | 103 | 302 | 0.955 [0.926, 0.980] | 0.512 | 0.587 | 0.010 |
+| probe Lall boundary 2 (newline after it) | 405 | 135 | 103 | 302 | 0.969 [0.950, 0.985] | 0.514 | 0.586 | 0.010 |
+| probe Lall boundary 3 (<|im_start|>) | 405 | 135 | 103 | 302 | 0.961 [0.935, 0.983] | 0.518 | 0.584 | 0.010 |
+| probe Lall boundary 4 (assistant) | 405 | 135 | 103 | 302 | 0.970 [0.950, 0.985] | 0.513 | 0.574 | 0.010 |
+| probe Lall boundary 5 (newline after assistant) | 405 | 135 | 103 | 302 | 0.974 [0.959, 0.987] | 0.508 | 0.574 | 0.010 |
+| probe Lall boundary 1-5 concatenated | 405 | 135 | 103 | 302 | 0.970 [0.947, 0.987] | 0.514 | 0.584 | 0.010 |
+| TF-IDF agent's words | 405 | 135 | 103 | 302 | 0.971 [0.950, 0.987] |  |  |  |
+| TF-IDF whole text | 405 | 135 | 103 | 302 | 0.977 [0.958, 0.991] |  |  |  |
+| metadata (arm, seed, turn budget) | 405 | 135 | 103 | 302 | 0.919 [0.881, 0.954] |  |  |  |
+
+### spar_screen_team, all: 3r coordination: read the board
+
+| Status | Agents | Positive | Negative |
+|---|---|---|---|
+| skipped: fewer than 3 agents in a class | 405 | 403 | 2 |
+
+### spar_screen_team, all: 3a coordination: posted or above, setting A: think pair, all agents
+
+| Features | Runs scored | Runs | Positive | Negative | AUROC [95% CI] | Null mean | Null 95th pct | Null p |
+|---|---|---|---|---|---|---|---|---|
+| probe Lall think-open+close | 405 | 135 | 364 | 41 | 0.872 [0.790, 0.938] | 0.481 | 0.573 | 0.010 |
+| probe Lall think-open | 405 | 135 | 364 | 41 | 0.868 [0.787, 0.933] | 0.478 | 0.577 | 0.010 |
+| probe Lall think-close | 405 | 135 | 364 | 41 | 0.858 [0.776, 0.924] | 0.487 | 0.573 | 0.010 |
+| probe L26 think-open | 405 | 135 | 364 | 41 | 0.875 [0.807, 0.934] | 0.483 | 0.575 | 0.010 |
+| probe L26 think-close | 405 | 135 | 364 | 41 | 0.827 [0.741, 0.909] | 0.489 | 0.580 | 0.010 |
+| probe L38 think-open | 405 | 135 | 364 | 41 | 0.923 [0.869, 0.962] | 0.482 | 0.581 | 0.010 |
+| probe L38 think-close | 405 | 135 | 364 | 41 | 0.936 [0.907, 0.962] | 0.484 | 0.589 | 0.010 |
+| probe L51 think-open | 405 | 135 | 364 | 41 | 0.844 [0.741, 0.929] | 0.476 | 0.577 | 0.010 |
+| probe L51 think-close | 405 | 135 | 364 | 41 | 0.855 [0.777, 0.927] | 0.485 | 0.567 | 0.010 |
+| TF-IDF agent's words | 405 | 135 | 364 | 41 | 0.842 [0.745, 0.919] |  |  |  |
+| TF-IDF whole text | 405 | 135 | 364 | 41 | 0.815 [0.705, 0.909] |  |  |  |
+| metadata (arm, seed, turn budget) | 405 | 135 | 364 | 41 | 0.731 [0.597, 0.840] |  |  |  |
+
+### spar_screen_team, all: 3a coordination: posted or above, setting B: all seven tokens, agents with turns.safetensors
+
+| Features | Runs scored | Runs | Positive | Negative | AUROC [95% CI] | Null mean | Null 95th pct | Null p |
+|---|---|---|---|---|---|---|---|---|
+| probe Lall think-open+close | 405 | 135 | 364 | 41 | 0.872 [0.790, 0.938] | 0.481 | 0.573 | 0.010 |
+| probe Lall think-open | 405 | 135 | 364 | 41 | 0.868 [0.787, 0.933] | 0.478 | 0.577 | 0.010 |
+| probe Lall think-close | 405 | 135 | 364 | 41 | 0.858 [0.776, 0.924] | 0.487 | 0.573 | 0.010 |
+| probe Lall all seven tokens (boundary 1-5 + think pair) | 405 | 135 | 364 | 41 | 0.891 [0.818, 0.953] | 0.486 | 0.582 | 0.010 |
+| probe Lall boundary 1 (previous <|im_end|>) | 405 | 135 | 364 | 41 | 0.807 [0.713, 0.897] | 0.491 | 0.603 | 0.010 |
+| probe Lall boundary 2 (newline after it) | 405 | 135 | 364 | 41 | 0.919 [0.870, 0.960] | 0.486 | 0.588 | 0.010 |
+| probe Lall boundary 3 (<|im_start|>) | 405 | 135 | 364 | 41 | 0.813 [0.722, 0.894] | 0.486 | 0.565 | 0.010 |
+| probe Lall boundary 4 (assistant) | 405 | 135 | 364 | 41 | 0.906 [0.843, 0.961] | 0.491 | 0.600 | 0.010 |
+| probe Lall boundary 5 (newline after assistant) | 405 | 135 | 364 | 41 | 0.824 [0.728, 0.901] | 0.494 | 0.585 | 0.010 |
+| probe Lall boundary 1-5 concatenated | 405 | 135 | 364 | 41 | 0.844 [0.764, 0.918] | 0.489 | 0.594 | 0.010 |
+| TF-IDF agent's words | 405 | 135 | 364 | 41 | 0.842 [0.745, 0.919] |  |  |  |
+| TF-IDF whole text | 405 | 135 | 364 | 41 | 0.815 [0.705, 0.909] |  |  |  |
+| metadata (arm, seed, turn budget) | 405 | 135 | 364 | 41 | 0.731 [0.597, 0.840] |  |  |  |
+
+### spar_screen_team, all: 2 collusion: exploit crossed or above vs none, setting A: think pair, all agents
+
+| Features | Runs scored | Runs | Positive | Negative | AUROC [95% CI] | Null mean | Null 95th pct | Null p |
+|---|---|---|---|---|---|---|---|---|
+| probe Lall think-open+close | 397 | 135 | 67 | 330 | 0.937 [0.877, 0.982] | 0.508 | 0.596 | 0.010 |
+| probe Lall think-open | 397 | 135 | 67 | 330 | 0.937 [0.882, 0.980] | 0.511 | 0.587 | 0.010 |
+| probe Lall think-close | 397 | 135 | 67 | 330 | 0.943 [0.876, 0.989] | 0.506 | 0.574 | 0.010 |
+| probe L26 think-open | 397 | 135 | 67 | 330 | 0.940 [0.877, 0.986] | 0.518 | 0.595 | 0.010 |
+| probe L26 think-close | 397 | 135 | 67 | 330 | 0.908 [0.833, 0.964] | 0.509 | 0.579 | 0.010 |
+| probe L38 think-open | 397 | 135 | 67 | 330 | 0.946 [0.891, 0.988] | 0.511 | 0.590 | 0.010 |
+| probe L38 think-close | 397 | 135 | 67 | 330 | 0.952 [0.893, 0.989] | 0.510 | 0.589 | 0.010 |
+| probe L51 think-open | 397 | 135 | 67 | 330 | 0.934 [0.882, 0.976] | 0.509 | 0.586 | 0.010 |
+| probe L51 think-close | 397 | 135 | 67 | 330 | 0.932 [0.865, 0.981] | 0.504 | 0.577 | 0.010 |
+| TF-IDF agent's words | 397 | 135 | 67 | 330 | 0.972 [0.938, 0.996] |  |  |  |
+| TF-IDF whole text | 397 | 135 | 67 | 330 | 0.988 [0.973, 0.999] |  |  |  |
+| metadata (arm, seed, turn budget) | 397 | 135 | 67 | 330 | 0.896 [0.838, 0.943] |  |  |  |
+
+### spar_screen_team, all: 2 collusion: exploit crossed or above vs none, setting B: all seven tokens, agents with turns.safetensors
+
+| Features | Runs scored | Runs | Positive | Negative | AUROC [95% CI] | Null mean | Null 95th pct | Null p |
+|---|---|---|---|---|---|---|---|---|
+| probe Lall think-open+close | 397 | 135 | 67 | 330 | 0.937 [0.877, 0.982] | 0.508 | 0.596 | 0.010 |
+| probe Lall think-open | 397 | 135 | 67 | 330 | 0.937 [0.882, 0.980] | 0.511 | 0.587 | 0.010 |
+| probe Lall think-close | 397 | 135 | 67 | 330 | 0.943 [0.876, 0.989] | 0.506 | 0.574 | 0.010 |
+| probe Lall all seven tokens (boundary 1-5 + think pair) | 397 | 135 | 67 | 330 | 0.943 [0.889, 0.981] | 0.509 | 0.589 | 0.010 |
+| probe Lall boundary 1 (previous <|im_end|>) | 397 | 135 | 67 | 330 | 0.965 [0.934, 0.991] | 0.506 | 0.593 | 0.010 |
+| probe Lall boundary 2 (newline after it) | 397 | 135 | 67 | 330 | 0.961 [0.914, 0.994] | 0.502 | 0.589 | 0.010 |
+| probe Lall boundary 3 (<|im_start|>) | 397 | 135 | 67 | 330 | 0.965 [0.927, 0.994] | 0.506 | 0.581 | 0.010 |
+| probe Lall boundary 4 (assistant) | 397 | 135 | 67 | 330 | 0.954 [0.906, 0.992] | 0.505 | 0.602 | 0.010 |
+| probe Lall boundary 5 (newline after assistant) | 397 | 135 | 67 | 330 | 0.955 [0.886, 0.995] | 0.503 | 0.589 | 0.010 |
+| probe Lall boundary 1-5 concatenated | 397 | 135 | 67 | 330 | 0.956 [0.903, 0.993] | 0.508 | 0.602 | 0.010 |
+| TF-IDF agent's words | 397 | 135 | 67 | 330 | 0.972 [0.938, 0.996] |  |  |  |
+| TF-IDF whole text | 397 | 135 | 67 | 330 | 0.988 [0.973, 0.999] |  |  |  |
+| metadata (arm, seed, turn budget) | 397 | 135 | 67 | 330 | 0.896 [0.838, 0.943] |  |  |  |
+
+### spar_screen_team: team collaboration crossed or above (team, mean or max of workers), setting A: think pair, all agents
+
+| Features | Runs scored | Runs | Positive | Negative | AUROC [95% CI] | Null mean | Null 95th pct | Null p |
+|---|---|---|---|---|---|---|---|---|
+| probe Lall think-open+close, max of workers' vectors | 135 | 135 | 42 | 93 | 0.909 [0.854, 0.957] | 0.535 | 0.632 | 0.010 |
+| probe Lall think-open+close, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.903 [0.848, 0.953] | 0.532 | 0.628 | 0.010 |
+| probe Lall think-open, max of workers' vectors | 135 | 135 | 42 | 93 | 0.862 [0.793, 0.929] | 0.538 | 0.637 | 0.010 |
+| probe Lall think-open, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.885 [0.816, 0.942] | 0.539 | 0.628 | 0.010 |
+| probe Lall think-close, max of workers' vectors | 135 | 135 | 42 | 93 | 0.894 [0.824, 0.950] | 0.531 | 0.639 | 0.010 |
+| probe Lall think-close, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.860 [0.783, 0.923] | 0.528 | 0.630 | 0.010 |
+| probe L26 think-open, max of workers' vectors | 135 | 135 | 42 | 93 | 0.899 [0.837, 0.953] | 0.544 | 0.647 | 0.010 |
+| probe L26 think-open, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.917 [0.863, 0.963] | 0.537 | 0.623 | 0.010 |
+| probe L26 think-close, max of workers' vectors | 135 | 135 | 42 | 93 | 0.910 [0.855, 0.954] | 0.529 | 0.628 | 0.010 |
+| probe L26 think-close, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.928 [0.881, 0.965] | 0.528 | 0.626 | 0.010 |
+| probe L38 think-open, max of workers' vectors | 135 | 135 | 42 | 93 | 0.891 [0.830, 0.945] | 0.545 | 0.645 | 0.010 |
+| probe L38 think-open, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.915 [0.864, 0.959] | 0.544 | 0.656 | 0.010 |
+| probe L38 think-close, max of workers' vectors | 135 | 135 | 42 | 93 | 0.852 [0.775, 0.925] | 0.530 | 0.627 | 0.010 |
+| probe L38 think-close, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.909 [0.848, 0.961] | 0.532 | 0.637 | 0.010 |
+| probe L51 think-open, max of workers' vectors | 135 | 135 | 42 | 93 | 0.835 [0.757, 0.908] | 0.536 | 0.633 | 0.010 |
+| probe L51 think-open, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.887 [0.819, 0.943] | 0.537 | 0.626 | 0.010 |
+| probe L51 think-close, max of workers' vectors | 135 | 135 | 42 | 93 | 0.820 [0.737, 0.898] | 0.530 | 0.633 | 0.010 |
+| probe L51 think-close, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.889 [0.828, 0.942] | 0.523 | 0.624 | 0.010 |
+| max over workers of the held-out agent collusion probe score, probe Lall think-close | 135 | 135 | 42 | 93 | 0.854 [0.777, 0.923] |  |  |  |
+| max over workers of the held-out agent collusion probe score, probe Lall think-open | 135 | 135 | 42 | 93 | 0.781 [0.680, 0.876] |  |  |  |
+| max over workers of the held-out agent collusion probe score, probe Lall think-open+close | 135 | 135 | 42 | 93 | 0.834 [0.753, 0.906] |  |  |  |
+| mean over workers of the held-out agent collusion probe score, probe Lall think-close | 135 | 135 | 42 | 93 | 0.859 [0.786, 0.924] |  |  |  |
+| mean over workers of the held-out agent collusion probe score, probe Lall think-open | 135 | 135 | 42 | 93 | 0.786 [0.687, 0.876] |  |  |  |
+| mean over workers of the held-out agent collusion probe score, probe Lall think-open+close | 135 | 135 | 42 | 93 | 0.854 [0.787, 0.916] |  |  |  |
+| TF-IDF workers' whole texts | 135 | 135 | 42 | 93 | 0.922 [0.872, 0.963] |  |  |  |
+| TF-IDF workers' words | 135 | 135 | 42 | 93 | 0.891 [0.825, 0.948] |  |  |  |
+| metadata (arm, seed, turn budget) | 135 | 135 | 42 | 93 | 0.895 [0.842, 0.941] |  |  |  |
+
+### spar_screen_team: team collaboration crossed or above (team, mean or max of workers), setting B: all seven tokens, agents with turns.safetensors
+
+| Features | Runs scored | Runs | Positive | Negative | AUROC [95% CI] | Null mean | Null 95th pct | Null p |
+|---|---|---|---|---|---|---|---|---|
+| probe Lall think-open+close, max of workers' vectors | 135 | 135 | 42 | 93 | 0.909 [0.854, 0.957] | 0.535 | 0.632 | 0.010 |
+| probe Lall think-open+close, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.903 [0.848, 0.953] | 0.532 | 0.628 | 0.010 |
+| probe Lall think-open, max of workers' vectors | 135 | 135 | 42 | 93 | 0.862 [0.793, 0.929] | 0.538 | 0.637 | 0.010 |
+| probe Lall think-open, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.885 [0.816, 0.942] | 0.539 | 0.628 | 0.010 |
+| probe Lall think-close, max of workers' vectors | 135 | 135 | 42 | 93 | 0.894 [0.824, 0.950] | 0.531 | 0.639 | 0.010 |
+| probe Lall think-close, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.860 [0.783, 0.923] | 0.528 | 0.630 | 0.010 |
+| probe Lall all seven tokens (boundary 1-5 + think pair), max of workers' vectors | 135 | 135 | 42 | 93 | 0.878 [0.812, 0.935] | 0.541 | 0.631 | 0.010 |
+| probe Lall all seven tokens (boundary 1-5 + think pair), mean of workers' vectors | 135 | 135 | 42 | 93 | 0.926 [0.877, 0.967] | 0.534 | 0.620 | 0.010 |
+| probe Lall boundary 1 (previous <|im_end|>), max of workers' vectors | 135 | 135 | 42 | 93 | 0.912 [0.850, 0.961] | 0.538 | 0.622 | 0.010 |
+| probe Lall boundary 1 (previous <|im_end|>), mean of workers' vectors | 135 | 135 | 42 | 93 | 0.895 [0.831, 0.944] | 0.533 | 0.621 | 0.010 |
+| probe Lall boundary 2 (newline after it), max of workers' vectors | 135 | 135 | 42 | 93 | 0.870 [0.796, 0.934] | 0.537 | 0.616 | 0.010 |
+| probe Lall boundary 2 (newline after it), mean of workers' vectors | 135 | 135 | 42 | 93 | 0.905 [0.840, 0.957] | 0.537 | 0.631 | 0.010 |
+| probe Lall boundary 3 (<|im_start|>), max of workers' vectors | 135 | 135 | 42 | 93 | 0.908 [0.844, 0.956] | 0.540 | 0.625 | 0.010 |
+| probe Lall boundary 3 (<|im_start|>), mean of workers' vectors | 135 | 135 | 42 | 93 | 0.915 [0.861, 0.957] | 0.540 | 0.622 | 0.010 |
+| probe Lall boundary 4 (assistant), max of workers' vectors | 135 | 135 | 42 | 93 | 0.935 [0.888, 0.972] | 0.546 | 0.644 | 0.010 |
+| probe Lall boundary 4 (assistant), mean of workers' vectors | 135 | 135 | 42 | 93 | 0.897 [0.836, 0.950] | 0.544 | 0.630 | 0.010 |
+| probe Lall boundary 5 (newline after assistant), max of workers' vectors | 135 | 135 | 42 | 93 | 0.901 [0.839, 0.949] | 0.534 | 0.626 | 0.010 |
+| probe Lall boundary 5 (newline after assistant), mean of workers' vectors | 135 | 135 | 42 | 93 | 0.911 [0.854, 0.955] | 0.530 | 0.629 | 0.010 |
+| probe Lall boundary 1-5 concatenated, max of workers' vectors | 135 | 135 | 42 | 93 | 0.897 [0.833, 0.946] | 0.541 | 0.621 | 0.010 |
+| probe Lall boundary 1-5 concatenated, mean of workers' vectors | 135 | 135 | 42 | 93 | 0.892 [0.824, 0.945] | 0.538 | 0.617 | 0.010 |
+| TF-IDF workers' whole texts | 135 | 135 | 42 | 93 | 0.922 [0.872, 0.963] |  |  |  |
+| TF-IDF workers' words | 135 | 135 | 42 | 93 | 0.891 [0.825, 0.948] |  |  |  |
+| metadata (arm, seed, turn budget) | 135 | 135 | 42 | 93 | 0.895 [0.842, 0.941] |  |  |  |
+
+### spar_screen_team: held-out author (fitted on the training authors, scored unchanged on the held-out one)
+
+| Probe | Trained on | Scored on | Setting | Features | Agents | Runs | Positive | Negative | AUROC [95% CI] |
+|---|---|---|---|---|---|---|---|---|---|
+| 1a cheating: used or above | haiku + luna | ds | A | probe Lall think-open+close | 135 | 45 | 59 | 76 | 0.820 [0.734, 0.897] |
+| 1a cheating: used or above | haiku + luna | ds | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 135 | 45 | 59 | 76 | 0.858 [0.786, 0.923] |
+| 1a cheating: used or above | haiku + luna | ds | A | TF-IDF agent's words | 135 | 45 | 59 | 76 | 0.876 [0.772, 0.954] |
+| 1a cheating: used or above | ds + luna | haiku | A | probe Lall think-open+close | 135 | 45 | 12 | 123 | 0.661 [0.413, 0.824] |
+| 1a cheating: used or above | ds + luna | haiku | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 135 | 45 | 12 | 123 | 0.811 [0.618, 0.935] |
+| 1a cheating: used or above | ds + luna | haiku | A | TF-IDF agent's words | 135 | 45 | 12 | 123 | 0.878 [0.670, 0.991] |
+| 1a cheating: used or above | ds + haiku | luna | A | probe Lall think-open+close | 135 | 45 | 32 | 103 | 0.836 [0.704, 0.929] |
+| 1a cheating: used or above | ds + haiku | luna | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 135 | 45 | 32 | 103 | 0.887 [0.767, 0.966] |
+| 1a cheating: used or above | ds + haiku | luna | A | TF-IDF agent's words | 135 | 45 | 32 | 103 | 0.913 [0.822, 0.972] |
+| 3a coordination: posted or above | haiku + luna | ds | A | probe Lall think-open+close | 135 | 45 | 129 | 6 | 0.307 [0.150, 0.483] |
+| 3a coordination: posted or above | haiku + luna | ds | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 135 | 45 | 129 | 6 | 0.659 [0.395, 0.889] |
+| 3a coordination: posted or above | haiku + luna | ds | A | TF-IDF agent's words | 135 | 45 | 129 | 6 | 0.432 [0.120, 0.940] |
+| 3a coordination: posted or above | ds + luna | haiku | A | probe Lall think-open+close | 135 | 45 | 103 | 32 | 0.713 [0.623, 0.806] |
+| 3a coordination: posted or above | ds + luna | haiku | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 135 | 45 | 103 | 32 | 0.755 [0.654, 0.851] |
+| 3a coordination: posted or above | ds + luna | haiku | A | TF-IDF agent's words | 135 | 45 | 103 | 32 | 0.582 [0.428, 0.749] |
+| 3a coordination: posted or above | ds + haiku | luna | A | probe Lall think-open+close | 135 | 45 | 132 | 3 | 0.985 [0.962, 1.000] |
+| 3a coordination: posted or above | ds + haiku | luna | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 135 | 45 | 132 | 3 | 0.997 [0.985, 1.000] |
+| 3a coordination: posted or above | ds + haiku | luna | A | TF-IDF agent's words | 135 | 45 | 132 | 3 | 0.811 [0.707, 0.918] |
+| 2 collusion: exploit crossed or above vs none | haiku + luna | ds | A | probe Lall think-open+close | 131 | 45 | 37 | 94 | 0.753 [0.635, 0.868] |
+| 2 collusion: exploit crossed or above vs none | haiku + luna | ds | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 131 | 45 | 37 | 94 | 0.817 [0.710, 0.910] |
+| 2 collusion: exploit crossed or above vs none | haiku + luna | ds | A | TF-IDF agent's words | 131 | 45 | 37 | 94 | 0.792 [0.647, 0.912] |
+| 2 collusion: exploit crossed or above vs none | ds + luna | haiku | A | probe Lall think-open+close | 135 | 45 | 6 | 129 | 0.711 [0.587, 0.831] |
+| 2 collusion: exploit crossed or above vs none | ds + luna | haiku | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 135 | 45 | 6 | 129 | 0.718 [0.514, 0.915] |
+| 2 collusion: exploit crossed or above vs none | ds + luna | haiku | A | TF-IDF agent's words | 135 | 45 | 6 | 129 | 0.990 [0.967, 1.000] |
+| 2 collusion: exploit crossed or above vs none | ds + haiku | luna | A | probe Lall think-open+close | 131 | 45 | 24 | 107 | 0.974 [0.940, 0.997] |
+| 2 collusion: exploit crossed or above vs none | ds + haiku | luna | B | probe Lall all seven tokens (boundary 1-5 + think pair) | 131 | 45 | 24 | 107 | 0.976 [0.927, 1.000] |
+| 2 collusion: exploit crossed or above vs none | ds + haiku | luna | A | TF-IDF agent's words | 131 | 45 | 24 | 107 | 0.975 [0.923, 1.000] |
+
 ## Data gaps
 
 - One author. Every team worker is DeepSeek V4.1 Flash, so these probes cannot separate the behaviour from the author's style; the controls transfer is the only cross-author test.
@@ -1090,5 +1323,6 @@ Turn AUROC scores held-out turns against the turn label. Agent AUROC scores the 
 - Proxies. The ladders time exposed, tried and opened per call; used and crossed carry no call. The used onset is estimated as the first tool call whose arguments contain an added line of the planted diff the agent opened (falling back to the opened call), and probe 5b gives the opened call as a lower bound. The collusion onset is a proxy: the later of the used onset (or, for a sharer below used, its first post) and its first board read or post. Cooperation, collaboration and scheming are proxies in levels.py itself.
 - Labels that depend on the future. A turn after the opened call is negative for an agent that ends at opened and positive for one that goes on to use the content, so the per-step used label partly asks the probe to predict what comes next.
 - Setting B covers only the agents whose turns.safetensors is on the Hub; until the backfill completes its rows rest on a subset, named with its agent and run counts. The list of agents with boundary tokens is boundary_agents.csv.
+- In the labelled sets some readers hold one turn per tool-call step: the label CSVs map source steps to turns by index when the counts agree, by rank among tool-call steps when those counts agree, and otherwise leave the per-call steps empty (turn_map unmappable). Only per-call columns depend on it; the agent-level probes do not.
 - The 5% false positive threshold is set on the pooled held-out negative turns of all folds, whose fold models differ in scale.
 - The controls label counts cheating from tried for software engineering, chess and creative writing and from opened for other tasks; the team label counts from used. Probe 6 scores the team workers against both rules.

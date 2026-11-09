@@ -54,3 +54,13 @@
 | spar_mixed_41 probes | 50 agent rows and 44 team rows recomputed, 0 mismatches; no run in two folds; 209 labelled = 209 on the Hub | VERIFIED |
 | spar_mixed_41 thin classes | 12 workers used or above, 7 collusion crossed; read and posted have no contrast (skipped) | NOTED |
 | spar_mixed_41 regulator transcript | one regulator rendered 232 of 358 steps; regulators are not probed | NOTED |
+
+## 2026-11-09 02:20 PST: spar_screen_team (450 agents) and the step-to-turn correction of the labelled sets
+
+| Output | How it was checked | Result |
+|---|---|---|
+| spar_screen_team probes | 75 agent rows and 44 team rows recomputed, 0 mismatches; labels equal the ladder rules; no run in two folds; three workers traced to signals.jsonl; 450 labelled = 450 on the Hub | VERIFIED |
+| step-to-turn mapping | label CSVs rewritten: solo_design 174 by index, 3 unmappable; spar_mixed_41 208 by index, 1 unmappable (a regulator); spar_screen_team 381 by index, 37 by tool-call rank, 32 unmappable; unmappable agents carry no per-call step | VERIFIED |
+| example binder_minimal_cheat_haiku1/a02 | traced by hand: 29 agent steps, 22 tool-call steps = 22 turns; opened call 3 sits at source step 2, rank 2 among tool-call steps; label opened_step 2 | VERIFIED |
+| ladder columns after the rewrite | cheat, coord, coop, collab, collude, scheme identical before and after in all three sets; the only other change is used_onset_source "turns unmappable" for 3 solo_design agents | VERIFIED |
+| probe rows after the rewrite | the labelled sets have agent-level and team probes only; they read no per-call column, so no row moves | VERIFIED (no row to move) |

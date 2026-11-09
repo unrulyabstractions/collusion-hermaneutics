@@ -24,6 +24,10 @@ from .extract import LAYERS, LINEAR_CHUNK, PREFIX, Qwen3_5TextRotaryEmbedding, W
 from .goodfire import label_rows, read_ids, run_dir_of
 
 FP16_MAX = 65504.0
+TURN_IDS = (248046, 198, 248045, 74455, 198)  # <|im_end|> \n <|im_start|> assistant \n: the change of turn before <think>
+# Commits whose think_L vectors are identical to this code's (same forward; later commits only add turn_L): a resume may
+# skip folders they wrote. Folders without turn_L are the backfill list.
+THINK_COMPATIBLE = {"f4672813f425c6a5ba627198b720e7eb810883ba"}
 
 
 def versions(dev):
@@ -65,17 +69,26 @@ class Resident:
 
     @torch.no_grad()
     def forward(self, ids, think, linear_chunk=LINEAR_CHUNK):
-        """{think_L<L>: [n_turns, 2, d] fp16} and {L: absmax} for one rollout."""
+        """{think_L<L>: [n_turns, 2, d], turn_L<L>: [n_turns, 5, d]} fp16 and {L: absmax} for one rollout. turn_L holds
+        the change of turn before each assistant turn: the 5 tokens before its <think>, which are always TURN_IDS
+        (<|im_end|> closing the user/tool turn, "\\n", <|im_start|>, "assistant", "\\n"); checked here."""
+        for a, _ in think:
+            if a < 5 or tuple(ids[a - 5:a]) != TURN_IDS:
+                raise RuntimeError(f"tokens before <think> at {a} are {ids[max(0, a - 5):a]}, not {TURN_IDS}")
         h = self.emb[torch.tensor(ids, device=self.dev)][None]
         pos = torch.tensor([p for pair in think for p in pair], dtype=torch.long, device=self.dev)
+        tpos = torch.tensor([a - 5 + j for a, _ in think for j in range(5)], dtype=torch.long, device=self.dev)
         acts, absmax = {}, {}
         for i, block in enumerate(self.blocks):
             h = apply_layer(block, self.cfg, h, self.rotary, linear_chunk)
             if i + 1 in self.layers:
                 x = h[0][pos].view(len(think), 2, h.shape[-1])
-                absmax[i + 1] = float(x.float().abs().max()) if x.numel() else 0.0
+                y = h[0][tpos].view(len(think), 5, h.shape[-1])
+                absmax[i + 1] = max(float(x.float().abs().max()), float(y.float().abs().max())) if x.numel() else 0.0
                 acts[f"think_L{i + 1}"] = x.half().cpu()
+                acts[f"turn_L{i + 1}"] = y.half().cpu()
         del h
+        acts["turn_pos"] = torch.tensor([[a - 5 + j for j in range(5)] for a, _ in think], dtype=torch.int32).reshape(len(think), 5)
         return acts, absmax
 
 
@@ -98,7 +111,9 @@ def write_atomic(out, job, tensors, layers, model):
             "condition": "goodfire", "model": model, "layers": layers, "n_tokens": len(ids), "n_units": 0,
             "n_turns": len(think), "n_readable": int(sum(readable)), "units": False, "dtype": "float16",
             "think_ids": [extract_goodfire.OPEN, extract_goodfire.CLOSE], "template": extract_goodfire.TEMPLATE_KWARGS,
-            "layer_convention": "HF hidden_states index: residual stream after L blocks", "teacher_forced": True, **info}
+            "layer_convention": "HF hidden_states index: residual stream after L blocks", "teacher_forced": True,
+            "turn_vectors": "turn_L26" in tensors, "turn_ids": list(TURN_IDS),
+            "turn_tokens": ["<|im_end|>", "\\n", "<|im_start|>", "assistant", "\\n"], **info}
 
     def done(tmp, final):
         fd = os.open(tmp, os.O_RDONLY)
@@ -123,7 +138,7 @@ def check_done_folders(out, run_dir, code_sha):
     other = []
     for p in glob.glob(os.path.join(out, run_dir, "*", "meta.json")):
         sha = json.load(open(p)).get("code_sha")
-        if sha != code_sha:
+        if sha != code_sha and sha not in THINK_COMPATIBLE:
             other.append((p, sha))
     if other:
         raise SystemExit(f"{len(other)} finished folders under {out}/{run_dir} come from other code ({other[0]}); "

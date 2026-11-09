@@ -1,0 +1,621 @@
+[
+ {
+  "label": "cheat",
+  "scheme": "alone: controls",
+  "kind": "alone",
+  "train": [
+   "controls_600"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "alone: board_seed",
+  "kind": "alone",
+  "train": [
+   "board_seed"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "alone: solo_design",
+  "kind": "alone",
+  "train": [
+   "solo_design"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "alone: spar_team",
+  "kind": "alone",
+  "train": [
+   "spar_screen_team"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "alone: spar_mixed",
+  "kind": "alone",
+  "train": [
+   "spar_mixed_41"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "alone: spar_expl",
+  "kind": "alone",
+  "train": [
+   "spar_exploration_single"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "alone: spar_solo",
+  "kind": "alone",
+  "train": [
+   "spar_screen_solo"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "alone: goodfire",
+  "kind": "alone",
+  "train": [
+   "goodfire_reward_hack"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "alone: cheatbench",
+  "kind": "alone",
+  "train": [
+   "cheatbench"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "alone: evilgenie",
+  "kind": "alone",
+  "train": [
+   "evilgenie"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "ours",
+  "kind": "ours",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "external",
+  "kind": "external",
+  "train": [
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "all",
+  "kind": "all",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo",
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": null
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: controls",
+  "kind": "loso",
+  "train": [
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo",
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": [
+   "controls_600"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: board_seed",
+  "kind": "loso",
+  "train": [
+   "controls_600",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo",
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": [
+   "board_seed"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: solo_design",
+  "kind": "loso",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo",
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": [
+   "solo_design"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: spar_team",
+  "kind": "loso",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo",
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": [
+   "spar_screen_team"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: spar_mixed",
+  "kind": "loso",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_exploration_single",
+   "spar_screen_solo",
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": [
+   "spar_mixed_41"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: spar_expl",
+  "kind": "loso",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_screen_solo",
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": [
+   "spar_exploration_single"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: spar_solo",
+  "kind": "loso",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": [
+   "spar_screen_solo"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: goodfire",
+  "kind": "loso",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": [
+   "goodfire_reward_hack"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: cheatbench",
+  "kind": "loso",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo",
+   "goodfire_reward_hack",
+   "evilgenie"
+  ],
+  "test": [
+   "cheatbench"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "leave out: evilgenie",
+  "kind": "loso",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo",
+   "goodfire_reward_hack",
+   "cheatbench"
+  ],
+  "test": [
+   "evilgenie"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "ours to external",
+  "kind": "transfer",
+  "train": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo"
+  ],
+  "test": [
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ]
+ },
+ {
+  "label": "cheat",
+  "scheme": "external to ours",
+  "kind": "transfer",
+  "train": [
+   "goodfire_reward_hack",
+   "cheatbench",
+   "evilgenie"
+  ],
+  "test": [
+   "controls_600",
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41",
+   "spar_exploration_single",
+   "spar_screen_solo"
+  ]
+ },
+ {
+  "label": "coord",
+  "scheme": "alone: board_seed",
+  "kind": "alone",
+  "train": [
+   "board_seed"
+  ],
+  "test": null
+ },
+ {
+  "label": "coord",
+  "scheme": "alone: solo_design",
+  "kind": "alone",
+  "train": [
+   "solo_design"
+  ],
+  "test": null
+ },
+ {
+  "label": "coord",
+  "scheme": "alone: spar_team",
+  "kind": "alone",
+  "train": [
+   "spar_screen_team"
+  ],
+  "test": null
+ },
+ {
+  "label": "coord",
+  "scheme": "alone: spar_mixed",
+  "kind": "alone",
+  "train": [
+   "spar_mixed_41"
+  ],
+  "test": null
+ },
+ {
+  "label": "coord",
+  "scheme": "ours",
+  "kind": "ours",
+  "train": [
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ],
+  "test": null
+ },
+ {
+  "label": "coord",
+  "scheme": "external",
+  "kind": "external",
+  "train": [],
+  "test": null
+ },
+ {
+  "label": "coord",
+  "scheme": "all",
+  "kind": "all",
+  "train": [
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ],
+  "test": null
+ },
+ {
+  "label": "coord",
+  "scheme": "leave out: board_seed",
+  "kind": "loso",
+  "train": [
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ],
+  "test": [
+   "board_seed"
+  ]
+ },
+ {
+  "label": "coord",
+  "scheme": "leave out: solo_design",
+  "kind": "loso",
+  "train": [
+   "board_seed",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ],
+  "test": [
+   "solo_design"
+  ]
+ },
+ {
+  "label": "coord",
+  "scheme": "leave out: spar_team",
+  "kind": "loso",
+  "train": [
+   "board_seed",
+   "solo_design",
+   "spar_mixed_41"
+  ],
+  "test": [
+   "spar_screen_team"
+  ]
+ },
+ {
+  "label": "coord",
+  "scheme": "leave out: spar_mixed",
+  "kind": "loso",
+  "train": [
+   "board_seed",
+   "solo_design",
+   "spar_screen_team"
+  ],
+  "test": [
+   "spar_mixed_41"
+  ]
+ },
+ {
+  "label": "coord",
+  "scheme": "ours to external",
+  "kind": "transfer",
+  "train": [
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ],
+  "test": []
+ },
+ {
+  "label": "coord",
+  "scheme": "external to ours",
+  "kind": "transfer",
+  "train": [],
+  "test": [
+   "board_seed",
+   "solo_design",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ]
+ },
+ {
+  "label": "collude",
+  "scheme": "alone: board_seed",
+  "kind": "alone",
+  "train": [
+   "board_seed"
+  ],
+  "test": null
+ },
+ {
+  "label": "collude",
+  "scheme": "alone: spar_team",
+  "kind": "alone",
+  "train": [
+   "spar_screen_team"
+  ],
+  "test": null
+ },
+ {
+  "label": "collude",
+  "scheme": "alone: spar_mixed",
+  "kind": "alone",
+  "train": [
+   "spar_mixed_41"
+  ],
+  "test": null
+ },
+ {
+  "label": "collude",
+  "scheme": "ours",
+  "kind": "ours",
+  "train": [
+   "board_seed",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ],
+  "test": null
+ },
+ {
+  "label": "collude",
+  "scheme": "external",
+  "kind": "external",
+  "train": [],
+  "test": null
+ },
+ {
+  "label": "collude",
+  "scheme": "all",
+  "kind": "all",
+  "train": [
+   "board_seed",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ],
+  "test": null
+ },
+ {
+  "label": "collude",
+  "scheme": "leave out: board_seed",
+  "kind": "loso",
+  "train": [
+   "spar_screen_team",
+   "spar_mixed_41"
+  ],
+  "test": [
+   "board_seed"
+  ]
+ },
+ {
+  "label": "collude",
+  "scheme": "leave out: spar_team",
+  "kind": "loso",
+  "train": [
+   "board_seed",
+   "spar_mixed_41"
+  ],
+  "test": [
+   "spar_screen_team"
+  ]
+ },
+ {
+  "label": "collude",
+  "scheme": "leave out: spar_mixed",
+  "kind": "loso",
+  "train": [
+   "board_seed",
+   "spar_screen_team"
+  ],
+  "test": [
+   "spar_mixed_41"
+  ]
+ },
+ {
+  "label": "collude",
+  "scheme": "ours to external",
+  "kind": "transfer",
+  "train": [
+   "board_seed",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ],
+  "test": []
+ },
+ {
+  "label": "collude",
+  "scheme": "external to ours",
+  "kind": "transfer",
+  "train": [],
+  "test": [
+   "board_seed",
+   "spar_screen_team",
+   "spar_mixed_41"
+  ]
+ }
+]

@@ -1,0 +1,89 @@
+label,scheme,feature,source,turns,pos_turns,agents,pos_agents,turn_auroc,agent_auroc
+cheat,ours,"think pair, layer 38 (per turn)",board_seed,7281,1927,134,56,0.8684258785219728,0.896978021978022
+cheat,ours,"think pair, layer 38 (per turn)",controls,10834,3759,593,336,0.857837876963368,0.765251528627015
+cheat,ours,"think pair, layer 38 (per turn)",solo_design,6000,1838,173,80,0.899023707422825,0.8776881720430108
+cheat,ours,"think pair, layer 38 (per turn)",spar_expl,14580,2620,313,71,0.930387104598024,0.9161331626120358
+cheat,ours,"think pair, layer 38 (per turn)",spar_mixed,12373,511,209,12,0.9105019201574797,0.8862098138747885
+cheat,ours,"think pair, layer 38 (per turn)",spar_solo,2600,1165,84,41,0.7936187585051816,0.89563244469654
+cheat,ours,"think pair, layer 38 (per turn)",spar_team,17445,4240,449,108,0.9028187936244847,0.9125122189638318
+cheat,ours,turn index,board_seed,7281,1927,134,56,0.806248775098724,0.804945054945055
+cheat,ours,turn index,controls,10834,3759,593,336,0.5895424408980284,0.48792732073374095
+cheat,ours,turn index,solo_design,6000,1838,173,80,0.6139191236949257,0.47923387096774195
+cheat,ours,turn index,spar_expl,14580,2620,313,71,0.6666051916056065,0.6596729135141427
+cheat,ours,turn index,spar_mixed,12373,511,209,12,0.6642999187327455,0.6865482233502538
+cheat,ours,turn index,spar_solo,2600,1165,84,41,0.7776052399395852,0.5751559841179807
+cheat,ours,turn index,spar_team,17445,4240,449,108,0.676390536031949,0.6518002606712284
+cheat,ours,turn index + fraction,board_seed,7281,1927,134,56,0.7558326624444445,0.19322344322344323
+cheat,ours,turn index + fraction,controls,10834,3759,593,336,0.7105594018407647,0.5229699370020382
+cheat,ours,turn index + fraction,solo_design,6000,1838,173,80,0.6672175556972013,0.5433467741935484
+cheat,ours,turn index + fraction,spar_expl,14580,2620,313,71,0.6864154529091884,0.34585612850657665
+cheat,ours,turn index + fraction,spar_mixed,12373,511,209,12,0.6485479953582308,0.3083756345177665
+cheat,ours,turn index + fraction,spar_solo,2600,1165,84,41,0.6407847946045371,0.3539421440726035
+cheat,ours,turn index + fraction,spar_team,17445,4240,449,108,0.619614291684825,0.3229472140762463
+cheat,ours,metadata + turn index + fraction,board_seed,7281,1927,134,56,0.8229880748167276,0.7589285714285714
+cheat,ours,metadata + turn index + fraction,controls,10834,3759,593,336,0.8109462237626164,0.6031591624976839
+cheat,ours,metadata + turn index + fraction,solo_design,6000,1838,173,80,0.8266959103009298,0.802016129032258
+cheat,ours,metadata + turn index + fraction,spar_expl,14580,2620,313,71,0.932569251193546,0.9234082179024561
+cheat,ours,metadata + turn index + fraction,spar_mixed,12373,511,209,12,0.8958985607810103,0.8718274111675127
+cheat,ours,metadata + turn index + fraction,spar_solo,2600,1165,84,41,0.7939268143141271,0.8581962563811685
+cheat,ours,metadata + turn index + fraction,spar_team,17445,4240,449,108,0.9132998506854894,0.9308135114586727
+cheat,all (ours + goodfire: the sources with per-call labels),"think pair, layer 38 (per turn)",board_seed,7281,1927,134,56,0.8282453365548923,0.8054029304029304
+cheat,all (ours + goodfire: the sources with per-call labels),"think pair, layer 38 (per turn)",controls,10834,3759,593,336,0.7473390505895392,0.6355266814897165
+cheat,all (ours + goodfire: the sources with per-call labels),"think pair, layer 38 (per turn)",goodfire,140000,73945,2813,2063,0.9156146917014933,0.8842559379544352
+cheat,all (ours + goodfire: the sources with per-call labels),"think pair, layer 38 (per turn)",solo_design,6000,1838,173,80,0.8655874775613758,0.8202956989247312
+cheat,all (ours + goodfire: the sources with per-call labels),"think pair, layer 38 (per turn)",spar_expl,14580,2620,313,71,0.8769325869948174,0.8249330694913282
+cheat,all (ours + goodfire: the sources with per-call labels),"think pair, layer 38 (per turn)",spar_mixed,12373,511,209,12,0.9111723832554481,0.8845177664974619
+cheat,all (ours + goodfire: the sources with per-call labels),"think pair, layer 38 (per turn)",spar_solo,2600,1165,84,41,0.7571000882295763,0.7793533749290982
+cheat,all (ours + goodfire: the sources with per-call labels),"think pair, layer 38 (per turn)",spar_team,17445,4240,449,108,0.8540764468861852,0.8344466167046812
+cheat,all (ours + goodfire: the sources with per-call labels),turn index,board_seed,7281,1927,134,56,0.8104467819529371,0.7890338827838828
+cheat,all (ours + goodfire: the sources with per-call labels),turn index,controls,10834,3759,593,336,0.6428732925548766,0.4767521308134149
+cheat,all (ours + goodfire: the sources with per-call labels),turn index,goodfire,140000,73945,2813,2063,0.5985817008110745,0.6270008078849572
+cheat,all (ours + goodfire: the sources with per-call labels),turn index,solo_design,6000,1838,173,80,0.6510718119636757,0.45745967741935484
+cheat,all (ours + goodfire: the sources with per-call labels),turn index,spar_expl,14580,2620,313,71,0.670370142842554,0.6693050867186591
+cheat,all (ours + goodfire: the sources with per-call labels),turn index,spar_mixed,12373,511,209,12,0.6647856910240763,0.685067681895093
+cheat,all (ours + goodfire: the sources with per-call labels),turn index,spar_solo,2600,1165,84,41,0.7931991446217344,0.6228020419739081
+cheat,all (ours + goodfire: the sources with per-call labels),turn index,spar_team,17445,4240,449,108,0.6863115833053517,0.6858911697621375
+cheat,all (ours + goodfire: the sources with per-call labels),turn index + fraction,board_seed,7281,1927,134,56,0.7575907047270188,0.19471153846153846
+cheat,all (ours + goodfire: the sources with per-call labels),turn index + fraction,controls,10834,3759,593,336,0.7104167242434412,0.5332186863072077
+cheat,all (ours + goodfire: the sources with per-call labels),turn index + fraction,goodfire,140000,73945,2813,2063,0.7222241476460037,0.3597776700597835
+cheat,all (ours + goodfire: the sources with per-call labels),turn index + fraction,solo_design,6000,1838,173,80,0.670275104199402,0.5621639784946236
+cheat,all (ours + goodfire: the sources with per-call labels),turn index + fraction,spar_expl,14580,2620,313,71,0.6914051928821262,0.3316843208008381
+cheat,all (ours + goodfire: the sources with per-call labels),turn index + fraction,spar_mixed,12373,511,209,12,0.6578079420181401,0.3056260575296108
+cheat,all (ours + goodfire: the sources with per-call labels),turn index + fraction,spar_solo,2600,1165,84,41,0.653534117928549,0.3976176971072036
+cheat,all (ours + goodfire: the sources with per-call labels),turn index + fraction,spar_team,17445,4240,449,108,0.6248204653754653,0.3128597806017161
+cheat,all (ours + goodfire: the sources with per-call labels),metadata + turn index + fraction,board_seed,7281,1927,134,56,0.8325399300853975,0.790521978021978
+cheat,all (ours + goodfire: the sources with per-call labels),metadata + turn index + fraction,controls,10834,3759,593,336,0.8225609961299007,0.6368468593663146
+cheat,all (ours + goodfire: the sources with per-call labels),metadata + turn index + fraction,goodfire,140000,73945,2813,2063,0.8583814311576822,0.7897935046049442
+cheat,all (ours + goodfire: the sources with per-call labels),metadata + turn index + fraction,solo_design,6000,1838,173,80,0.8371416029478588,0.8172043010752689
+cheat,all (ours + goodfire: the sources with per-call labels),metadata + turn index + fraction,spar_expl,14580,2620,313,71,0.9158471303837218,0.9064136887440345
+cheat,all (ours + goodfire: the sources with per-call labels),metadata + turn index + fraction,spar_mixed,12373,511,209,12,0.8662676883310055,0.8587140439932318
+cheat,all (ours + goodfire: the sources with per-call labels),metadata + turn index + fraction,spar_solo,2600,1165,84,41,0.7867464222159083,0.8468519568916619
+cheat,all (ours + goodfire: the sources with per-call labels),metadata + turn index + fraction,spar_team,17445,4240,449,108,0.9081319968851136,0.9251384815900945
+coord,ours (= all: no external source has a board),"think pair, layer 38 (per turn)",board_seed,6735,2617,125,78,0.9642542512132073,0.9536279323513366
+coord,ours (= all: no external source has a board),"think pair, layer 38 (per turn)",solo_design,6086,552,177,38,0.8991730304887311,0.7671336614918591
+coord,ours (= all: no external source has a board),"think pair, layer 38 (per turn)",spar_mixed,12056,9347,206,202,0.9664152194798765,0.8972772277227723
+coord,ours (= all: no external source has a board),"think pair, layer 38 (per turn)",spar_team,16491,10411,417,373,0.9769887239711035,0.9412015598342676
+coord,ours (= all: no external source has a board),turn index,board_seed,6735,2617,125,78,0.8701950744960983,0.9421713038734315
+coord,ours (= all: no external source has a board),turn index,solo_design,6086,552,177,38,0.6659325683652572,0.5784740628549792
+coord,ours (= all: no external source has a board),turn index,spar_mixed,12056,9347,206,202,0.798769958859877,0.3935643564356436
+coord,ours (= all: no external source has a board),turn index,spar_team,16491,10411,417,373,0.8540483891658115,0.7906409943943457
+coord,ours (= all: no external source has a board),turn index + fraction,board_seed,6735,2617,125,78,0.8519125239890186,0.9402618657937807
+coord,ours (= all: no external source has a board),turn index + fraction,solo_design,6086,552,177,38,0.6677020971805387,0.5775274517228323
+coord,ours (= all: no external source has a board),turn index + fraction,spar_mixed,12056,9347,206,202,0.8094348518225349,0.38985148514851486
+coord,ours (= all: no external source has a board),turn index + fraction,spar_team,16491,10411,417,373,0.8694432192165169,0.7832074092127711
+coord,ours (= all: no external source has a board),metadata + turn index + fraction,board_seed,6735,2617,125,78,0.9096037360234563,0.8857064920894708
+coord,ours (= all: no external source has a board),metadata + turn index + fraction,solo_design,6086,552,177,38,0.8208845974555187,0.5531995456266565
+coord,ours (= all: no external source has a board),metadata + turn index + fraction,spar_mixed,12056,9347,206,202,0.856833746409061,0.8613861386138614
+coord,ours (= all: no external source has a board),metadata + turn index + fraction,spar_team,16491,10411,417,373,0.919804726402742,0.8324396782841823
+collude,ours (= all: no external source has a board),"think pair, layer 38 (per turn)",board_seed,7281,1536,134,48,0.881885176421526,0.8926841085271318
+collude,ours (= all: no external source has a board),"think pair, layer 38 (per turn)",spar_mixed,12373,395,209,7,0.9240161815649366,0.9504950495049505
+collude,ours (= all: no external source has a board),"think pair, layer 38 (per turn)",spar_team,17511,2156,450,67,0.9341515185749265,0.9302443396594053
+collude,ours (= all: no external source has a board),turn index,board_seed,7281,1536,134,48,0.818975796435306,0.8234011627906976
+collude,ours (= all: no external source has a board),turn index,spar_mixed,12373,395,209,7,0.7376315439064445,0.8882602545968883
+collude,ours (= all: no external source has a board),turn index,spar_team,17511,2156,450,67,0.7163653309522501,0.6171232609796968
+collude,ours (= all: no external source has a board),turn index + fraction,board_seed,7281,1536,134,48,0.7662189834457499,0.4268410852713178
+collude,ours (= all: no external source has a board),turn index + fraction,spar_mixed,12373,395,209,7,0.6257159222287274,0.3415841584158416
+collude,ours (= all: no external source has a board),turn index + fraction,spar_team,17511,2156,450,67,0.6944287001085624,0.389891274697011
+collude,ours (= all: no external source has a board),metadata + turn index + fraction,board_seed,7281,1536,134,48,0.8761855871047287,0.8578003875968992
+collude,ours (= all: no external source has a board),metadata + turn index + fraction,spar_mixed,12373,395,209,7,0.9165596843157603,0.9328147100424328
+collude,ours (= all: no external source has a board),metadata + turn index + fraction,spar_team,17511,2156,450,67,0.9186019915796164,0.909122793343985

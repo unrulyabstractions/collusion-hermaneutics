@@ -154,12 +154,48 @@ class RemoteWeights:
         return [n for n in self.map if n.startswith(p)]
 
 
+def run_batch_gpu(batch, layers, cfg, weights, dev, linear_chunk, random_seed=None):
+    """extract.run_batch with the batch's hidden states kept on the GPU between blocks (no host round trip per block;
+    the batch must fit: 10 KiB per token beside one block's temporaries). Same operations in the same order."""
+    from .extract import Qwen3_5TextRotaryEmbedding, apply_layer, load_layer
+    assert random_seed is None
+    emb = weights.get([f"{PREFIX}embed_tokens.weight"], dev)[f"{PREFIX}embed_tokens.weight"]
+    hidden = [emb[torch.tensor(j[2], device=dev)][None] for j in batch]
+    del emb
+    torch.cuda.empty_cache()
+    rotary = Qwen3_5TextRotaryEmbedding(config=cfg).to(dev)
+    acts = [{} for _ in batch]
+    t0 = time.time()
+    for i in range(max(layers)):
+        layer = load_layer(cfg, weights, i, dev, random_seed)
+        with torch.no_grad():
+            for k, j in enumerate(batch):
+                h = apply_layer(layer, cfg, hidden[k], rotary, linear_chunk)
+                if i + 1 in layers:
+                    hk = h[0]
+                    think = j[4]
+                    pos = torch.tensor([p for pair in think for p in pair], dtype=torch.long, device=dev)
+                    acts[k][f"think_L{i + 1}"] = hk[pos].view(len(think), 2, hk.shape[1]).half().cpu()
+                hidden[k] = h
+                del h
+        del layer
+        torch.cuda.empty_cache()
+        if i % 8 == 7 or i + 1 == max(layers):
+            print(f"  block {i} done, {time.time() - t0:.0f}s, peak GPU {torch.cuda.max_memory_allocated() / 2**30:.1f} GiB",
+                  flush=True)
+    del hidden
+    return acts
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--queue", required=True, help="lines '<traces.jsonl> <ids file or ->'")
     ap.add_argument("--model", required=True, help="directory with config, tokenizer and model.safetensors.index.json")
     ap.add_argument("rest", nargs=argparse.REMAINDER, help="-- then extract_goodfire.py arguments (--out, --batch-tokens ...)")
+    ap.add_argument("--gpu-hidden", action="store_true", help="keep the batch's hidden states on the GPU (run_batch_gpu)")
     a = ap.parse_args()
+    if a.gpu_hidden:
+        extract_goodfire.run_batch = run_batch_gpu
     rest = a.rest[1:] if a.rest[:1] == ["--"] else a.rest
     layers = [26, 38, 51]
     if "--layers" in rest:

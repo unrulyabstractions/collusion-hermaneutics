@@ -31,6 +31,10 @@ def main():
     ap.add_argument("--work", required=True)
     ap.add_argument("--ledger", required=True)
     ap.add_argument("--batch", type=int, default=20, help="rollouts per Hub commit")
+    ap.add_argument("--reverse", action="store_true",
+                    help="walk the list from the end (a second host; rollouts the other host already did are skipped "
+                         "because their Hub meta.json has turn_vectors)")
+    ap.add_argument("--stream", action="store_true", help="fetch the weights from the Hub (host without the checkpoint)")
     a = ap.parse_args()
     from huggingface_hub import HfApi, hf_hub_download
     from huggingface_hub.hf_api import RepoFile
@@ -40,11 +44,18 @@ def main():
     todo = [(r["run_dir"], r["rollout_id"]) for r in csv.DictReader(open(a.list))]
     done = {(r["run_dir"], r["rollout_id"]) for r in map(json.loads, open(a.ledger))} if os.path.exists(a.ledger) else set()
     todo = [x for x in todo if x not in done]
+    if a.reverse:
+        todo.reverse()
     dev = torch.device("cuda")
     env = versions(dev)
     if not env["code_sha"]:
         raise SystemExit("set HERM_CODE_SHA")
-    res = Resident(a.model, [26, 38, 51], dev)
+    weights = None
+    if a.stream:
+        from .goodfire_stream import RemoteWeights
+        weights = RemoteWeights(a.model)
+        weights.stop_block = 51
+    res = Resident(a.model, [26, 38, 51], dev, weights=weights)
     print(f"{len(todo)} rollouts to backfill, {len(done)} already in the ledger", flush=True)
     pending, t0, ntok = [], time.time(), 0
 

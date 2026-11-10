@@ -2,8 +2,8 @@
 """Markdown (GitHub flavour) to ICML 2026 LaTeX (preprint, two columns) for the report, plus a page report.
 
 Usage
-  md2tex.py convert REPORT.md report.tex     write report.tex (and nothing else)
-  md2tex.py pages report.tex                 read report.log / report.aux after xelatex
+  md2tex.py convert main.md main.tex         write main.tex (and nothing else)
+  md2tex.py pages main.tex                   read main.log / main.aux after pdflatex
                                              and print the page summary
 
 Standard library only. The converter is lossless for text: it escapes LaTeX
@@ -13,7 +13,7 @@ pipe tables (with "**Table X.**" caption lines) and images. It never rewords.
 Headings: "# " -> the ICML title; the paragraph after it is "Author, Affiliation", and a
 "Correspondence: <address>" paragraph sets the corresponding author. "## Abstract" -> the abstract
 environment; other "## " -> \\section (numbered; Code and data, Acknowledgements and similar unnumbered),
-"### " -> \\subsection. "## References" -> natbib bibliography from ../gen/refs.bib with icml2026.bst;
+"### " -> \\subsection. "## References" -> natbib bibliography from ../src/references.bib with icml2026.bst;
 "## Appendix" -> \\appendix in one column, where "### Appendix X: Title" -> \\section{Title} lettered X.
 Citations: [@key] or [@a; @b] -> \\citep.
 
@@ -349,7 +349,8 @@ def inline(s: str, tex_dir: Path | None = None, md_dir: Path | None = None, cell
         elif m.group("ipath") is not None:
             out.append(r"\includegraphics[width=\linewidth]{" + image_path(m.group("ipath"), tex_dir, md_dir) + "}")
         elif m.group("lhref") is not None:
-            out.append(r"\href{" + m.group("lhref") + "}{" + inline(m.group("ltext"), tex_dir, md_dir, cell) + "}")
+            # escape # so the link survives inside a caption's argument
+            out.append(r"\href{" + m.group("lhref").replace("#", r"\#") + "}{" + inline(m.group("ltext"), tex_dir, md_dir, cell) + "}")
         elif m.group("url") is not None:
             url, tail = split_url(m.group("url"))
             out.append(r"\url{" + url + "}" + text_run(tail, cell))
@@ -543,6 +544,7 @@ class Emitter:
         self.in_appendix = False
         self.appendix_letters = 0
         self.sup_sections = 0
+        self.supplement = False
 
     def inl(self, s: str) -> str:
         return inline(s, self.tex_dir, self.md_dir)
@@ -552,6 +554,37 @@ class Emitter:
         return r"\mdtexmark{%d}" % (len(self.marks) - 1)
 
     # -- blocks
+    def title_page_supplement(self, title: str, meta: list[str], intro: list[str]) -> str:
+        """The supplement's first page: title, author, a short note, and the contents (sections, tables, figures)."""
+        author, _, affil = (meta[0] if meta else "").partition(",")
+        corr = next((m.split(":", 1)[1].strip() for m in meta[1:] if m.lower().startswith("correspondence:")), None)
+        out = ["\\onecolumn", "\\raggedbottom",   # tables stay in place, so a short page ends short instead of stretching its gaps
+               "\\icmltitle{" + self.inl(title) + "}",
+               "\\begin{icmlauthorlist}", "\\icmlauthor{" + self.inl(author.strip()) + "}{aff1}", "\\end{icmlauthorlist}",
+               "\\icmlaffiliation{aff1}{" + self.inl(affil.strip()) + "}"]
+        if corr:
+            out.append("\\icmlcorrespondingauthor{" + self.inl(author.strip()) + "}{" + esc(corr) + "}")
+        out += ["\\printAffiliationsAndNotice{}", "\\vspace{1ex}"]
+        out += ["\\noindent " + self.inl(t) + "\\par\\medskip" for t in intro]
+        out += ["\\let\\addcontentsline\\mdtexaddcontentsline", "\\setcounter{tocdepth}{2}", "{\\small\\tableofcontents}"]
+        return "\n".join(out)
+
+    def toc_entry(self, cap: str) -> str:
+        """In the supplement, a contents line for a table or figure: its number and its first sentence."""
+        if not self.supplement:
+            return ""
+        m = re.match(r"^\*\*(Table|Figure) (S\d+)\.\*\*\s*(.*)$", cap)
+        if not m:
+            return ""
+        text = m.group(3).split(" Rows:", 1)[0].split(" Rows and columns", 1)[0]
+        ends = [x.end() for x in [re.search(r"\?(?=\s|$)", text)] if x] + [x.start() for x in [re.search(r"(?<=[a-z0-9)])\.(?=\s|$)", text)] if x]
+        first = text[:min(ends)] if ends else text
+        first = first.strip().rstrip(".")
+        first = re.sub(r"\*\*|`", "", first)
+        if len(first) > 95:
+            first = first[:92].rsplit(" ", 1)[0] + " ..."
+        return "\\addcontentsline{toc}{subsection}{" + m.group(1) + " " + m.group(2) + ". " + inline(first) + "}"
+
     def title_block(self, title: str, meta: list[str]) -> str:
         """meta[0] is "Author, Affiliation"; ICML preprint byline with the affiliation footnote."""
         author, _, affil = (meta[0] if meta else "").partition(",")
@@ -584,7 +617,18 @@ class Emitter:
         low = text.lower()
         if h.level == 2 and low == "references":
             return ("\\FloatBarrier\n" + self.mark(2, "References") +
-                    "\n\\bibliographystyle{icml2026}\n\\bibliography{../gen/refs}")
+                    "\n\\bibliographystyle{icml2026}\n\\bibliography{../src/references}")
+        if h.level == 2 and low == "supplement":
+            self.in_appendix = True
+            self.supplement = True
+            return "\\FloatBarrier\n\\clearpage" + self.mark(2, "Supplement")
+        if self.supplement and h.level == 3:
+            # a numbered section (hyperref names it section.N, so the paper can link to it); the running header names it
+            self.sup_sections += 1
+            head = "Supplementary tables, Section %d: %s" % (self.sup_sections, esc(text))
+            return ("\\FloatBarrier\n" + ("\\clearpage\n" if self.sup_sections > 1 else "")
+                    + "\\makeatletter\\gdef\\@icmltitlerunning{" + head + "}\\makeatother\n"
+                    + "\\section[" + self.inl(text) + "]{" + self.inl(text) + self.mark(2, text) + "}")   # the short title keeps the mark out of the contents
         if h.level == 2 and low == "appendix":
             self.in_appendix = True
             return "\\clearpage\n\\appendix\n\\onecolumn" + self.mark(2, "Appendix")
@@ -635,10 +679,11 @@ class Emitter:
         wide = (tag is not None and tag.group(1) == "wide") and not self.in_appendix
         env = "figure*" if wide else "figure"
         width = "0.72\\linewidth" if self.in_appendix else "\\linewidth"
-        out = ["\\begin{" + env + "}[" + ("!htbp" if self.in_appendix else "!t") + "]", "\\centering",
+        place = "H" if self.supplement else ("!htbp" if self.in_appendix else "!t")   # the supplement keeps its order: no floating
+        out = ["\\begin{" + env + "}[" + place + "]", "\\centering",
                "\\includegraphics[width=" + width + "]{" + image_path(im.path, self.tex_dir, self.md_dir) + "}"]
         if cap:
-            out.append("\\caption*{" + self.inl(cap) + "}")
+            out.append("\\caption*{" + self.inl(cap) + "}" + self.toc_entry(cap))
         out.append("\\end{" + env + "}")
         return "\n".join(out)
 
@@ -678,18 +723,18 @@ class Emitter:
             out += ["\\begingroup", size_cmd, "\\setlength{\\tabcolsep}{%gpt}" % TABCOLSEP_PT,
                     "\\begin{longtable}{" + spec + "}"]
             if cap:
-                out.append("\\caption*{" + self.inl(cap) + "}\\\\")
+                out.append("\\caption*{" + self.inl(cap) + "}" + self.toc_entry(cap) + "\\\\")
             out += ["\\toprule", head, "\\midrule", "\\endfirsthead",
                     "\\toprule", head, "\\midrule", "\\endhead",
                     "\\bottomrule", "\\endlastfoot"]
             out += [cells(r) for r in rows]
             out += ["\\end{longtable}", "\\endgroup"]
             return "\n".join(out)
-        place = "!htbp" if self.in_appendix else "!t"
+        place = "H" if self.supplement else ("!htbp" if self.in_appendix else "!t")   # the supplement keeps its order: no floating
         out += ["\\begin{" + env + "}[" + place + "]", "\\centering", size_cmd,
                 "\\setlength{\\tabcolsep}{%gpt}" % TABCOLSEP_PT]
         if cap:
-            out.append("\\caption*{" + self.inl(cap) + "}")
+            out.append("\\caption*{" + self.inl(cap) + "}" + self.toc_entry(cap))
         if natural:
             out.append("\\begin{tabular}{" + spec + "}")
         else:
@@ -725,10 +770,12 @@ PREAMBLE = r"""\documentclass{article}
 \usepackage{tabularx}
 \usepackage{longtable}
 \usepackage{placeins}
+\usepackage{float}
 \usepackage{enumitem}
 \usepackage{ragged2e}
 \PassOptionsToPackage{hyphens}{url}
 \usepackage{hyperref}
+\makeatletter\let\mdtexaddcontentsline\addcontentsline\makeatother % icml2026.sty empties it; the supplement restores it for its contents
 \usepackage[preprint]{icml2026}
 \definecolor{darkblue}{RGB}{0,0,139}
 \hypersetup{colorlinks=true,linkcolor=darkblue,urlcolor=darkblue,citecolor=darkblue,breaklinks=true}
@@ -767,7 +814,12 @@ def convert(md_path: Path, tex_path: Path) -> None:
             b = blocks[i]
             meta.append(b.text if hasattr(b, "text") else "")
             i += 1
-        body.append(em.title_block(title, meta))
+        if any(isinstance(x, Heading) and x.level == 2 and x.text.strip().lower() == "supplement" for x in blocks):
+            # the paragraphs after the author line (other than the correspondence line) are the title page's note
+            intro = [m for m in meta[1:] if m and not m.lower().startswith("correspondence:")]
+            body.append(em.title_page_supplement(title, meta, intro))
+        else:
+            body.append(em.title_block(title, meta))
 
     while i < len(blocks):
         b = blocks[i]
@@ -795,7 +847,7 @@ def convert(md_path: Path, tex_path: Path) -> None:
                       for k, (lvl, ttl) in enumerate(em.marks))
     cites = "%% CITED " + " ".join(dict.fromkeys(CITED)) + "\n"
     doc = (
-        "%% Generated by report/gen/md2tex.py from %s. Do not edit; edit the markdown.\n" % md_path.name
+        "%% Generated by paper/src/md2tex.py from %s. Do not edit; edit the template in paper/src.\n" % md_path.name
         + head + marks + "\n" + cites + "\\begin{document}\n" + "\n\n".join(body) + "\n\\end{document}\n"
     )
     tex_path.parent.mkdir(parents=True, exist_ok=True)

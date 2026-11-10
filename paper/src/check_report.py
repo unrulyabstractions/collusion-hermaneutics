@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Checks on the built report. Exit status 1 when any check fails.
 
-  check_report.py report/tex/report.tex [--md report/REPORT_DRAFT.md]
+  check_report.py paper/build/main.tex [--md paper/build/main.md] [--supplement]
 
 1. overfull boxes: 0 Overfull \\hbox lines in report.log
 2. em dashes: 0 U+2014 in the PDF text and 0 "---" in the tex body
@@ -31,7 +31,7 @@ def pdf_pages(pdf: Path) -> list[str]:
 
 def main(argv: list[str]) -> int:
     tex = Path(argv[1])
-    md = Path(argv[argv.index("--md") + 1]) if "--md" in argv else tex.parent.parent / "REPORT_DRAFT.md"
+    md = Path(argv[argv.index("--md") + 1]) if "--md" in argv else tex.with_suffix(".md")
     supplement = "--supplement" in argv   # the supplementary tables: no page limit, and the bib need not be cited in full
     log = tex.with_suffix(".log").read_text(encoding="utf-8", errors="replace")
     tex_text = tex.read_text(encoding="utf-8")
@@ -51,7 +51,7 @@ def main(argv: list[str]) -> int:
 
     md_full = md.read_text(encoding="utf-8")
     if supplement:   # all of the supplement is checked like the appendices
-        md_full = md_full.split("\n## Appendix\n", 1)[0].split("\n## References", 1)[0] + "\n## References\n\n## Appendix\n" + md_full.split("\n## Appendix\n", 1)[1]
+        md_full = "\n## References\n\n## Appendix\n" + md_full.split("\n## References", 1)[0]
     main_md = md_full.split("\n## References", 1)[0]
     app_md = md_full.split("\n## Appendix", 1)[1] if "\n## Appendix" in md_full else ""
     # sections whose heading names the ladders quote the framework's evidence text verbatim (task file names)
@@ -92,7 +92,7 @@ def main(argv: list[str]) -> int:
     if n_main or DOLLAR_RE.search(rest):
         fails.append("dollar figures")      # no spend figure anywhere in the report
 
-    bib = Path(tex.parent, "../gen/refs.bib").resolve().read_text(encoding="utf-8")
+    bib = Path(tex.parent, "../src/references.bib").resolve().read_text(encoding="utf-8")
     keys = set(re.findall(r"^@\w+\{([^,]+),", bib, re.M))
     cited = set(re.findall(r"\\citep\{([^}]*)\}", body))
     cited = {k.strip() for c in cited for k in c.split(",")}

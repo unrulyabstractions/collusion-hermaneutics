@@ -8,7 +8,7 @@ We ask whether a small open-weight **reader** model, Qwen3.8-27B, can monitor la
 
 | path | what it holds |
 |---|---|
-| `report/` | the report (`REPORT_DRAFT.md`), its number ledger (`NUMBERS.md`, one line per number with its source and selector), the abstract, the generator (`gen/gen_report.py`, `gen/report_template.md`) and the LaTeX build (`tex/`, `build_pdf.sh`) |
+| `paper/` | the paper: `src/` holds the templates (`main_template.md`, `supplement_template.md`), the generator (`gen_report.py`, `md2tex.py`), the ICML 2026 style, the bibliography, the checks, the build (`build.sh`), the figures, and `sources/` with the number ledger (`NUMBERS.md`, one line per number with its source and selector); `build/` holds `main.pdf`, `supplement.pdf` and the generated Markdown, LaTeX and abstract |
 | `hermeneutics/` | the probe pipeline: transcript rendering, think-position extraction, labels, probes, text baselines, judges, result summaries; `results/RESULTS.md` is script-generated from the CSV and JSON result files beside it |
 | `submodule/spar-guardian-agents` | **SparGuardianAgents**, the agent framework that produced the transcripts (CheatBench tasks on ORBIT with our instrumentation) (branch `board-seed-injection`), including the board-seed mechanism `src/swarm/board_seed.py` |
 | `tools/controls_run/` | the scripts that drove the five-author controls run across the hosts (archival; hostnames replaced by placeholders) |
@@ -26,16 +26,16 @@ The sprint rules ask that code written before the sprint be marked. The sprint o
 
 1. **`submodule/spar-guardian-agents` (SparGuardianAgents).** The agent framework, its model registry and Inspect integration were written before the sprint (log begins 2026-10-09), in a SPAR project by Rigel Cierniak, Lucy Kappai and Ian Rios-Sialer ([report](https://docs.google.com/document/d/1-Ph3v3OPblL2tBs2lxPLk3oPMDhVh686zzhywludDgc)). Its benchmark tasks with planted exploits are third-party: they come from **CheatBench** (Phan et al. 2026, Center for AI Safety, MIT licence, https://github.com/centerforaisafety/cheatbench), which the framework includes as a submodule from the fork `unrulyabstractions/cheatbench` (forked 2026-10-09). Its board-based multi-agent scaffold is also third-party: **ORBIT** (Hagag, Anderson, Chakraborty and Schroeder de Witt 2026, arXiv 2609.33102, Apache-2.0, https://github.com/wlanderson0/orbit), included as a submodule from the fork `unrulyabstractions/orbit` (forked 2026-10-09). Written during the sprint on branch `board-seed-injection`: the board-seed mechanism (`src/swarm/board_seed.py` and its setup solver, commit 2c72d93), the `gpt-5-mini` registry entry and the pilot and dose-response verification entries.
 2. **`hermeneutics/`.** Six files were adapted from the author's earlier capstone code, each source last changed on or before 2026-11-06 14:24 UTC (segment and sentence spans, transcript rendering, layer-streaming activation extraction, the cheat-rung label rule, the probe and LEACE machinery, the judge prompt and local scorer). `hermeneutics/PREEXISTING.md` lists each file, its source, what was kept and what changed. Written during the sprint: `think.py`, `subsample.py`, `baselines.py`, `runs.py` (adapted from sprint code), the random-weights path of `extract.py`, `summary.py`, `recompute.py`, `verify.py`, `report.py`, and every result.
-3. **Nothing else.** `report/`, `tools/controls_run/`, `publish_apart_swarm/`, the dataset survey and the logs were written during the sprint.
+3. **Nothing else.** `paper/`, `tools/controls_run/`, `publish_apart_swarm/`, the dataset survey and the logs were written during the sprint.
 
-## Reproducing the report
+## Reproducing the paper
 
 ```
-.venv/bin/python report/gen/gen_report.py     # rebuilds REPORT_DRAFT.md, NUMBERS.md, ABSTRACT.txt from the result files
-bash report/build_pdf.sh                      # Markdown to LaTeX to PDF (xelatex), prints the page count
+.venv/bin/python paper/src/gen_report.py      # rebuilds paper/build/{main,supplement}.md, abstract.txt and paper/src/sources/NUMBERS.md from the result files
+bash paper/src/build.sh                       # Markdown to LaTeX to PDF (pdflatex, ICML 2026 style) for both documents, runs the checks, prints page counts
 ```
 
-Every number in the tables and every number written in digits in the text has a line in `report/NUMBERS.md` naming its source and selector: a result file and its cell, a run log, a code constant, a repository document, or, for a few facts (such as DeepSeek V4.1 Flash's licence and size, the sprint's dates and tracks, and reference years), the public page and the field read. The tables were checked cell by cell against those sources by independent verification passes; the entries are in `VERIFICATION_LOG.md`.
+Every number in the tables and every number written in digits in the text has a line in `paper/src/sources/NUMBERS.md` naming its source and selector: a result file and its cell, a run log, a code constant, a repository document, or, for a few facts (such as DeepSeek V4.1 Flash's licence and size, the sprint's dates and tracks, and reference years), the public page and the field read. The tables were checked cell by cell against those sources by independent verification passes; the entries are in `VERIFICATION_LOG.md`.
 
 ## LLM use
 

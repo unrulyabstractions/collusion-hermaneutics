@@ -105,7 +105,7 @@ def build(led, ctx):
     JT = []
     for st in order:
         cuts = list(dict.fromkeys(r["cut"] for r in jc if r["set"] == st))
-        L = [f"**Table {{N}}.** {SETNAME[st]}: every scorer on the same agents. AUROC [95% bootstrap over runs, rollouts or pairs]; within: { {'controls_600': 'the mean of the per-author AUROCs', 'board_seed': 'pairs inside one seed arm', 'solo_design': 'one stratum, equal to the AUROC', 'spar_screen_team': 'pairs inside one task', 'spar_mixed_41': 'pairs inside one task', 'goodfire_reward_hack': 'pairs inside one run directory', 'cheatbench': 'pairs inside one harness', 'evilgenie': 'pairs inside one author'}[st] }; judges' Yes rate and Cohen's kappa against the code label.", "",
+        L = [f"**Table {{N}}.** {SETNAME[st]}: every scorer on the same agents. Rows: each scorer on each label; columns: agents scored, positives and negatives, AUROC [95% bootstrap over runs, rollouts or pairs], within, and for judges the share of Yes replies and Cohen's kappa against the code label. Within: { {'controls_600': 'the mean of the per-author AUROCs', 'board_seed': 'pairs inside one seed arm', 'solo_design': 'one stratum, equal to the AUROC', 'spar_screen_team': 'pairs inside one task', 'spar_mixed_41': 'pairs inside one task', 'goodfire_reward_hack': 'pairs inside one run directory', 'cheatbench': 'pairs inside one harness', 'evilgenie': 'pairs inside one author'}[st] }.", "",
              "| label | scorer | agents scored | positive / negative | AUROC [95% CI] | within | judge says Yes | kappa |", "|---|---|---|---|---|---|---|---|"]
         for cut in cuts:
             for r in [r for r in jc if r["set"] == st and r["cut"] == cut]:
@@ -277,6 +277,7 @@ def build(led, ctx):
         led(line, f"Appendix within-condition row {d['Label']}/{d['Set']}/{d['Value']}", P.where(tw, r), "restricted and refit columns", raw_where=True)
         W.append(line)
     out["<<T_WITHIN>>"] = "\n".join(W)
+    out["<<T_WITHIN_CONTROLS>>"] = "\n".join(W[:2] + [l for l in W[2:] if l.split(" | ")[1] == "Controls"])   # the paper's appendix: the controls' two arms
 
     # author identity and LEACE (main)
     AU = ["| label | training scheme | authors | positive / agents | author probe: raw | after erasure (chance) | B.I: raw, author erased, all three erased | B.II mean: raw, author erased, all three erased |",

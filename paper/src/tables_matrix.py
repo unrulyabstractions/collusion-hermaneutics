@@ -1,7 +1,7 @@
 """Tables and figures from the probe matrix (hermeneutics/results/matrix_probes at d38598d), read through pinned.py.
 
 build(led, ctx) returns {placeholder: markdown}; it also copies the two transfer heatmaps, byte for byte from the
-pinned commit, into report/figures.
+pinned commit, into paper/src/figures.
 """
 import os
 import re
@@ -9,7 +9,7 @@ import re
 import pinned as P
 
 MR = "hermeneutics/results/matrix_probes/RESULTS.md"
-FIG = os.path.join(P.REPO, "report", "figures")
+FIG = os.path.join(P.REPO, "paper", "src", "figures")
 LAB = {"cheating": "cheating", "coordination posted": "coordination", "collusion crossed": "collusion"}
 SRC = {"controls": "controls", "board_seed": "board-seed teams", "solo_design": "design runs", "spar_team": "SPAR screen teams",
        "spar_mixed": "SPAR mixed teams", "spar_expl": "SPAR exploration", "spar_solo": "SPAR screen solo", "goodfire": "Goodfire",

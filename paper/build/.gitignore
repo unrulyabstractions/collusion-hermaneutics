@@ -1,9 +1,9 @@
 *.aux
 *.log
 *.out
+*.toc
 *.xdv
 *.synctex.gz
-*.pass*.out
 *.bbl
 *.blg
 *.bibtex.out

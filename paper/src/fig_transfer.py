@@ -1,11 +1,11 @@
 """Figure 1: unseen-author transfer (type B.II, leave one author out), solo arm.
 
-Reads the same result files and the same selectors as Table D4 in report/gen/gen_report.py, plots one row group per
+Reads the same result files and the same selectors as Table D4 in paper/src/gen_report.py, plots one row group per
 held-out author with four methods (three reader probes and the TF-IDF text baseline), and cross-checks every plotted
-value against the Table D4 cells in report/REPORT_DRAFT.md at 3 decimals. Any mismatch exits non-zero.
+value against the Table D4 cells in paper/build/main.md at 3 decimals. Any mismatch exits non-zero.
 
-Writes report/figures/fig1_transfer.{pdf,png} and report/figures/fig1_transfer_values.json.
-Run: .venv/bin/python report/gen/fig_transfer.py
+Writes paper/src/figures/fig1_transfer.{pdf,png} and paper/src/figures/fig1_transfer_values.json.
+Run: .venv/bin/python paper/src/fig_transfer.py
 """
 import csv
 import json
@@ -20,9 +20,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 from matplotlib.transforms import blended_transform_factory  # noqa: E402
 
-REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))  # report/gen -> repo root
-OUT = f"{REPO}/report/figures"
-DRAFT = f"{REPO}/report/REPORT_DRAFT.md"
+REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))  # paper/src -> repo root
+OUT = f"{REPO}/paper/src/figures"
+DRAFT = f"{REPO}/paper/build/supplement.md"
 RENDER = "data/render_summary.csv"
 
 # Table D4 row order and display names (gen_report.py AUTH / NAME)

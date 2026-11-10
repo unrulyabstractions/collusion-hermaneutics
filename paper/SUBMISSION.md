@@ -5,8 +5,8 @@ Source: the sprint page https://apartresearch.com/sprints/swarm-alignment-2026, 
 | form field | value | status |
 |---|---|---|
 | Project title * | Hermeneutics for swarm collusion monitoring | set (rename if you wish) |
-| Project summary * | the text of `report/ABSTRACT.txt` (222 words; 231 with hyphenated words split) | ready |
-| PDF report * (up to 25 MB) | `report/tex/report.pdf` (18 pages; body 7.69 pages, title through Code and Data (everything before References); references from page 8, appendices from page 10; `report/build_pdf.sh` prints these figures after each build) | built; your edit pass pending |
+| Project summary * | the text of `paper/build/abstract.txt` (222 words; 231 with hyphenated words split) | ready |
+| PDF report * (up to 25 MB) | `paper/build/main.pdf` (main text pages 1 to 8, references from page 8, then the appendices; `paper/src/build.sh` prints the page map after each build), with `paper/build/supplement.pdf` beside it | built; your edit pass pending |
 | Are you interested in publishing this project? * | Yes / No | your call |
 | Tracks (choose every track that fits) | Track 4: Multi-Agent Oversight and Control; Track 2: The Science of Agent Networks | ready |
 | Presentation recording (optional) | none | skip or record |
@@ -20,7 +20,7 @@ Source: the sprint page https://apartresearch.com/sprints/swarm-alignment-2026, 
 
 Before you press submit:
 
-1. Finish your edit pass on `report/gen/report_template.md` (REPORT_DRAFT.md is generated), then run `.venv/bin/python report/gen/gen_report.py && report/build_pdf.sh` (or ask me) and read the page line it prints: the body must stay under 8 pages.
+1. Finish your edit pass on `paper/src/main_template.md` and `paper/src/supplement_template.md` (the files in `paper/build/` are generated), then run `.venv/bin/python paper/src/gen_report.py && paper/src/build.sh` (or ask me) and read the page line it prints: the main text must stay within 8 pages.
 2. Read the LLM Usage Statement at the end of the PDF; it says the author reviewed the text.
 3. Check the title and the affiliation line on page 1.
 4. `git push` so the public repository matches the PDF.

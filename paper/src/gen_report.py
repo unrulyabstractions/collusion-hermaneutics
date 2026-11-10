@@ -1,4 +1,5 @@
-"""Build report/REPORT_DRAFT.md, report/NUMBERS.md and report/ABSTRACT.txt from the result files.
+"""Build paper/build/main.md and paper/build/supplement.md (and paper/src/sources/NUMBERS.md, the number ledger, and
+paper/build/abstract.txt) from the result files.
 
 Every number in a table is read from a file and written to the ledger with its selector. Prose numbers are ledgered
 by hand at the bottom of this script.
@@ -11,7 +12,7 @@ import os
 import re
 import sys
 
-REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))  # report/gen -> repo root
+REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))  # paper/src -> repo root
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import subprocess
 import pinned
@@ -24,8 +25,11 @@ for _d in ("hermeneutics/results/team_probes", "hermeneutics/results/attn_probe"
     assert _r.returncode == 0, f"{_d} differs from {pinned.TEAM}; rebuild against the new results deliberately"
 SUB = f"{REPO}/submodule/spar-guardian-agents"  # the repo submodule on branch board-seed-injection: read for the board-seed texts (Appendix C) and cited in the ledger
 PILOT = f"{REPO}/data/board_seed_pilot"
-HF_README = f"{REPO}/report/gen/sources/hf_README.md"  # tracked copy of the published dataset README (byte-identical to the HF upload)
-OUT = f"{REPO}/report"
+HF_README = f"{REPO}/paper/src/sources/hf_README.md"  # tracked copy of the published dataset README (byte-identical to the HF upload)
+OUT = f"{REPO}/paper/build"          # generated documents
+SRC = f"{REPO}/paper/src"            # templates and sources
+LEDGER_PATH = f"{SRC}/sources/NUMBERS.md"
+SUBMISSION = f"{REPO}/paper/SUBMISSION.md"
 
 LEDGER = []
 
@@ -137,7 +141,7 @@ led("763,205,315,794 parameters", "NUMBERS only: basis for 'far more parameters 
 N_CLOSED = sum(1 for a in AUTH if WEIGHTS[a] == "closed")
 assert N_CLOSED == 3, N_CLOSED
 led(f"{N_CLOSED} of {len(AUTH)} authors closed-weight", "Related Work; Methods, Authors and reader; Conclusion ('three of our five authors', 'three of them closed-weight')",
-    "report/gen/gen_report.py WEIGHTS (Table E1 weights column)", "authors whose weights cell reads 'closed'; DeepSeek V4.1 Flash open per its Hub page")
+    "paper/src/gen_report.py WEIGHTS (Table E1 weights column)", "authors whose weights cell reads 'closed'; DeepSeek V4.1 Flash open per its Hub page")
 TM1 = ["| author | API model id | weights | valid runs | think coverage (share of turns with readable reasoning) |",
        "|---|---|---|---|---|"]
 for a in AUTH:
@@ -676,7 +680,7 @@ led("licence allows evaluation only", "Results, label map; Discussion; Table F1 
 # Appendix B: full sweep
 # ----------------------------------------------------------------------------------------------------------------
 def sweep(tab, path, probe, name):
-    out = [f"**{name}.** Solo arm, raw features, agent pooling. Columns: B.I pooled AUROC [95% CI]; A within each author; B.II leave-one-author-out; permutation null 95th percentile (pooled).", "",
+    out = [f"**{name}.** Controls, solo arm, raw features, agent pooling. Rows: reader layer and think position; columns: B.I pooled AUROC [95% CI], type A within each author, type B.II on each held-out author, and the permutation null's 95th percentile (pooled).", "",
            "| layer | position | B.I pooled | A ds | A gpt5m | A haiku | A luna | A qwen | B.II ds | B.II gpt5m | B.II haiku | B.II luna | B.II qwen | null 95th |",
            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     order = {"26": 0, "38": 1, "51": 2, "all": 3}
@@ -731,7 +735,7 @@ led(ABS_ERASED, "Abstract: B.I after erasure", rel(PCA), sel(**base, features="a
 # ----------------------------------------------------------------------------------------------------------------
 # Figure 1 (unseen-author transfer): the plotted values must equal the source rows that Table D4 prints
 # ----------------------------------------------------------------------------------------------------------------
-FIGV = f"{REPO}/report/figures/fig1_transfer_values.json"
+FIGV = f"{REPO}/paper/src/figures/fig1_transfer_values.json"
 _fig = json.load(open(FIGV))
 _src = {"hermeneutics/results/pca_agent/auroc.csv": pca, "hermeneutics/results/full_agent/auroc.csv": full,
         "hermeneutics/results/pca_turn/auroc.csv": turn, "hermeneutics/results/tfidf/auroc.csv": tfidf_all}
@@ -906,7 +910,7 @@ led("1 call per agent per judge",
 # ----------------------------------------------------------------------------------------------------------------
 TP = f"{REPO}/hermeneutics/results/team_probes"
 AP = f"{REPO}/hermeneutics/results/attn_probe"
-DESIGN = f"{REPO}/report/gen/sources/solo_design_runs.csv"  # tracked copy of the design-run launcher's runs.csv (177 agent rows)
+DESIGN = f"{REPO}/paper/src/sources/solo_design_runs.csv"  # tracked copy of the design-run launcher's runs.csv (177 agent rows)
 
 
 def ci3(r, a="auroc", lo="ci_lo", hi="ci_hi"):
@@ -1150,12 +1154,12 @@ led("ladder tables", "Appendix G, Tables G1 to G6", "viewer/ladders_data.py", "R
 # ----------------------------------------------------------------------------------------------------------------
 # assemble
 # ----------------------------------------------------------------------------------------------------------------
-tpl = open(os.path.join(os.path.dirname(__file__), "report_template.md")).read()
+tpl = open(os.path.join(os.path.dirname(__file__), "main_template.md")).read()
 # Table B1: the number of adapted files, counted from the table itself
 _b1 = tpl.split("**Table B1.**", 1)[1].split("\n\n", 2)[1]
 N_B1 = sum(1 for l in _b1.splitlines() if l.startswith("| ") and not l.startswith("| module here") and not l.startswith("|---"))
 _pre = [l for l in open(f"{REPO}/hermeneutics/PREEXISTING.md") if l.startswith("| `hermeneutics/")]
-led(N_B1, "Table B1 caption: adapted files", "report/gen/report_template.md Table B1 rows; hermeneutics/PREEXISTING.md", f"rows in Table B1; PREEXISTING.md lists {len(_pre)} at build time")
+led(N_B1, "Table B1 caption: adapted files", "paper/src/main_template.md Table B1 rows; hermeneutics/PREEXISTING.md", f"rows in Table B1; PREEXISTING.md lists {len(_pre)} at build time")
 if len(_pre) != N_B1:
     print(f"NOTE: Table B1 has {N_B1} rows and hermeneutics/PREEXISTING.md lists {len(_pre)} files")
 REPL = {"<<TM1>>": TM1, "<<TM2>>": TM2, "<<TM3>>": TM3, "<<T1>>": T1, "<<T2>>": T2, "<<T3>>": T3, "<<T4>>": T4, "<<T5>>": T5,
@@ -1212,12 +1216,15 @@ for k, v in REPL.items():
     sup = sup.replace(k, v)
 assert "<<" not in tpl, re.findall(r"<<[A-Z_0-9]+>>", tpl)
 assert "<<" not in sup, re.findall(r"<<[A-Z_0-9]+>>", sup)
-sup = re.sub(r"\*\*Table [A-Z]\d+: ([^*]+?)\.\*\*", r"**Table S.** \1.", sup)     # the layer-sweep captions
+sup = re.sub(r"\*\*Table [A-Z]\d+: ([^*]+?)\.\*\* Controls, solo arm, raw features, agent pooling\.",
+             r"**Table S.** Controls, solo arm: the \1 by layer and position, raw features, agent pooling.", sup)     # the layer-sweep captions
+assert not re.search(r"\*\*Table [A-Z]\d+: ", sup), "a layer-sweep caption kept its old form"
 for _kind in ("Table", "Figure"):
     _n = iter(range(1, 1000))
     sup = re.sub(r"\*\*" + _kind + r" S\.\*\*", lambda m, k=_kind: f"**{k} S{next(_n)}.**", sup)
-assert re.search(r"\*\*Table S1\.\*\* The board-seed texts", sup)
-sup = sup.replace("neutral team post (Table C1)", "neutral team post (Table S1)")   # in the supplement the texts are Table S1
+_bs = re.search(r"\*\*Table (S\d+)\.\*\* The board-seed texts", sup)
+assert _bs, "supplement lacks the board-seed texts table"
+sup = sup.replace("neutral team post (Table C1)", f"neutral team post (Table {_bs.group(1)})")   # the texts' own number in the supplement
 assert not re.search(r"\*\*(Table|Figure) [A-RT-Z]\d", sup), re.findall(r"\*\*(?:Table|Figure) [A-Z]\d+", sup)   # every caption in the supplement is S-numbered
 assert not re.search(r"\*\*(Table|Figure) S", tpl)
 led("0.5", "Table 2 col 'chance / majority rate': the three AUROC rows", "hermeneutics/probes.py", "auc() wraps sklearn roc_auc_score (lines 71-77); a score unrelated to the label has AUROC 0.5", raw_where=True)
@@ -1247,9 +1254,9 @@ assert _arms == ["cheat", "pooled", "solo"], _arms
 led("2 other arms (pooled, cheat)", "Results, text classifier; Table 3 caption: 'the other two arms'", rel(PCA), f"distinct arm: {_arms}; the solo arm is primary", raw_where=True)
 _notrun = [l for l in T4.splitlines() if "not run" in l]
 assert len(_notrun) == 1, _notrun   # the random-weights reader; the reader interrogation now has rows
-led("1 not-run row (random-weights reader)", "Table D3 rows; Methods, controls; Limitations: the random-weights null was not run", "report/gen/gen_report.py Table D3 rows", "rows of Table D3 whose cells read 'not run'", raw_where=True)
+led("1 not-run row (random-weights reader)", "Table D3 rows; Methods, controls; Limitations: the random-weights null was not run", "paper/src/gen_report.py Table D3 rows", "rows of Table D3 whose cells read 'not run'", raw_where=True)
 led("1 probe, scope pooled (B.I)", "Abstract: 'one probe pooled over authors'", rel(PCA), sel(**base, features="raw", scope="pooled"), raw_where=True)
-led("1 reader (Qwen3.8-27B)", "Methods, Authors and reader: 'five authors through one reader'; Table E1 reader row", "VERIFICATION_LOG.md; report/gen/gen_report.py Table E1; hermeneutics/extract.py; hermeneutics/__init__.py",
+led("1 reader (Qwen3.8-27B)", "Methods, Authors and reader: 'five authors through one reader'; Table E1 reader row", "VERIFICATION_LOG.md; paper/src/gen_report.py Table E1; hermeneutics/extract.py; hermeneutics/__init__.py",
     "07:20 entry: every transcript rendered through the Qwen3.8-27B chat template; the extraction loads that model alone", raw_where=True)
 # (the board-seed paragraph no longer counts its readings with ordinals)
 _outrows = [l for l in T6.splitlines()[2:] if l.startswith("| ")]
@@ -1257,8 +1264,8 @@ assert len(_outrows) == 6, _outrows
 led(f"{len(_outrows) - 1} other outputs", "Results, label map: 'the other five as zeros by construction'", "Table F1 rows; PROJECT_DESCRIPTION.md",
     f"{len(_outrows)} outputs in Table F1 less cheating", raw_where=True)
 os.makedirs(OUT, exist_ok=True)
-open(f"{OUT}/REPORT_DRAFT.md", "w").write(tpl)
-open(f"{OUT}/SUPPLEMENT_DRAFT.md", "w").write(sup)
+open(f"{OUT}/main.md", "w").write(tpl)
+open(f"{OUT}/supplement.md", "w").write(sup)
 print("supplement tables", len(re.findall(r"\*\*Table S\d+\.", sup)), "| figures", len(re.findall(r"\*\*Figure S\d+\.", sup)))
 
 abstract = tpl.split("## Abstract\n", 1)[1].split("\n## ", 1)[0].strip()
@@ -1266,21 +1273,21 @@ plain = abstract.replace("**", "")
 wc = len(plain.split())
 wc_split = len([w for w in re.split(r"[\s\-]+", plain) if w])  # word processors may count hyphenated parts apart
 assert 150 <= wc <= 238 and wc_split <= 248, (wc, wc_split)  # the form allows 150 to 250; keep a margin for either count
-open(f"{OUT}/ABSTRACT.txt", "w").write(plain + "\n")
-_sub = f"{OUT}/SUBMISSION.md"
+open(f"{OUT}/abstract.txt", "w").write(plain + "\n")
+_sub = SUBMISSION
 if os.path.exists(_sub):
     _st = open(_sub).read()
-    _new, _n = re.subn(r"the text of `report/ABSTRACT.txt` \(\d+ words(?:; \d+ with hyphenated words split)?\)",
-                       f"the text of `report/ABSTRACT.txt` ({wc} words; {wc_split} with hyphenated words split)", _st)
+    _new, _n = re.subn(r"the text of `(?:report/ABSTRACT.txt|paper/build/abstract.txt)` \(\d+ words(?:; \d+ with hyphenated words split)?\)",
+                       f"the text of `paper/build/abstract.txt` ({wc} words; {wc_split} with hyphenated words split)", _st)
     assert _n == 1, _n
     if _new != _st:
         open(_sub, "w").write(_new)
 
-hdr = ["# Number ledger for report/REPORT_DRAFT.md", "",
+hdr = ["# Number ledger for paper/build/main.md and paper/build/supplement.md", "",
        "Every number in the tables and every number written in digits in the text of the draft traces to a cited source: a result file, a run log, a code constant, a repository document or a public page, read 2026-11-07 to 2026-11-08. One line per number; text cells (setup descriptions, 'n/a' and 'not run' markers) are not numbers. "
        "Paths are relative to the repository root unless absolute. The dataset README was fetched from the Hub with the account token.", "",
        "| value | where in the draft | source | field / selector |", "|---|---|---|---|"]
-open(f"{OUT}/NUMBERS.md", "w").write("\n".join(hdr + LEDGER) + "\n")
+open(LEDGER_PATH, "w").write("\n".join(hdr + LEDGER) + "\n")
 
 body = tpl.split("## Abstract\n", 1)[1].split("\n## References", 1)[0]
 body_wo_tables = "\n".join(l for l in body.splitlines() if not l.startswith("|"))

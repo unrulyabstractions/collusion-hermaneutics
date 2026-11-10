@@ -196,15 +196,11 @@ Each judge reads the task head and the agent's turns with every tool result cut,
 
 ### Design runs
 
-These tables give the board-seed texts, the board-seed team runs and the first batch of design runs. The paper's Table C1 gives the clean design runs.
+These tables give the board-seed texts and the first batch of design runs. The paper's Table C1 gives the clean design runs and its Table C2 the board-seed team runs.
 
 **Table S.** The board-seed texts. Rows: message conditions; columns: the text the system posts as the first board message. The anti-coordination condition posts no text; a hidden regulator agent carries it.
 
 <<TC>>
-
-**Table S.** Board-seed software-engineering runs with three worker agents and a split exploit (DeepSeek V4.1 Flash). Rows: pilots at turn budgets 25 and 60, then the dose-response matrix, by arm; columns: teams, teams where a piece crossed or the exploit assembled, teams that passed the hidden tests, and per-run means of board posts (workers only) and of the collaboration evidence. The anti-coordination arm adds a hidden regulator. Readings are directional at five seeds per arm, with no significance test.
-
-<<T5>>
 
 **Table S.** Design runs, first batch. Rows: telling level, system post and author; columns: runs and agents, and the agents that read the board, posted, and reached the task's cheat floor. The design is the paper's Table C1 with the neutral board-seed post at L1 and L2; that post speaks of a team, so it hints at teammates.
 

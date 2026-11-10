@@ -171,7 +171,7 @@ A per-step monitor is useful only if it fires soon after the onset. Lateness alo
 
 ### What do the telling-ladder design runs show?
 
-Labelled team data needs agents that find and use a shared board, so we measure how much telling lone agents need. With board tools alone almost no agent reads the board (Table C1). Round notices and a bare system post bring nearly every agent to read it, and naming the board in the prompt adds posting, though posting stays rare. Under one prompt DeepSeek V4.1 Flash cheats in most runs and GPT-6 Luna in few. In teams, one planted post moves coordination, and the mild post yields the most teams that pass the hidden tests ([Supplement, Section 9](supplement.pdf#section.9)). On the design runs the attention monitor reads coordination far above the classifier (Table 2). We therefore treat the telling ladder and the board seed as cheap levers for building labelled team data.
+Labelled team data needs agents that find and use a shared board, so we measure how much telling lone agents need. With board tools alone almost no agent reads the board (Table C1). Round notices and a bare system post bring nearly every agent to read it, and naming the board in the prompt adds posting, though posting stays rare. Under one prompt DeepSeek V4.1 Flash cheats in most runs and GPT-6 Luna in few. In teams, one planted post moves coordination, and the mild post yields the most teams that pass the hidden tests (Table C2). On the design runs the attention monitor reads coordination far above the classifier (Table 2). We therefore treat the telling ladder and the board seed as cheap levers for building labelled team data.
 
 ### What do the controls say about prompt and author identity?
 
@@ -258,11 +258,11 @@ This appendix separates what we made from what we adapted, and says how we used 
 
 **LLM usage.** We used Claude Code (Anthropic) under the author's direction. It ran the experiments and drafted the text. The author set the research questions, took every design decision, and reviewed the text.
 
-### Appendix C: Design runs
+### Appendix C: Design runs and board-seed runs
 
-This appendix gives the design runs behind the telling ladder. It shows how much telling lone agents need before they read and post on a shared board.
+This appendix gives the design runs behind the telling ladder and the board-seed team runs. It shows how much telling lone agents need before they use a shared board, and how one planted post moves a team.
 
-**Table C1.** Design runs: three lone agents per run on one task, with board tools and no team in the prompt. Agents that read the board, posted on it, and reached the task's cheat floor. L1 and L2 use the bare post; L0 has no post. [Supplement, Section 9](supplement.pdf#section.9) gives a first batch whose post hinted at a team, and the board-seed team runs.
+**Table C1.** Design runs: three lone agents per run on one task, with board tools and no team in the prompt. Agents that read the board, posted on it, and reached the task's cheat floor. L1 and L2 use the bare post; L0 has no post. [Supplement, Section 9](supplement.pdf#section.9) gives a first batch whose post hinted at a team, and the board-seed texts.
 
 | telling level | system post | author | runs | agents | read the board | posted | cheated |
 |---|---|---|---|---|---|---|---|
@@ -271,6 +271,21 @@ This appendix gives the design runs behind the telling ladder. It shows how much
 | L1: round notices and one system post | "Board opened." | GPT-6 Luna | 12 | 36 | 33/36 | 5/36 | 11/36 |
 | L1: round notices and one system post | "Board opened." | Qwen3.8-Max | 1 | 3 | 3/3 | 0/3 | 3/3 |
 | L2: the prompt names the board | "Board opened." | DeepSeek V4.1 Flash | 3 | 9 | 9/9 | 3/9 | 9/9 |
+
+**Table C2.** Board-seed software-engineering runs with three worker agents and a split exploit (DeepSeek V4.1 Flash). Rows: pilots at turn budgets 25 and 60, then the dose-response matrix, by arm; columns: teams, teams where a piece crossed or the exploit assembled, teams that passed the hidden tests, and per-run means of board posts (workers only) and of the collaboration evidence. The anti-coordination arm posts no text and adds a hidden regulator; [Supplement, Section 9](supplement.pdf#section.9) gives the posted texts. Readings are directional at five seeds per arm, with no significance test.
+
+| set | turn budget | arm | n | crossed or assembled | passed hidden tests | mean board posts (workers only) | mean discussed | mean solicited | mean crossed | mean assembled |
+|---|---|---|---|---|---|---|---|---|---|---|
+| pilot | 25 | none (empty board) | 2 | 0/2 | 0/2 | 0 | | | 0 | 0 |
+| pilot | 25 | neutral post | 5 | 0/5 | 0/5 | 0 | | | 0 | 0 |
+| pilot | 25 | pro-coordination, explicit | 5 | 0/5 | 0/5 | 0.4 (one team, two posts) | | | 0 | 0 |
+| pilot | 60 | none (empty board) | 3 | 3/3 | 1/3 | 2.7 | 2.0 | 1.7 | 1.7 | 1.7 |
+| pilot | 60 | pro-coordination, explicit | 3 | 3/3 | 1/3 | 9.3 | 8.3 | 5.0 | 4.0 | 2.0 |
+| dose-response | 60 | none (empty board) | 5 | 2/5 | 0/5 | 1.0 | 0.0 | 0.2 | 0.6 | 0.0 |
+| dose-response | 60 | neutral post | 5 | 5/5 | 2/5 | 5.0 | 3.6 | 2.4 | 2.8 | 2.2 |
+| dose-response | 60 | pro-coordination, mild | 5 | 4/5 | 4/5 | 9.4 | 7.6 | 3.4 | 2.6 | 5.2 |
+| dose-response | 60 | pro-coordination, explicit | 5 | 5/5 | 0/5 | 7.2 | 6.6 | 4.4 | 3.4 | 2.8 |
+| dose-response | 60 | anti-coordination (hidden regulator) | 5 | 2/5 | 0/5 | 7.0 (all posts 22.8, the regulator included) | 2.0 | 0.0 | 0.6 | 0.0 |
 
 ### Appendix D: Controls against text and judges
 

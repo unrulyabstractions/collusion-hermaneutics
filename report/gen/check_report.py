@@ -32,6 +32,7 @@ def pdf_pages(pdf: Path) -> list[str]:
 def main(argv: list[str]) -> int:
     tex = Path(argv[1])
     md = Path(argv[argv.index("--md") + 1]) if "--md" in argv else tex.parent.parent / "REPORT_DRAFT.md"
+    supplement = "--supplement" in argv   # the supplementary tables: no page limit, and the bib need not be cited in full
     log = tex.with_suffix(".log").read_text(encoding="utf-8", errors="replace")
     tex_text = tex.read_text(encoding="utf-8")
     pages = pdf_pages(tex.with_suffix(".pdf"))
@@ -49,10 +50,14 @@ def main(argv: list[str]) -> int:
         fails.append("em dashes")
 
     md_full = md.read_text(encoding="utf-8")
+    if supplement:   # all of the supplement is checked like the appendices
+        md_full = md_full.split("\n## Appendix\n", 1)[0].split("\n## References", 1)[0] + "\n## References\n\n## Appendix\n" + md_full.split("\n## Appendix\n", 1)[1]
     main_md = md_full.split("\n## References", 1)[0]
     app_md = md_full.split("\n## Appendix", 1)[1] if "\n## Appendix" in md_full else ""
-    ladder_md = app_md.split("\n### Appendix K:", 1)[1].split("\n### Appendix L:", 1)[0] if "\n### Appendix K:" in app_md else ""
-    other_app = app_md.replace(ladder_md, "")
+    # sections whose heading names the ladders quote the framework's evidence text verbatim (task file names)
+    sections = re.split(r"\n(?=### )", app_md)
+    ladder_md = "\n".join(sec for sec in sections if re.match(r"### [^\n]*ladders", sec))
+    other_app = "\n".join(sec for sec in sections if not re.match(r"### [^\n]*ladders", sec))
 
     def find_paths(text):
         hits = []
@@ -68,14 +73,15 @@ def main(argv: list[str]) -> int:
     p_main, p_app, p_lad = find_paths(main_md), find_paths(other_app), find_paths(ladder_md)
     print(f"check: paths in the main text {len(p_main)}" + (": " + ", ".join(sorted(set(p_main))) if p_main else ""))
     print(f"check: paths in the appendices outside the ladder tables {len(p_app)}" + (": " + ", ".join(sorted(set(p_app))) if p_app else ""))
-    print(f"check: task file names quoted verbatim in the ladder tables (Appendix K, the framework's evidence text) {len(p_lad)}: " + ", ".join(sorted(set(p_lad))))
+    print(f"check: task file names quoted verbatim in the ladder tables (the ladder sections, the framework's evidence text) {len(p_lad)}: " + ", ".join(sorted(set(p_lad))))
     if p_main or p_app:
         fails.append("paths")
 
     ref_page = next((i for i, p in enumerate(pages) if re.search(r"^\s*References\s*$", p, re.M)), None)
     if ref_page is None:
         print("check: References heading not found in the PDF text")
-        fails.append("references heading")
+        if not supplement:
+            fails.append("references heading")
         main_text, rest = "".join(pages), ""
     else:
         head = re.split(r"^\s*References\s*$", pages[ref_page], maxsplit=1, flags=re.M)
@@ -93,10 +99,10 @@ def main(argv: list[str]) -> int:
     undefined = re.findall(r"Citation `([^']+)' .*undefined", log)
     missing, uncited = sorted(cited - keys), sorted(keys - cited)
     print(f"check: citations {len(cited)} keys cited, {len(keys)} in the bib; missing {missing}; uncited {uncited}; undefined in the log {sorted(set(undefined))}")
-    if missing or uncited or undefined or "There were undefined references" in log:
+    if missing or (uncited and not supplement) or undefined or "There were undefined references" in log:
         fails.append("citations")
 
-    if ref_page is not None:
+    if ref_page is not None and not supplement:
         page_no = ref_page + 1
         before = re.split(r"^\s*References\s*$", pages[ref_page], maxsplit=1, flags=re.M)[0]
         lead = len(re.sub(r"\s+", "", before))

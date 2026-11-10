@@ -542,6 +542,7 @@ class Emitter:
         self.tables = 0
         self.in_appendix = False
         self.appendix_letters = 0
+        self.sup_sections = 0
 
     def inl(self, s: str) -> str:
         return inline(s, self.tex_dir, self.md_dir)
@@ -594,8 +595,13 @@ class Emitter:
                 if m.group(1) != expect:
                     raise SystemExit(f"md2tex: appendix '{text}' is out of order; LaTeX will letter it {expect}")
                 self.appendix_letters += 1
-                barrier = "\\FloatBarrier\n" + ("\\clearpage\n" if self.appendix_letters > 1 else "")
+                barrier = "\\FloatBarrier\n"
                 return barrier + "\\section{" + self.inl(m.group(2)) + self.mark(2, text) + "}"
+        if self.in_appendix and h.level == 3:
+            # a supplement section (no "Appendix X:" letter): unnumbered, each on a new page after the first
+            barrier = "\\FloatBarrier\n" + ("\\clearpage\n" if self.appendix_letters or self.sup_sections else "")
+            self.sup_sections += 1
+            return barrier + "\\section*{" + self.inl(text) + self.mark(2, text) + "}"
         if self.in_appendix:
             cmd = {2: "\\section", 3: "\\section", 4: "\\subsection"}.get(h.level, "\\subsubsection")
         else:

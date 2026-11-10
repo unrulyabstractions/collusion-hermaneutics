@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Build report/tex/report.pdf (ICML 2026 preprint, two columns) from report/REPORT_DRAFT.md.
+# Build report/tex/report.pdf (ICML 2026 preprint, two columns) from report/REPORT_DRAFT.md, and
+# report/tex/supplement.pdf ("Supplementary tables") from report/SUPPLEMENT_DRAFT.md.
 #
 #   report/build_pdf.sh            # uses report/REPORT_DRAFT.md
 #   report/build_pdf.sh other.md   # any markdown file
@@ -22,29 +23,43 @@ TEXDIR="$HERE/tex"
 TEX="$TEXDIR/report.tex"
 
 [ -f "$MD" ] || { echo "build_pdf: markdown not found: $MD" >&2; exit 1; }
+SUP_MD="$HERE/SUPPLEMENT_DRAFT.md"
 mkdir -p "$TEXDIR"
-rm -f "$TEXDIR"/report.{aux,bbl,blg,log,out,pdf}
-
-"$PY" "$HERE/gen/md2tex.py" convert "$MD" "$TEX"
-
-cd "$TEXDIR"
 export TEXINPUTS="$HERE/icml//:"
 export BSTINPUTS="$HERE/icml//:"
-run_latex() {
-  if ! "$PDFLATEX" -interaction=nonstopmode -halt-on-error -file-line-error report.tex > "report.pass$1.out" 2>&1; then
-    echo "build_pdf: pdflatex failed on pass $1; last lines of report.pass$1.out:" >&2
-    tail -n 40 "report.pass$1.out" >&2
-    exit 1
-  fi
-}
-run_latex 1
-if ! "$BIBTEX" report > report.bibtex.out 2>&1; then
-  echo "build_pdf: bibtex failed:" >&2; cat report.bibtex.out >&2; exit 1
-fi
-run_latex 2
-run_latex 3
-[ -s report.pdf ] || { echo "build_pdf: report.pdf missing or empty" >&2; exit 1; }
 
-"$PY" "$HERE/gen/md2tex.py" pages "$TEX"
-"$PY" "$HERE/gen/check_report.py" "$TEX"
+# build_one <markdown> <stem>: md2tex, pdflatex, BibTeX when the document cites, pdflatex twice
+build_one() {
+  local md="$1" stem="$2"
+  rm -f "$TEXDIR/$stem".{aux,bbl,blg,log,out,pdf}
+  "$PY" "$HERE/gen/md2tex.py" convert "$md" "$TEXDIR/$stem.tex"
+  ( cd "$TEXDIR"
+    run_latex() {
+      if ! "$PDFLATEX" -interaction=nonstopmode -halt-on-error -file-line-error "$stem.tex" > "$stem.pass$1.out" 2>&1; then
+        echo "build_pdf: pdflatex failed on $stem, pass $1; last lines:" >&2
+        tail -n 40 "$stem.pass$1.out" >&2
+        exit 1
+      fi
+    }
+    run_latex 1
+    if grep -q '\\citation' "$stem.aux"; then
+      if ! "$BIBTEX" "$stem" > "$stem.bibtex.out" 2>&1; then
+        echo "build_pdf: bibtex failed on $stem:" >&2; cat "$stem.bibtex.out" >&2; exit 1
+      fi
+    fi
+    run_latex 2
+    run_latex 3
+    [ -s "$stem.pdf" ] || { echo "build_pdf: $stem.pdf missing or empty" >&2; exit 1; }
+  )
+}
+
+build_one "$MD" report
+"$PY" "$HERE/gen/md2tex.py" pages "$TEXDIR/report.tex"
+"$PY" "$HERE/gen/check_report.py" "$TEXDIR/report.tex" --md "$MD"
 echo "build_pdf: wrote $TEXDIR/report.pdf"
+if [ "$MD" = "$HERE/REPORT_DRAFT.md" ] && [ -f "$SUP_MD" ]; then
+  build_one "$SUP_MD" supplement
+  "$PY" "$HERE/gen/md2tex.py" pages "$TEXDIR/supplement.tex" | head -n 1
+  "$PY" "$HERE/gen/check_report.py" "$TEXDIR/supplement.tex" --md "$SUP_MD" --supplement
+  echo "build_pdf: wrote $TEXDIR/supplement.pdf"
+fi

@@ -1137,6 +1137,14 @@ def ladder_table(rows_):
 T_LAD = {"cheat": ladder_table(LD.RUNGS_BY_DOMAIN), "coord": ladder_table(LD.COLLABORATION_BY_DOMAIN)}
 for k in ("coop", "collab", "collude", "scheme"):
     T_LAD[k] = ladder_table(LD.LADDERS4_BY_TASK[k]["rows"])
+# Appendix I, Table I1: every ladder's levels above none and the rule for all tasks (the "all tasks" rows of the six tables)
+LADNAME = [("cheat", "cheating", LD.RUNGS_BY_DOMAIN), ("coord", "coordination", LD.COLLABORATION_BY_DOMAIN)] + \
+          [(k, n, LD.LADDERS4_BY_TASK[k]["rows"]) for k, n in (("coop", "cooperation"), ("collab", "collaboration"), ("collude", "collusion"), ("scheme", "scheming"))]
+T_LAD_DEFS = ["| ladder | level reached | rule for all tasks |", "|---|---|---|"]
+for _k, _n, _rows in LADNAME:
+    for _i, (_level, _gloss, _cells) in enumerate(_rows):
+        T_LAD_DEFS.append(f"| {_n if _i == 0 else ''} | {_level} | {_gloss} |")
+T_LAD_DEFS = "\n".join(T_LAD_DEFS)
 led("ladder tables", "Appendix G, Tables G1 to G6", "viewer/ladders_data.py", "RUNGS_BY_DOMAIN, COLLABORATION_BY_DOMAIN (SparGuardianAgents, verbatim) and LADDERS4_BY_TASK (ours)", raw_where=True)
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -1192,16 +1200,26 @@ led("prompt-only shares: <= 0.25 on the sets called clean; >= 0.45 on the sets n
     f"hermeneutics/results/controls_nulls/RESULTS.md@{pinned.CN}", "Share of full margin, Table 6 rows; assertions in gen_report.py", raw_where=True)
 led("internals beat TF-IDF on 4 rows; beat the best judge outside SPAR mixed; beat the reader interrogation everywhere", "Results, text baselines; Discussion; Abstract",
     f"hermeneutics/results/judges_all/auroc.csv@{pinned.JA}", "assertions over Table 2 rows in gen_report.py", raw_where=True)
-# the per-set judge tables: numbered in the order the appendix prints them
-_jl = re.search(r"<<T_JUDGE_SETS:([A-Z])(\d+)>>", tpl)
-assert _jl, "template lacks <<T_JUDGE_SETS:Xn>>"
-_letter, _n0 = _jl.group(1), int(_jl.group(2))
-REPL[_jl.group(0)] = "\n\n".join(t.replace("**Table {N}.**", f"**Table {_letter}{_n0 + i}.**") for i, t in enumerate(TABLES_1109["<<T_JUDGE_SETS>>"]))
-_unused = [k for k in REPL if k not in tpl]
-print("placeholders not in the template:", _unused)
+REPL["<<T_LAD_DEFS>>"] = T_LAD_DEFS
+# the supplement: the same placeholders, the per-set judge tables, then every table and figure numbered S1, S2, ... in order
+SUP_PATH = os.path.join(os.path.dirname(__file__), "supplement_template.md")
+sup = open(SUP_PATH).read()
+REPL["<<T_JUDGE_SETS:S1>>"] = "\n\n".join(t.replace("**Table {N}.**", "**Table S.**") for t in TABLES_1109["<<T_JUDGE_SETS>>"])
+_unused = [k for k in REPL if k not in tpl and k not in sup]
+print("placeholders in neither document:", _unused)
 for k, v in REPL.items():
     tpl = tpl.replace(k, v)
+    sup = sup.replace(k, v)
 assert "<<" not in tpl, re.findall(r"<<[A-Z_0-9]+>>", tpl)
+assert "<<" not in sup, re.findall(r"<<[A-Z_0-9]+>>", sup)
+sup = re.sub(r"\*\*Table [A-Z]\d+: ([^*]+?)\.\*\*", r"**Table S.** \1.", sup)     # the layer-sweep captions
+for _kind in ("Table", "Figure"):
+    _n = iter(range(1, 1000))
+    sup = re.sub(r"\*\*" + _kind + r" S\.\*\*", lambda m, k=_kind: f"**{k} S{next(_n)}.**", sup)
+assert re.search(r"\*\*Table S1\.\*\* The board-seed texts", sup)
+sup = sup.replace("neutral team post (Table C1)", "neutral team post (Table S1)")   # in the supplement the texts are Table S1
+assert not re.search(r"\*\*(Table|Figure) [A-RT-Z]\d", sup), re.findall(r"\*\*(?:Table|Figure) [A-Z]\d+", sup)   # every caption in the supplement is S-numbered
+assert not re.search(r"\*\*(Table|Figure) S", tpl)
 led("0.5", "Table 2 col 'chance / majority rate': the three AUROC rows", "hermeneutics/probes.py", "auc() wraps sklearn roc_auc_score (lines 71-77); a score unrelated to the label has AUROC 0.5", raw_where=True)
 assert "torch.bfloat16" in open(f"{REPO}/hermeneutics/extract.py").read()
 led("bf16", "Table E1 reader row; Table E3 reader row", "hermeneutics/extract.py", "layer.to(torch.bfloat16) (line 124); docstring '52 GB bf16'", raw_where=True)
@@ -1240,6 +1258,8 @@ led(f"{len(_outrows) - 1} other outputs", "Results, label map: 'the other five a
     f"{len(_outrows)} outputs in Table F1 less cheating", raw_where=True)
 os.makedirs(OUT, exist_ok=True)
 open(f"{OUT}/REPORT_DRAFT.md", "w").write(tpl)
+open(f"{OUT}/SUPPLEMENT_DRAFT.md", "w").write(sup)
+print("supplement tables", len(re.findall(r"\*\*Table S\d+\.", sup)), "| figures", len(re.findall(r"\*\*Figure S\d+\.", sup)))
 
 abstract = tpl.split("## Abstract\n", 1)[1].split("\n## ", 1)[0].strip()
 plain = abstract.replace("**", "")

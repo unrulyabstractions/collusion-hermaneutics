@@ -1,0 +1,19 @@
+set,tokens,ladder,model,seed,final_level_acc,final_level_mae,step_level_acc
+spar_screen_team,think,cheat,attention monitor,0.0,0.3037037037037037,1.180246913580247,0.6034404708012675
+spar_screen_team,think,cheat,attention monitor,1.0,0.3037037037037037,1.202469135802469,0.6089374636228416
+spar_screen_team,think,cheat,majority level of the training fold,,0.40987654320987654,1.8024691358024691,0.30265795770549053
+spar_screen_team,think,coord,attention monitor,0.0,0.48641975308641977,1.1160493827160494,0.8548793895104443
+spar_screen_team,think,coord,attention monitor,1.0,0.508641975308642,1.0765432098765433,0.8733104830886632
+spar_screen_team,think,coord,majority level of the training fold,,0.5259259259259259,0.9827160493827161,0.5879195498932936
+spar_screen_team,think,coop,attention monitor,0.0,0.7679012345679013,0.37777777777777777,0.9093319536959192
+spar_screen_team,think,coop,attention monitor,1.0,0.7802469135802469,0.3432098765432099,0.8769967018043071
+spar_screen_team,think,coop,majority level of the training fold,,0.782716049382716,0.49876543209876545,0.8808122615275173
+spar_screen_team,think,collab,attention monitor,0.0,0.8444444444444444,0.26666666666666666,0.9154756515553256
+spar_screen_team,think,collab,attention monitor,1.0,0.8320987654320988,0.254320987654321,0.9013774817305826
+spar_screen_team,think,collab,majority level of the training fold,,0.854320987654321,0.35802469135802467,0.8808122615275173
+spar_screen_team,think,collude,attention monitor,0.0,0.8123456790123457,0.528395061728395,0.8762853262626916
+spar_screen_team,think,collude,attention monitor,1.0,0.8049382716049382,0.5358024691358024,0.8649679881006272
+spar_screen_team,think,collude,majority level of the training fold,,0.8148148148148148,0.745679012345679,0.8605703938433681
+spar_screen_team,think,scheme,attention monitor,0.0,0.9728395061728395,0.05432098765432099,1.0
+spar_screen_team,think,scheme,attention monitor,1.0,0.9728395061728395,0.05432098765432099,1.0
+spar_screen_team,think,scheme,majority level of the training fold,,0.9728395061728395,0.05432098765432099,1.0

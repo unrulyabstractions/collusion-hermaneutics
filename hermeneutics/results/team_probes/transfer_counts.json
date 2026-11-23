@@ -1,0 +1,14 @@
+{
+ "solo": {
+  "agents": 373,
+  "cheat": 193,
+  "no_cheat": 180,
+  "authors": 5
+ },
+ "solo + cheat": {
+  "agents": 600,
+  "cheat": 343,
+  "no_cheat": 257,
+  "authors": 5
+ }
+}

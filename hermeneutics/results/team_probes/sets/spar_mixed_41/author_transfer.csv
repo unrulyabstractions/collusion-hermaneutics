@@ -1,0 +1,7 @@
+features,n,runs,pos,neg,auroc,ci_lo,ci_hi,probe,setting,train,test,C
+probe Lall think-open+close,36,12,9,27,0.7242798353909465,0.5886245819397994,0.8654848484848485,1a cheating: used or above,"A: think pair, all agents",luna,ds,0.0001
+probe Lall all seven tokens (boundary 1-5 + think pair),36,12,9,27,0.6090534979423868,0.43842364532019706,0.7722435897435898,1a cheating: used or above,"B: all seven tokens, agents with turns.safetensors",luna,ds,0.1
+TF-IDF agent's words,36,12,9,27,0.4609053497942387,0.15370967741935485,0.6626543209876542,1a cheating: used or above,"A: think pair, all agents",luna,ds,0.01
+probe Lall think-open+close,117,39,3,114,0.5497076023391813,0.19827586206896552,0.9396551724137931,1a cheating: used or above,"A: think pair, all agents",ds,luna,1.0
+probe Lall all seven tokens (boundary 1-5 + think pair),117,39,3,114,0.32456140350877194,0.0,0.6728523238380806,1a cheating: used or above,"B: all seven tokens, agents with turns.safetensors",ds,luna,1.0
+TF-IDF agent's words,117,39,3,114,0.24561403508771928,0.06896551724137931,0.5130434782608696,1a cheating: used or above,"A: think pair, all agents",ds,luna,0.01

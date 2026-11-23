@@ -1,0 +1,4 @@
+set,tokens,ladder,model,seed,final_level_acc,final_level_mae,step_level_acc
+spar_mixed_41,seven,cheat,attention monitor,0.0,0.24880382775119617,0.9712918660287081,0.4387779843206983
+spar_mixed_41,seven,cheat,attention monitor,1.0,0.24880382775119617,0.9712918660287081,0.37525256607128427
+spar_mixed_41,seven,cheat,majority level of the training fold,,0.7607655502392344,0.5358851674641149,0.648104744201083

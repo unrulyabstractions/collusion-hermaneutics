@@ -1,0 +1,4 @@
+set,tokens,ladder,model,seed,final_level_acc,final_level_mae,step_level_acc
+controls_600,seven,cheat,attention monitor,0.0,0.4666666666666667,1.38,0.8881201638598089
+controls_600,seven,cheat,attention monitor,1.0,0.4666666666666667,1.36,0.8893035958124715
+controls_600,seven,cheat,majority level of the training fold,,0.325,3.5683333333333334,0.40273099681383706

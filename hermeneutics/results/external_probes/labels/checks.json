@@ -1,0 +1,36 @@
+{
+ "goodfire_rollouts": 5553,
+ "goodfire_npz_turns_equal_meta": 5553,
+ "goodfire_turn_nodes_equal_turns": 5553,
+ "goodfire_meta_verdict_equal_source": 5547,
+ "goodfire_hub_verdict_equal_source": 5547,
+ "goodfire_row_index_equal_source": 5553,
+ "goodfire_rollouts_with_unmapped_passages": 9,
+ "goodfire_unmapped_flagged_passages": 2,
+ "goodfire_verdict_counts": {
+  "judge|no": 750,
+  "judge|split": 297,
+  "judge|yes": 2083,
+  "monitor|no": 1720,
+  "monitor|unclear": 522,
+  "monitor|yes": 175
+ },
+ "goodfire_yes_without_flagged_turn": 21,
+ "goodfire_no_with_flagged_turn": 0,
+ "cheatbench_rollouts": 244,
+ "cheatbench_zero_turns": 20,
+ "cheatbench_label_counts": {
+  "attempt|1": 9,
+  "benign|0": 110,
+  "cheating|1": 125
+ },
+ "cheatbench_onset_found": 21,
+ "evilgenie_rollouts": 266,
+ "evilgenie_pairs": 133,
+ "evilgenie_pairs_one_pos_one_neg": 133,
+ "evilgenie_pairs_same_author": 133,
+ "evilgenie_label_counts": {
+  "hack|1": 133,
+  "legitimate|0": 133
+ }
+}

@@ -1,0 +1,22 @@
+heldout_author,cut,model,seed,agents,pos_agents,step_auroc,agent_auroc_last
+claude-haiku-5-5,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",0.0,148,23,0.9211370896937413,0.9064347826086957
+claude-haiku-5-5,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",1.0,148,23,0.9086314640066697,0.8904347826086957
+claude-haiku-5-5,cheating (the set's label: from tried or opened by task),linear per-step probe (team_probes),,148,23,0.7942584791093339,0.6306086956521739
+claude-haiku-5-5,cheating (the set's label: from tried or opened by task),cumulative mean of the linear probe,,148,23,0.9463825909885716,0.8598260869565217
+claude-haiku-5-5,cheating (the set's label: from tried or opened by task),GRU over the linear probe scores,,148,23,0.9602715823489918,0.9220869565217391
+claude-haiku-5-5,cheating (the set's label: from tried or opened by task),turn index alone,,148,23,0.5714960269737861,0.5471304347826087
+claude-haiku-5-5,cheating (the set's label: from tried or opened by task),TF-IDF on the agent's words so far,,148,23,0.9745857280930212,0.9721739130434782
+deepseek-v4.1-flash,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",0.0,136,95,0.7945804513092032,0.8631578947368421
+deepseek-v4.1-flash,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",1.0,136,95,0.8332507172213983,0.8557124518613607
+deepseek-v4.1-flash,cheating (the set's label: from tried or opened by task),linear per-step probe (team_probes),,136,95,0.7673542697390305,0.6801026957637998
+deepseek-v4.1-flash,cheating (the set's label: from tried or opened by task),cumulative mean of the linear probe,,136,95,0.8489958652233697,0.8575096277278562
+deepseek-v4.1-flash,cheating (the set's label: from tried or opened by task),GRU over the linear probe scores,,136,95,0.8310345392431495,0.8295250320924262
+deepseek-v4.1-flash,cheating (the set's label: from tried or opened by task),turn index alone,,136,95,0.6086284602360866,0.603594351732991
+deepseek-v4.1-flash,cheating (the set's label: from tried or opened by task),TF-IDF on the agent's words so far,,136,95,0.9663287068931123,0.9671373555840822
+gpt-6-luna,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",0.0,141,45,0.88675609977966,0.8712962962962963
+gpt-6-luna,cheating (the set's label: from tried or opened by task),"attention monitor, binary head",1.0,141,45,0.9521914698382536,0.9650462962962963
+gpt-6-luna,cheating (the set's label: from tried or opened by task),linear per-step probe (team_probes),,141,45,0.6998017156487613,0.5423611111111111
+gpt-6-luna,cheating (the set's label: from tried or opened by task),cumulative mean of the linear probe,,141,45,0.8062798347016746,0.7423611111111111
+gpt-6-luna,cheating (the set's label: from tried or opened by task),GRU over the linear probe scores,,141,45,0.723646013520733,0.5550925925925926
+gpt-6-luna,cheating (the set's label: from tried or opened by task),turn index alone,,141,45,0.6219963151526353,0.5001157407407407
+gpt-6-luna,cheating (the set's label: from tried or opened by task),TF-IDF on the agent's words so far,,141,45,0.897252391829804,0.9291666666666667

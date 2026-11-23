@@ -297,7 +297,7 @@ export function renderCase(t, ctx) {
   svg.appendChild(mk('rect', { x: RX, y: 14, width: RW, height: n * rh, fill: 'none', stroke: 'var(--line)', 'stroke-width': 0.5 }));
 
   const left = h('div', { class: 'left' },
-    h('h2', null, 'The whole episode ', h('span', { class: 'sub' }, `${n} calls, ${nSent} sentences`)),
+    h('h2', null, `${ctx.agent} (${ctx.role === 'regulator' ? 'hidden regulator' : (ctx.role || 'worker')})`, ' ', h('span', { class: 'sub' }, `whole episode: ${n} calls, ${nSent} sentences`)),
     sixLine,
     svg, scale, lensNote,
     lv ? fullLegend(lv.ladders, order) : null,

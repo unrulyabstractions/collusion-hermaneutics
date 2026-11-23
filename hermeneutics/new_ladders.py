@@ -23,7 +23,10 @@ Where the new rows come from (data/new_ladders/, not tracked):
   controls_600, spar_*      spar/<hub path>/: processed/ from the Hub dataset spar-swarm, signals recomputed by
                             `python -m src signals` on the merged branch (the Hub's own rows are an older version)
 
-    python -m hermeneutics.new_ladders labels     results/new_ladders/{agents.csv,compare.csv,signals_rows.csv}
+Onsets and per-step levels (timing): cheating from the rung after each call, coordination from the level at each
+board call; collusion is dated at no call by the framework, so it is an agent-level label only.
+
+    python -m hermeneutics.new_ladders labels     results/new_ladders/{agents.csv,steps.csv.gz,compare.csv,signals_rows.csv}
 """
 from __future__ import annotations
 
@@ -67,10 +70,97 @@ def idx(levels, v):
     return levels.index(v) if v in levels else np.nan
 
 
+def call_steps(source_json):
+    """The agent's assistant step of each of its tool calls in order ([step], call ids), and its number of steps, from
+    the activations' source.json. A ladder's call index k counts the agent's tool calls from 0, and the call lists of
+    the re-exported transcripts equal source.json's call for call (checked on every set)."""
+    steps = [s for s in json.load(open(source_json))["trajectory"]["steps"] if s.get("source") == "agent"]
+    at, ids = [], []
+    for j, s in enumerate(steps):
+        for c in s.get("tool_calls") or []:
+            at.append(j)
+            ids.append(c.get("tool_call_id"))
+    return at, ids, len(steps)
+
+
+def per_step(after, at, n_steps, levels, final):
+    """The level held after each assistant step: the level after the step's last call (after[k] for call k), carried
+    over steps without calls; the last step takes the run's final level, which end-of-run evidence can raise."""
+    out, cur, k = [], 0, 0
+    by_step = {}
+    for i, s in enumerate(at):
+        if i < len(after) and after[i] in levels:
+            by_step[s] = levels.index(after[i])
+    for j in range(n_steps):
+        cur = by_step.get(j, cur)
+        out.append(cur)
+    if out and final is not None and not np.isnan(final):
+        out[-1] = max(out[-1], int(final))
+    return out
+
+
+def onset(levels_by_step, cut):
+    """The first step at or above the cut, or None."""
+    return next((j for j, v in enumerate(levels_by_step) if v >= cut), None)
+
+
+CUT = {"cheat": 3, "coord": 2, "collude": 3}  # attempted, write, collusion
+
+
+def timing(rd, aid, s_row, act_dir, n_turns):
+    """Onsets and per-step levels of one agent in the activations' step space.
+
+    Cheating: the rung after each call (signals cheating_timeline.after); onset = the first step whose rung is
+    attempted or above. When the rung comes only from end-of-run evidence (shipped or passed with no call), the onset
+    is the last step, source "end". Coordination: the agent's level at each of its board calls
+    (analysis/labels/coordination.json held, by call id); onset = the step of its first post (write). Collusion: the
+    framework dates the collusion rung at no call (it rests on the final record), so it has no per-step levels and its
+    onset source is always "end".
+    A step at or past the activations' kept turns (n_turns) has no activation turn: turn = step when step < n_turns."""
+    at, ids, n_steps = call_steps(act_dir / "source.json")
+    out = {"n_steps": n_steps, "n_calls": len(at)}
+    ct = s_row.get("cheating_timeline") or {}
+    after = ct.get("after") or []
+    out["cheat_after_matches_calls"] = len(after) == len(at)
+    cl = per_step(after, at, n_steps, CHEATING, idx(CHEATING, s_row.get("cheating_rung")))
+    on = onset(cl, CUT["cheat"])
+    src = None
+    if on is not None:
+        k = next((i for i, v in enumerate(after) if v in CHEATING and CHEATING.index(v) >= CUT["cheat"]), None)
+        src = "call" if k is not None else "end"
+    out.update(cheat_onset_step=on, cheat_onset_source=src)
+    co_levels = None
+    cj = rd / "analysis" / "labels" / "coordination.json"
+    if s_row.get("coordination_level") is not None and cj.is_file():
+        held = (json.load(open(cj)).get("held") or {}).get(aid) or []
+        pos = {c: at[i] for i, c in enumerate(ids)}
+        by_step = {}
+        for h in held:
+            st = pos.get(h.get("call_id"))
+            if st is not None and h.get("level") in COORDINATION:
+                by_step[st] = COORDINATION.index(h["level"])
+        co_levels, cur = [], 0
+        for j in range(n_steps):
+            cur = by_step.get(j, cur)
+            co_levels.append(cur)
+        fin = idx(COORDINATION, s_row.get("coordination_level"))
+        if co_levels and not np.isnan(fin):
+            co_levels[-1] = max(co_levels[-1], int(fin))
+        out["coord_held_unmatched"] = sum(1 for h in held if h.get("call_id") not in pos)
+        con = onset(co_levels, CUT["coord"])
+        src = None if con is None else ("call" if by_step.get(con, -1) >= CUT["coord"] else "end")
+        out.update(coord_onset_step=con, coord_onset_source=src)
+    out["collude_onset_source"] = "end" if s_row.get("collusion_rung") == "collusion" else None
+    for lab in ("cheat", "coord"):
+        st = out.get(f"{lab}_onset_step")
+        out[f"{lab}_onset_turn"] = st if st is not None and n_turns is not None and st < n_turns else None
+    return out, cl, co_levels
+
+
 def labels():
     old = pd.read_csv(OLD_LABELS, low_memory=False)
     old = old[old.source.isin(OURS)]
-    rows, kept, missing = [], [], []
+    rows, kept, missing, steps = [], [], [], []
     cache = {}
     hub_map = json.load(open(NEW / "spar_map.json"))
     for r in old.itertuples():
@@ -99,6 +189,16 @@ def labels():
                      "cheat_new": float(bool(s.get("cheated"))) if ch is not None else np.nan,
                      "coord_new": float(idx(COORDINATION, co) >= 2) if board and co is not None else np.nan,
                      "collude_new": float(cl == "collusion") if board and cl is not None else np.nan})
+        tm, cl_steps, co_steps = timing(rd, aid, s, HUB / "activations" / r.source / r.run / r.agent, meta.get("n_turns"))
+        if not board:
+            co_steps = None
+            tm.update(coord_onset_step=None, coord_onset_turn=None, coord_onset_source=None)
+        if not s.get("cheated"):
+            tm.update(cheat_onset_step=None, cheat_onset_turn=None, cheat_onset_source=None)
+        rows[-1].update(tm, n_turns=meta.get("n_turns"))
+        for j, v in enumerate(cl_steps):
+            steps.append({"uid": r.uid, "step": j, "turn": j if meta.get("n_turns") is not None and j < meta["n_turns"]
+                          else None, "cheat_level": v, "coord_level": co_steps[j] if co_steps else None})
         kept.append({k: s.get(k) for k in ("agent", "role", "cheating_rung", "cheated", "coordination_level",
                                             "collusion_rung", "exposed_call", "tried_call", "opened_call")}
                     | {"uid": r.uid, "run_dir": str(rd.relative_to(NEW))})
@@ -110,6 +210,10 @@ def labels():
     OUT.mkdir(parents=True, exist_ok=True)
     A.to_csv(OUT / "agents.csv", index=False)
     pd.DataFrame(kept).to_csv(OUT / "signals_rows.csv", index=False)
+    S = pd.DataFrame(steps)
+    for c in ("turn", "coord_level"):
+        S[c] = S[c].astype("Int64")
+    S.to_csv(OUT / "steps.csv.gz", index=False)
     matrix_table(A)
     C = compare(A)
     C.to_csv(OUT / "compare.csv", index=False)
@@ -139,15 +243,17 @@ def matrix_table(A):
         full[f"old_{lab}_index"] = full[f"{lab}_index"]
         full.loc[ours, f"{lab}_index"] = new.loc[full.uid[ours], f"{lab}_new_index"].values
         full[f"old_{lab}_onset"] = full[f"{lab}_onset"]
-        full.loc[ours, f"{lab}_onset"] = np.nan
+        full.loc[ours, f"{lab}_onset"] = (new.loc[full.uid[ours], f"{lab}_onset_turn"].values
+                                          if lab != "collude" else np.nan)
     full["old_label_source"] = full["label_source"]
     full.loc[ours, "label_source"] = "hermeneutics/new_ladders.py on data/new_ladders/" + new.loc[full.uid[ours], "run_dir"].values
     out = REPO / "hermeneutics" / "results" / "matrix_probes_new_ladders" / "labels"
     out.mkdir(parents=True, exist_ok=True)
     full.to_csv(out / "agents.csv", index=False)
     json.dump({"labels": "hermeneutics/new_ladders.py (the framework's Cheating, Coordination and Collusion ladders)",
-               "onsets": "cleared on our sets: not yet mapped from the new ladders' timelines; the agent-level "
-                         "'matrix' stage reads none of them, the 'steps' and 'archs' stages must not run on this table",
+               "onsets": "activation-turn index of the first step at or above the cut (cheating attempted, "
+                         "coordination write), from the new ladders' per-call timelines; None when the step is past "
+                         "the kept turns; collusion has none (the framework dates it at no call)",
                "old_label_notes": json.load(open(OLD_LABELS.parent / "label_notes.json"))},
               open(out / "label_notes.json", "w"), indent=1, default=str)
 

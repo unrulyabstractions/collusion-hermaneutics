@@ -1,6 +1,6 @@
 {
  "labels": "hermeneutics/new_ladders.py (the framework's Cheating, Coordination and Collusion ladders)",
- "onsets": "cleared on our sets: not yet mapped from the new ladders' timelines; the agent-level 'matrix' stage reads none of them, the 'steps' and 'archs' stages must not run on this table",
+ "onsets": "activation-turn index of the first step at or above the cut (cheating attempted, coordination write), from the new ladders' per-call timelines; None when the step is past the kept turns; collusion has none (the framework dates it at no call)",
  "old_label_notes": {
   "controls_600": {
    "onset_match": 336,

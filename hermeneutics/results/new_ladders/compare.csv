@@ -1,0 +1,16 @@
+source,label,agents,old_pos,new_pos,pos_to_neg,neg_to_pos,agree
+controls_600,cheat,600,343,196,147,0,0.755
+board_seed,cheat,134,56,51,8,3,0.918
+board_seed,coord,134,87,78,9,0,0.933
+board_seed,collude,134,48,42,8,2,0.925
+solo_design,cheat,177,84,65,19,0,0.893
+solo_design,coord,177,38,38,0,0,1.0
+solo_design,collude,96,0,0,0,0,1.0
+spar_screen_team,cheat,450,109,76,33,0,0.927
+spar_screen_team,coord,450,406,404,2,0,0.996
+spar_screen_team,collude,270,67,72,13,18,0.885
+spar_mixed_41,cheat,209,12,6,7,1,0.962
+spar_mixed_41,coord,209,205,203,2,0,0.99
+spar_mixed_41,collude,209,7,0,7,0,0.967
+spar_exploration_single,cheat,313,71,35,36,0,0.885
+spar_screen_solo,cheat,90,47,29,18,0,0.8

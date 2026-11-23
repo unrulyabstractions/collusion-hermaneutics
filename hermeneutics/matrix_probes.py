@@ -47,7 +47,9 @@ import numpy as np  # noqa: E402
 
 REPO = tp.REPO
 HUB = tp.HUB
-OUT = REPO / "hermeneutics" / "results" / "matrix_probes"
+# HERM_MATRIX_OUT points the stages at another results folder (results/matrix_probes_new_ladders: the same cells on the
+# labels of hermeneutics/new_ladders.py)
+OUT = Path(os.environ.get("HERM_MATRIX_OUT", REPO / "hermeneutics" / "results" / "matrix_probes"))
 CACHE = REPO / "data" / "matrix_probes_cache"
 STATUS = Path("/private/tmp/claude-501/-Users-unrulyabstractions-work-arena-capstone/"
               "62859942-35bf-474f-b418-4803b6079982/scratchpad/matrix_probes/status.md")

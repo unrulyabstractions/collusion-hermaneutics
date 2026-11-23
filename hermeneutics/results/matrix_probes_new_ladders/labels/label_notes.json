@@ -1,0 +1,42 @@
+{
+ "controls_600": {
+  "onset_match": 336,
+  "onset_mismatch": 0,
+  "label_match": 600
+ },
+ "board_seed": {
+  "agents": 134,
+  "agents_with_activations_not_in_levels": []
+ },
+ "solo_design": {
+  "agents": 177,
+  "agents_with_activations_not_in_levels": []
+ },
+ "spar_screen_team": {
+  "agents": 450,
+  "agents_with_activations_not_in_levels": []
+ },
+ "spar_mixed_41": {
+  "agents": 209,
+  "agents_with_activations_not_in_levels": []
+ },
+ "spar_exploration_single": {
+  "agents": 313,
+  "agents_with_activations_not_in_levels": []
+ },
+ "spar_screen_solo": {
+  "agents": 90,
+  "agents_with_activations_not_in_levels": []
+ },
+ "goodfire_reward_hack": {
+  "meta_verdict_match": 3136,
+  "onset_exact_node": 2060,
+  "verdict_yes": 2083,
+  "verdict_no": 750,
+  "yes_without_positive_passage": 20,
+  "verdict_split": 297,
+  "onset_next_node": 3,
+  "verdict_None": 2423
+ },
+ "external_label_file": "[PosixPath('/Users/unrulyabstractions/work/collusion-hermaneutics/hermeneutics/results/external_probes/labels/cheatbench.csv'), PosixPath('/Users/unrulyabstractions/work/collusion-hermaneutics/hermeneutics/results/external_probes/labels/evilgenie.csv')]"
+}

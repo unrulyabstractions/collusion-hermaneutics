@@ -1637,6 +1637,11 @@ def main():
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     st = a.stage
+    if "HERM_MATRIX_OUT" in os.environ and st in ("labels", "all", "steps", "archs", "verify"):
+        # another folder holds labels written by another module (hermeneutics/new_ladders.py): the labels stage would
+        # overwrite them with the old ladders, steps and archs read onsets that table leaves unmapped, and verify
+        # compares the old label tables
+        raise SystemExit(f"stage {st} refused with HERM_MATRIX_OUT set (see {OUT / 'labels' / 'label_notes.json'})")
     if st in ("labels", "all"):
         labels()
     if st in ("features", "all"):

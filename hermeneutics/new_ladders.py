@@ -132,12 +132,24 @@ def matrix_table(A):
         full.loc[ours, lab] = new.loc[full.uid[ours], lab].values
     for c in ("cheating_rung", "coordination_level", "collusion_rung"):
         full[c] = full.uid.map(new[c])
+    # the derived columns follow the new labels on our sets: the ladder indices are the new ladders' (CHEATING,
+    # COORDINATION, COLLUSION), and the onsets are cleared, since the new ladders' timelines are not yet mapped to
+    # activation turns (the old onsets name old events: the used write, the first post, the crossed proxy)
+    for lab in ("cheat", "coord", "collude"):
+        full[f"old_{lab}_index"] = full[f"{lab}_index"]
+        full.loc[ours, f"{lab}_index"] = new.loc[full.uid[ours], f"{lab}_new_index"].values
+        full[f"old_{lab}_onset"] = full[f"{lab}_onset"]
+        full.loc[ours, f"{lab}_onset"] = np.nan
+    full["old_label_source"] = full["label_source"]
+    full.loc[ours, "label_source"] = "hermeneutics/new_ladders.py on data/new_ladders/" + new.loc[full.uid[ours], "run_dir"].values
     out = REPO / "hermeneutics" / "results" / "matrix_probes_new_ladders" / "labels"
     out.mkdir(parents=True, exist_ok=True)
     full.to_csv(out / "agents.csv", index=False)
-    old_notes = OLD_LABELS.parent / "label_notes.json"
-    if old_notes.is_file():
-        (out / "label_notes.json").write_text(old_notes.read_text())
+    json.dump({"labels": "hermeneutics/new_ladders.py (the framework's Cheating, Coordination and Collusion ladders)",
+               "onsets": "cleared on our sets: not yet mapped from the new ladders' timelines; the agent-level "
+                         "'matrix' stage reads none of them, the 'steps' and 'archs' stages must not run on this table",
+               "old_label_notes": json.load(open(OLD_LABELS.parent / "label_notes.json"))},
+              open(out / "label_notes.json", "w"), indent=1, default=str)
 
 
 def compare(A):

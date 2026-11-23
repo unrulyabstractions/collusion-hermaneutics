@@ -90,16 +90,16 @@
    "table": "Q3 controls solo -> Goodfire judge sets",
    "rows": 2833,
    "pos": 2083,
-   "sklearn": 0.7118828612578013,
-   "reported": 0.7118828612578012,
+   "sklearn": 0.5955736917906865,
+   "reported": 0.5955736917906865,
    "match": true
   },
   {
-   "table": "Q3 Goodfire -> team workers, cheating used or above",
+   "table": "Q3 Goodfire -> team workers, cheating attempted or above",
    "rows": 129,
-   "pos": 56,
-   "sklearn": 0.7375244618395304,
-   "reported": 0.7375244618395304,
+   "pos": 51,
+   "sklearn": 0.7315233785822022,
+   "reported": 0.7315233785822021,
    "match": true
   },
   {

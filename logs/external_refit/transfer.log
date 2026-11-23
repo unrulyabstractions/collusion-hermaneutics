@@ -1,0 +1,14 @@
+14:03:58 [4s] transfer: controls 600 (600 with tensors), team workers 129 (129), goodfire 5553
+14:04:05 [11s]   transfer controls solo all: all 0.596, author GLM 5.2 0.561, author Kimi K3 0.532, author Qwen 3.8 Max 0.421, environment swebench-verified 0.497, environment deepswe 0.709
+14:04:07 [13s]   transfer controls solo 26: all 0.631, author GLM 5.2 0.620, author Kimi K3 0.562, author Qwen 3.8 Max 0.695, environment swebench-verified 0.390, environment deepswe 0.666
+14:04:09 [15s]   transfer controls solo 38: all 0.651, author GLM 5.2 0.636, author Kimi K3 0.589, author Qwen 3.8 Max 0.518, environment swebench-verified 0.593, environment deepswe 0.681
+14:04:11 [17s]   transfer controls solo 51: all 0.576, author GLM 5.2 0.564, author Kimi K3 0.464, author Qwen 3.8 Max 0.393, environment swebench-verified 0.481, environment deepswe 0.712
+14:04:14 [21s]   transfer controls solo + cheat all: all 0.549, author GLM 5.2 0.539, author Kimi K3 0.544, author Qwen 3.8 Max 0.435, environment swebench-verified 0.244, environment deepswe 0.562
+14:04:16 [23s]   transfer controls solo + cheat 26: all 0.657, author GLM 5.2 0.602, author Kimi K3 0.669, author Qwen 3.8 Max 0.811, environment swebench-verified 0.548, environment deepswe 0.513
+14:04:18 [24s]   transfer controls solo + cheat 38: all 0.609, author GLM 5.2 0.612, author Kimi K3 0.601, author Qwen 3.8 Max 0.538, environment swebench-verified 0.489, environment deepswe 0.538
+14:04:20 [26s]   transfer controls solo + cheat 51: all 0.503, author GLM 5.2 0.524, author Kimi K3 0.491, author Qwen 3.8 Max 0.349, environment swebench-verified 0.230, environment deepswe 0.521
+14:04:23 [29s]   transfer goodfire all done
+14:04:24 [30s]   transfer goodfire 26 done
+14:04:25 [31s]   transfer goodfire 38 done
+14:04:26 [32s]   transfer goodfire 51 done
+rc=0

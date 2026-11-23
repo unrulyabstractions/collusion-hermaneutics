@@ -1,6 +1,6 @@
 # Verification of the external-set probes
 
-Written by `python -m hermeneutics.external_probes verify` then `report` on 2026-11-09. Every check below reads a saved output or a source file again and recomputes it a second way.
+Written by `python -m hermeneutics.external_probes verify` then `report` on 2026-11-23. Every check below reads a saved output or a source file again and recomputes it a second way.
 
 ## One AUROC per table, recomputed with sklearn
 
@@ -19,8 +19,8 @@ Each row reloads the saved per-rollout (or per-turn) scores and labels and recom
 | Q2 definition B, linear layers 26+38+51, step AUROC | 138728 | 73584 | 0.918094 | 0.918094 | True |
 | Q2 definition B, attention monitor, step AUROC | 138728 | 73584 | 0.941049 | 0.941049 | True |
 | Q2 definition B, attention monitor, rollout AUROC (max) | 2810 | 2060 | 0.941649 | 0.941649 | True |
-| Q3 controls solo -> Goodfire judge sets | 2833 | 2083 | 0.711883 | 0.711883 | True |
-| Q3 Goodfire -> team workers, cheating used or above | 129 | 56 | 0.737524 | 0.737524 | True |
+| Q3 controls solo -> Goodfire judge sets | 2833 | 2083 | 0.595574 | 0.595574 | True |
+| Q3 Goodfire -> team workers, cheating attempted or above | 129 | 51 | 0.731523 | 0.731523 | True |
 | Q4 cheatbench_cheating or attempt vs benign 5 folds, layers 26+38+51 | 224 | 134 | 0.954478 | 0.954478 | True |
 | Q4 evilgenie_hack vs legitimate 5 folds, layers 26+38+51 | 266 | 133 | 0.868562 | 0.868562 | True |
 | Q4 EvilGenie held-out author grok-4.5, layer 38 | 40 | 20 | 0.857500 | 0.857500 | True |
@@ -81,7 +81,7 @@ The one quote not found is a tau3-bench tool call: the monitor quotes tool calls
 | cheatbench | Pilot/cb-003605 | [29, 2, 5120] | {'L26': True, 'L38': True, 'L51': True} | True |
 | evilgenie | claude-fable-5/ec84acbe2b7450 | [8, 2, 5120] | {'L26': True, 'L38': True, 'L51': True} | True |
 
-Also checked: the per-rollout means built here equal team_probes.agent_matrix of the same tensors exactly (max absolute difference 0.0 on three CheatBench rollouts, every configuration); the rendered turn count equals the think-pair count for every rollout of the three sets; controls-solo-to-CheatBench recomputed here gives the same 0.279 as team_probes' RESULTS.md.
+Also checked: the per-rollout means built here equal team_probes.agent_matrix of the same tensors exactly (max absolute difference 0.0 on three CheatBench rollouts, every configuration); the rendered turn count equals the think-pair count for every rollout of the three sets; controls-solo-to-CheatBench recomputed here gave the same 0.279 as team_probes' RESULTS.md on the old controls labels (run of 2026-11-09; question 3 now uses the new labels).
 
 ## Independent verifier agent (2026-11-09)
 

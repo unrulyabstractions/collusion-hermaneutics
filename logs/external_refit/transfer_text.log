@@ -1,0 +1,39 @@
+14:05:56 [90s]                                             train                                                  target                                      group  auroc
+0            controls solo (373 agents, 96 cheat)                 Goodfire judge sets (verdict yes vs no)                                        all  0.638
+1            controls solo (373 agents, 96 cheat)                 Goodfire judge sets (verdict yes vs no)                             author GLM 5.2  0.572
+2            controls solo (373 agents, 96 cheat)                 Goodfire judge sets (verdict yes vs no)                             author Kimi K3  0.616
+3            controls solo (373 agents, 96 cheat)                 Goodfire judge sets (verdict yes vs no)                        author Qwen 3.8 Max  0.724
+4            controls solo (373 agents, 96 cheat)                                  Goodfire judge verdict              environment swebench-verified  0.514
+5            controls solo (373 agents, 96 cheat)                                  Goodfire judge verdict                        environment deepswe  0.678
+6            controls solo (373 agents, 96 cheat)                                  Goodfire judge verdict                environment impossiblebench  0.624
+7            controls solo (373 agents, 96 cheat)                                Goodfire monitor verdict                      environment tau3bench  0.554
+8            controls solo (373 agents, 96 cheat)                                Goodfire monitor verdict                  environment shoppingbench  0.639
+9            controls solo (373 agents, 96 cheat)                 Goodfire judge sets (verdict yes vs no)  within run dir (pairs inside one run dir)  0.533
+10           controls solo (373 agents, 96 cheat)                              cheatbench (its own label)                                        all  0.592
+11           controls solo (373 agents, 96 cheat)                              cheatbench (its own label)                             within harness  0.403
+12           controls solo (373 agents, 96 cheat)                               evilgenie (its own label)                                        all  0.506
+13           controls solo (373 agents, 96 cheat)                               evilgenie (its own label)                              within author  0.529
+14  controls solo + cheat (600 agents, 196 cheat)                 Goodfire judge sets (verdict yes vs no)                                        all  0.590
+15  controls solo + cheat (600 agents, 196 cheat)                 Goodfire judge sets (verdict yes vs no)                             author GLM 5.2  0.533
+16  controls solo + cheat (600 agents, 196 cheat)                 Goodfire judge sets (verdict yes vs no)                             author Kimi K3  0.566
+17  controls solo + cheat (600 agents, 196 cheat)                 Goodfire judge sets (verdict yes vs no)                        author Qwen 3.8 Max  0.706
+18  controls solo + cheat (600 agents, 196 cheat)                                  Goodfire judge verdict              environment swebench-verified  0.371
+19  controls solo + cheat (600 agents, 196 cheat)                                  Goodfire judge verdict                        environment deepswe  0.635
+20  controls solo + cheat (600 agents, 196 cheat)                                  Goodfire judge verdict                environment impossiblebench  0.579
+21  controls solo + cheat (600 agents, 196 cheat)                                Goodfire monitor verdict                      environment tau3bench  0.511
+22  controls solo + cheat (600 agents, 196 cheat)                                Goodfire monitor verdict                  environment shoppingbench  0.344
+23  controls solo + cheat (600 agents, 196 cheat)                 Goodfire judge sets (verdict yes vs no)  within run dir (pairs inside one run dir)  0.456
+24  controls solo + cheat (600 agents, 196 cheat)                              cheatbench (its own label)                                        all  0.499
+25  controls solo + cheat (600 agents, 196 cheat)                              cheatbench (its own label)                             within harness  0.313
+26  controls solo + cheat (600 agents, 196 cheat)                               evilgenie (its own label)                                        all  0.490
+27  controls solo + cheat (600 agents, 196 cheat)                               evilgenie (its own label)                              within author  0.493
+28  Goodfire judge sets (2833 rollouts, 2083 yes)                                           controls solo                                        all  0.581
+29  Goodfire judge sets (2833 rollouts, 2083 yes)                                           controls solo                              within author  0.579
+30  Goodfire judge sets (2833 rollouts, 2083 yes)                                   controls solo + cheat                                        all  0.499
+31  Goodfire judge sets (2833 rollouts, 2083 yes)                                   controls solo + cheat                              within author  0.497
+32  Goodfire judge sets (2833 rollouts, 2083 yes)  team workers (board seed), cheating attempted or above                                        all  0.694
+33  Goodfire judge sets (2833 rollouts, 2083 yes)                              cheatbench (its own label)                                        all  0.815
+34  Goodfire judge sets (2833 rollouts, 2083 yes)                              cheatbench (its own label)                             within harness  0.851
+35  Goodfire judge sets (2833 rollouts, 2083 yes)                               evilgenie (its own label)                                        all  0.680
+36  Goodfire judge sets (2833 rollouts, 2083 yes)                               evilgenie (its own label)                              within author  0.693
+rc=0

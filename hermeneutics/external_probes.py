@@ -15,6 +15,8 @@ Labels.
   turn_path_nodes (the path node the renderer replaced by its sampled sibling).
   CheatBench: meta.json label (cheating / attempt / benign) and cheat (1 for cheating or attempt). EvilGenie: meta.json
   sel_label (hack / legitimate), cheat, and the matched pair (sel_pair_with).
+  Controls and team workers (transfer stages): the framework's Cheating ladder from hermeneutics/new_ladders.py
+  (results/new_ladders/agents.csv, column cheat: Cheating attempted or hacked), joined on run and agent.
 
 Probes: team_probes' recipe (training-fold PCA to min(128, half the training rows), z-score, L2 logistic regression with
 C by inner grouped CV, class-balanced), on the mean over turns of the think pair (think-open and think-close) at layers
@@ -52,6 +54,8 @@ ACTS = HUB / "activations"
 OUT = REPO / "hermeneutics" / "results" / "external_probes"
 CACHE = REPO / "data" / "external_probes"
 SRC = REPO / "data" / "goodfire_source_labels"
+NEW_LADDERS = REPO / "hermeneutics" / "results" / "new_ladders" / "agents.csv"
+TEAM_TARGET = "cheating attempted or above"  # the new Cheating ladder's cut (new_ladders.py cheat)
 GF, CB, EG = "goodfire_reward_hack", "cheatbench", "evilgenie"
 GF_REPO, GF_REV = "Goodfire/reward-hack-data", "bd8fb473568b8ef1d12fc2325a5c8af939c15ad9"
 STATUS = Path("/private/tmp/claude-501/-Users-unrulyabstractions-work-arena-capstone/62859942-35bf-474f-b418-4803b6079982/scratchpad/external_probes/status.md")
@@ -1196,6 +1200,17 @@ def fit_probe(X, y, groups, perms=None):
     return (lambda Xn: lr.decision_function(f(Xn))), C, (lambda Xn: [m.decision_function(f(Xn)) for m in nulls])
 
 
+def new_cheat(source, df):
+    """The new Cheating ladder's binary label (attempted or hacked) of each (run, agent) row, from new_ladders.py's
+    agents.csv; every row must be found and labelled."""
+    import pandas as pd
+    A = pd.read_csv(NEW_LADDERS, usecols=["source", "run", "agent", "cheat"], low_memory=False)
+    A = A[A.source == source].set_index(["run", "agent"]).cheat
+    y = A.reindex(list(zip(df.run, df.agent))).values.astype(float)
+    assert np.isfinite(y).all(), f"{source}: {int((~np.isfinite(y)).sum())} rows without a new cheat label"
+    return y.astype(int)
+
+
 def controls_frame():
     import pandas as pd
     sub = pd.read_csv(HUB / "labels" / "controls_600" / "subsample.csv")
@@ -1205,8 +1220,10 @@ def controls_frame():
         ags = sorted(a for (rn, a) in have if rn == r.run)
         if ags:
             rows.append({"run": r.run, "agent": ags[0], "author": r.author, "condition": r.condition, "task": r.task,
-                         "y": int(r.cheat)})
-    return pd.DataFrame(rows)
+                         "y_old": int(r.cheat)})
+    df = pd.DataFrame(rows)
+    df["y"] = new_cheat("controls_600", df)
+    return df
 
 
 def team_frame():
@@ -1214,6 +1231,7 @@ def team_frame():
     A = pd.read_csv(tp.OUT / "labels" / "agents.csv")
     W = A[A.role != "regulator"].reset_index(drop=True)
     W = W[[tp.think_path("board_seed", r, a).is_file() for r, a in zip(W.run, W.agent)]].reset_index(drop=True)
+    W["cheat_new"] = new_cheat("board_seed", W)
     return W
 
 
@@ -1244,8 +1262,7 @@ def stage_transfer():
     cX, cok = means_of("controls_600", ctl)
     team = team_frame()
     tX, tok_ = means_of("board_seed", team)
-    targets_team = {"cheating used or above": (team.cheat.values >= tp.USED).astype(float),
-                    "cheating opened or above": (team.cheat.values >= tp.OPENED).astype(float)}
+    targets_team = {TEAM_TARGET: team.cheat_new.values.astype(float)}
     log(f"transfer: controls {len(ctl)} ({cok.sum()} with tensors), team workers {len(team)} ({tok_.sum()}), goodfire {len(gf)}")
 
     def add(train, cfg, target, group, s, y, clusters, nul=None):
@@ -1329,7 +1346,7 @@ def stage_transfer():
             add(train, cfg, f"team workers (board seed), {tname}", "all", np.where(tok_, st, np.nan), np.where(tok_, yt, np.nan),
                 team.run.values, [np.where(tok_, v, np.nan) for v in nv])
         score_frames.append(pd.DataFrame({"train": train, "features": cfg_name(cfg), "set": "board_seed", "run": team.run,
-                                          "agent": team.agent, "y": targets_team["cheating used or above"], "score": st}))
+                                          "agent": team.agent, "y": targets_team[TEAM_TARGET], "score": st}))
         for sname, df, M in ((CB, cb, Mc), (EG, eg, Me)):
             k = (df.n_turns > 0).values
             X = np.zeros((len(df), 30720 if cfg == "all" else 10240), np.float32)
@@ -1423,7 +1440,7 @@ def stage_transfer_text():
         rows.append({"train": train, "features": "TF-IDF agent's words (rendered text)", "target": f"controls {arm}",
                      "group": "within author", "auroc": within_auroc(s_, yc, ctl.author.values)[0]})
     st = sc(H["board_seed"])
-    for tname, yt in (("cheating used or above", team.cheat.values >= tp.USED), ("cheating opened or above", team.cheat.values >= tp.OPENED)):
+    for tname, yt in ((TEAM_TARGET, team.cheat_new.values),):
         add(train, f"team workers (board seed), {tname}", "all", st, yt.astype(float), team.run.values)
     s_ = sc(H[CB])
     add(train, "cheatbench (its own label)", "all", s_, ycb, cbid)
@@ -1514,6 +1531,12 @@ def write_report():
       "teacher-forced them through the reader and extracted the think pair (think-open and think-close residuals at layers "
       "26, 38 and 51, one pair per assistant turn) into the public Hub dataset unrulyabstractions/apart-swarm-align. None of "
       "these authors, tasks or labels were used to build any earlier probe, prompt or label in this project.\n")
+    w("**Labels of our sets.** The controls and the team workers (question 3) take their labels from the framework's "
+      "three ladders, Cheating, Coordination and Collusion (`hermeneutics/new_ladders.py`). An agent **cheated** when "
+      "its Cheating rung is attempted or hacked; Coordination counts from write up, and Collusion only at its top rung, "
+      "collusion. The ladders are not nested, so no label gates another. Collusion is an agent-level label only: the "
+      "framework dates it at no call, so there are no per-step collusion rows. Only the cheating cut enters this file, "
+      "and the external sets keep their authors' labels unchanged.\n")
     w("**Recipe.** As in the sprint: the mean over turns of the think pair, training-fold PCA to min(128, half the "
       "training rows), z-scoring, L2 logistic regression (class-balanced) with C chosen by an inner 3-fold grouped CV. "
       "Intervals: bootstrap over rollouts (EvilGenie: over matched pairs; controls and team workers: over runs), 1000 "
@@ -1575,7 +1598,9 @@ def write_report():
       "zero assistant turns in the converted trace and were left out. Six pairs in seven cross harnesses, so the pooled "
       "AUROC is mostly a comparison of harnesses. The interval in that table also resampled only the three harnesses "
       f"({dg['bootstrap_clusters']} clusters), which is why it was so wide; resampled over rollouts it is narrow and still "
-      "below 0.5 (the transfer table below reproduces 0.279). The within-harness AUROC is the number to read.\n")
+      "below 0.5. Question 0 reads team_probes' scores, which use the old controls labels (the Hub's subsample.csv "
+      "cheat); on those labels the transfer stage here reproduced 0.279, and question 3 now trains on the new labels. "
+      "The within-harness AUROC is the number to read.\n")
     # 1 goodfire trajectory
     w("## Question 1. Does the probe detect Goodfire's reward hacking at the trajectory level?\n")
 
@@ -1730,14 +1755,17 @@ def write_report():
         w(md(["Target", "Group", "Rows", "Positive", "Negative"] + ["probe " + cfg_name(c).replace("think pair, ", "") for c in CFGS]
              + ["Null (layers 26+38+51) mean / 95th", "TF-IDF"], out))
         w("")
-    w("**Reading.** The controls-trained probe ranks Goodfire's hacked rollouts above clean ones, above its null on the "
-      "judge pool, and keeps part of that inside a run dir, best at layer 26. On the monitor-labelled environments the "
-      "concatenated layers sit near chance and layer 26 alone does better. The other "
-      "way round, the Goodfire-trained probe barely separates the controls' cheaters (only layer 26 clears chance), and on the team workers it "
-      "sits at the edge of its null. The opened-or-above target has three negatives and says nothing. TF-IDF trained on "
-      "the controls transfers to Goodfire about as well as the probe on the pooled judge sets and better inside a run dir, "
-      "and the Goodfire TF-IDF transfers to "
-      "CheatBench far better than any probe does.\n")
+    w("**Reading.** On the new labels the controls-trained probe no longer transfers to Goodfire. Its pooled AUROC on "
+      "the judge pool stays inside its null. Inside a run dir the concatenated and layer-51 probes rank hacked rollouts "
+      "below clean ones, and only layers 26 and 38 of the solo + cheat probe stay above chance. Layer 26 alone keeps "
+      "some pooled separation in most authors and environments. TF-IDF trained on the controls loses most of its "
+      "transfer too, so the loss follows the labels and not the features. The new cut keeps only the controls agents "
+      "that shipped or tampered (Cheating attempted or hacked); the old positives that only opened, checked, tried or "
+      "used the exploit are now negatives. The other way round, the Goodfire-trained probe's "
+      "scores are unchanged and only the targets moved. It stays inside its null on the controls solo arm, with layer 26 "
+      "the best, and sits below chance on the pooled controls except at layer 26. On the team workers it sits at the edge "
+      "of its null, just above the 95th percentile. The Goodfire-trained rows on CheatBench and EvilGenie are the same as "
+      "before the relabelling, and the Goodfire TF-IDF still transfers to CheatBench far better than any probe does.\n")
     # 4 cheatbench, evilgenie
     w("## Question 4. Does the probe detect cheating in CheatBench and EvilGenie?\n")
     w("CheatBench folds keep each rollout whole and stratify by harness and label; EvilGenie folds keep each matched pair "
@@ -1849,8 +1877,8 @@ def stage_verify():
     chk("Q3 controls solo -> Goodfire judge sets", yj, x.score.values,
         tr[(tr.train.str.startswith("controls solo (")) & (tr.features == "think pair, layers 26+38+51") & (tr.target.str.startswith("Goodfire judge sets")) & (tr.group == "all")].auroc.iloc[0])
     x = ts[(ts.train.str.startswith("Goodfire")) & (ts.features == "think pair, layers 26+38+51") & (ts.set == "board_seed")]
-    chk("Q3 Goodfire -> team workers, cheating used or above", x.y.values.astype(float), x.score.values,
-        tr[(tr.train.str.startswith("Goodfire")) & (tr.features == "think pair, layers 26+38+51") & (tr.target.str.contains("used or above"))].auroc.iloc[0])
+    chk(f"Q3 Goodfire -> team workers, {TEAM_TARGET}", x.y.values.astype(float), x.score.values,
+        tr[(tr.train.str.startswith("Goodfire")) & (tr.features == "think pair, layers 26+38+51") & (tr.target.str.contains(TEAM_TARGET))].auroc.iloc[0])
     for w_, key, ev_ in (("cb", "cheatbench_cheating or attempt vs benign", "cheatbench|cheating or attempt vs benign|5fold"),
                          ("eg", "evilgenie_hack vs legitimate", "evilgenie|hack vs legitimate|5fold")):
         c = pd.read_csv(OUT / f"traj_scores_{w_}.csv.gz")
@@ -2036,7 +2064,8 @@ def write_verification():
     L.append("\nAlso checked: the per-rollout means built here equal team_probes.agent_matrix of the same tensors exactly "
              "(max absolute difference 0.0 on three CheatBench rollouts, every configuration); the rendered turn count "
              "equals the think-pair count for every rollout of the three sets; controls-solo-to-CheatBench recomputed "
-             "here gives the same 0.279 as team_probes' RESULTS.md.\n")
+             "here gave the same 0.279 as team_probes' RESULTS.md on the old controls labels (run of 2026-11-09; question 3 now "
+             "uses the new labels).\n")
     L.append("## Independent verifier agent (2026-11-09)\n")
     L.append("A separate verifier agent reread the code and every output without writing in the repository. It found "
              "every one of the 2,133 table cells equal to its json or csv source; recomputed with its own code the "

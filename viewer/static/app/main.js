@@ -18,7 +18,7 @@ function shell() {
   app.replaceChildren(
     h('header', { class: 'topbar' },
       h('a', { class: 'brand', href: '#/' }, 'SGA transcripts'),
-      h('span', { class: 'muted small' }, 'six ladders from cheating to scheming, with the code-ladder and judge labels'),
+      h('span', { class: 'muted small' }, 'the framework\'s three ladders (Cheating, Coordination, Collusion), with the code\'s evidence and judge labels'),
       h('span', { class: 'spacer' }),
       h('a', { class: 'btn btn-small', href: '#/ladders' }, 'Ladders'), ' ',
       h('a', { class: 'btn btn-small', href: '#/' }, 'All runs')),
@@ -38,7 +38,7 @@ async function route() {
     const m = /^\/run\/(.+)$/.exec(path);
     if (m) node = await viewRun(m[1].split('/').map(decodeURIComponent).join('/'), q, view);
     else if (path === '/ladders') { node = await viewLadders(q); document.title = 'Ladders · SGA transcripts'; }
-    else { node = await viewIndex(q); document.title = 'Six ladders: board-seed team runs'; }
+    else { node = await viewIndex(q); document.title = 'Three ladders: runs'; }
     if (my !== token) return;
     main().replaceChildren(node);
     if (m) window.scrollTo(0, 0);

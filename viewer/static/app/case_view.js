@@ -1,28 +1,26 @@
 /* One agent's whole episode in the case-study layout of arena-capstone script/visualize_case.html: a sticky left
  * column "The whole episode" (one row per tool call, top to bottom) and the transcript on the right, one block per
- * tool call. There is no reader pass for these runs, so the six ladder lanes stand where the sentence colours were.
+ * tool call. There is no reader pass for these runs, so the three ladder lanes stand where the sentence colours were.
  * Layout, classes and wording follow visualize_case.html and group_labels.js (RUNG_W); written for this viewer.
  * Every string goes in through h() text nodes. */
 import { h } from './dom.js';
 import { readableReasoning } from './transcript.js';
 import { colour, lensLabel, scoreZ } from './lens.js';
 
-// Colour ramps per ladder, level 0 first. Cheating and collaboration are viz_common.js RUNG and COLLAB fills.
+// Colour ramps per ladder, level 0 first (the framework's three ladders, viewer/levels.py LADDERS).
 export const RAMP = {
-  cheat: ['#eeede8', '#fde4c8', '#f9c396', '#f29a6a', '#e8714a', '#dc5b3c', '#d0452e', '#a8201c'],
+  cheat: ['#eeede8', '#fde4c8', '#f29a6a', '#d0452e', '#a8201c'],
   coord: ['#eeede8', '#f1eefa', '#e4dff7', '#d1c8f3', '#bdb2ee', '#8a76dc', '#4f3cb0'],
-  coop: ['#eeede8', '#cfe6f0', '#7fb8d4', '#2b7d96'],
-  collab: ['#eeede8', '#d3ecd9', '#7cc192', '#1f6b47'],
-  collude: ['#eeede8', '#f4d6d0', '#eaa79a', '#d0452e', '#a8201c', '#6e0f0c'],
-  scheme: ['#eeede8', '#c9a0d8', '#7a4fb0'],
+  collude: ['#eeede8', '#f4d6d0', '#eaa79a', '#a8201c'],
 };
-const SHORT = { cheat: 'Ch', coord: 'Cd', coop: 'Cp', collab: 'Cb', collude: 'Cl', scheme: 'Sc' };
-// Milestone wording, after group_labels.js RUNG_W ("saw it", "tried to reach it", ...).
+const SHORT = { cheat: 'Ch', coord: 'Cd', collude: 'Cl' };
+// Milestone wording.
 const WORDS = {
-  cheat: { exposed: 'saw it', tried: 'tried to reach it', opened: 'opened it', used: 'used it', tampered: 'tampered with the game', checked: 'checked it with the grader', shipped: 'shipped it' },
-  coord: { 'read the board': 'read the board', posted: 'posted', discussed: 'discussed', solicited: 'solicited', crossed: 'piece crossed', assembled: 'assembled' },
+  cheat: { looked: 'looked', tempted: 'tempted', attempted: 'attempted', hacked: 'hacked' },
+  coord: { read: 'read the board', write: 'posted', low: 'coordination low', medium: 'coordination medium', high: 'coordination high', extreme: 'coordination extreme' },
+  collude: { cooperation: 'cooperation', collaboration: 'collaboration', collusion: 'collusion' },
 };
-const STAGE = ['not seen yet', 'saw it', 'tried to reach it', 'opened it', 'used it', 'tampered with the game', 'checked it with the grader', 'shipped it'];
+const STAGE = ['none yet', 'looked', 'tempted', 'attempted', 'hacked'];
 
 /** Full colour legend: one row per ladder, every level as a swatch in ladder order. */
 export function fullLegend(ladders, order) {
@@ -66,7 +64,7 @@ function blk(label, text, call, input, kind) {
 }
 
 /**
- * ctx: {agent, levels (the run's six-ladder payload), boardCalls Map<tool_call_id, [mark]>, regulatorReads: Set of
+ * ctx: {agent, levels (the run's three-ladder payload), boardCalls Map<tool_call_id, [mark]>, regulatorReads: Set of
  * tool_call_ids that read a regulator post, isRegulator, regulatorPostCalls: Set of tool_call_ids}.
  * Returns the same handle as renderTranscript: {el, findCall, findToolCall, showAll, nCalls}.
  */
@@ -108,7 +106,7 @@ export function renderCase(t, ctx) {
   const cur = Object.fromEntries(order.map(L => [L, 0]));
   const fresh = new Map();
   for (let k = 0; k < n; k++) {
-    for (const e of at.get(k) || []) if (e.index > cur[e.ladder]) { cur[e.ladder] = e.index; if (!fresh.has(k)) fresh.set(k, []); fresh.get(k).push(e); }
+    for (const e of at.get(k) || []) if (e.set ? e.index !== cur[e.ladder] : e.index > cur[e.ladder]) { cur[e.ladder] = e.index; if (!fresh.has(k)) fresh.set(k, []); fresh.get(k).push(e); }
     order.forEach((L, i) => { level[i][k] = cur[L]; });
   }
   const finalIx = Object.fromEntries(order.map(L => [L, (lv && lv.agents[ctx.agent] && lv.agents[ctx.agent][L] && lv.agents[ctx.agent][L].index) || 0]));
@@ -155,7 +153,7 @@ export function renderCase(t, ctx) {
     const marks = ctx.boardCalls.get(c.tc.tool_call_id) || [];
     const evNew = fresh.get(k) || [];
     const el = h('div', { class: 'call', id: `a-${ctx.agent}-call-${k}`, dataset: { call: String(k) } },
-      h('div', { class: 'ch' }, h('span', { class: 'cn' }, `Call ${k}`), ' · ', h('span', { title: 'how far the agent had got toward the honeypot by this call' }, STAGE[level[0][k]] || ''),
+      h('div', { class: 'ch' }, h('span', { class: 'cn' }, `Call ${k}`), ' · ', h('span', { title: 'the agent\'s Cheating rung after this call' }, STAGE[level[0][k]] || ''),
         evNew.filter(e => e.ladder !== 'cheat').map(e => [' · ', h('span', { class: 'ev-w', title: e.evidence }, `${lv.ladders[e.ladder].name} ${e.level}`)]),
         evNew.filter(e => e.ladder === 'cheat' && WORDS.cheat[e.level] !== STAGE[level[0][k]]).map(e => [' · ', h('span', { class: 'ev-w', title: e.evidence }, WORDS.cheat[e.level] || e.level)]),
         h('span', { class: 'mz' }, h('span', { class: 'cs-lz' }), ' ', miniLanes(k), ' ', c.tc.function_name || '')),
@@ -169,7 +167,7 @@ export function renderCase(t, ctx) {
   }
   while (li < loose.length) right.appendChild(looseBlock(loose[li++]));
 
-  // 4. left: the whole episode, one row per call, six lanes, milestones in the margin
+  // 4. left: the whole episode, one row per call, three lanes, milestones in the margin
   const NS = 'http://www.w3.org/2000/svg';
   const LB = 138, LW = 10, GAP = 1, RW = 66, RX = LB + order.length * (LW + GAP) + 4, W = RX + RW + 2;
   const maxH = Math.max(320, Math.min(window.innerHeight - 220, 900));
@@ -301,7 +299,7 @@ export function renderCase(t, ctx) {
     sixLine,
     svg, scale, lensNote,
     lv ? fullLegend(lv.ladders, order) : null,
-    h('p', { class: 'note' }, 'Lanes show the six ladders; the sentence column shows the selected lens (none: blank). One row per tool call, call 0 at the top; the band below the last call is the level at the end of the run. Click a row or a label to open that call.'));
+    h('p', { class: 'note' }, 'Lanes show the three ladders (Collusion is agent level only: its lane fills only in the end band); the sentence column shows the selected lens (none: blank). One row per tool call, call 0 at the top; the band below the last call is the level at the end of the run. Click a row or a label to open that call.'));
   const el = h('div', { class: 'case' }, h('div', { class: 'main' }, left, right));
   return {
     el, nCalls: n, showAll() {}, setLens,

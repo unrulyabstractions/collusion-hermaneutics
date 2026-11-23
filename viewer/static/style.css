@@ -596,3 +596,7 @@ table.idx-table tr.row-disagree td:first-child { box-shadow: inset 3px 0 0 var(-
 .rp-teamline b { color: var(--text); font-weight: 600; }
 .rp-teamline i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 3px; }
 .lv-via { font-size: 11px; color: var(--muted); }
+
+/* per-step levels (steps.csv.gz) in the run panel */
+.lv-steps { display: inline-flex; flex-wrap: wrap; gap: 1px; max-width: 420px; }
+.lv-step { display: inline-block; width: 4px; height: 9px; }
